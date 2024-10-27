@@ -110,7 +110,7 @@ function loadModel(modelPath) {
                         roughness: 0,
                         envMap: envMap,
                         map: texture,
-                        depthWrite: true
+                        depthWrite: true,
                     });
 
                     node.material = decalMaterial;
@@ -149,14 +149,12 @@ function mergeAndSetDecals() {
 
     // Function to clean up existing sponsor meshes and reset materials
     const cleanupPreviousMeshes = () => {
-        // Remove all existing sponsor meshes from the scene
         scene.children.forEach((child) => {
             if (child.isMesh && child.material.name === "SponsorMaterial") {
                 scene.remove(child);
             }
         });
 
-        // Reset materials of existing meshes if necessary
         model.traverse((node) => {
             if (node.isMesh && node.material.name === "EXT_Carpaint_Inst") {
                 node.material.map = null; // Clear existing decal texture
@@ -185,7 +183,6 @@ function mergeAndSetDecals() {
 
                     model.traverse((node) => {
                         if (node.isMesh && node.material.name === "EXT_Carpaint_Inst") {
-                            // Apply the decal texture to the existing material
                             node.material.map = decalTexture;
                             node.material.clearcoat = decalsMats.clearCoat;
                             node.material.clearcoatRoughness = decalsMats.clearCoatRoughness;
@@ -212,22 +209,50 @@ function mergeAndSetDecals() {
     const drawSponsors = () => {
         if (sponsorsFile) {
             const imgSponsor = new Image();
-            console.log("Attempting to load sponsor image from path:", sponsorsFile);
             imgSponsor.src = sponsorsFile;
 
             return new Promise((resolve, reject) => {
                 imgSponsor.onload = () => {
                     console.log("Sponsor image loaded with dimensions:", imgSponsor.width, imgSponsor.height);
-                    ctx.drawImage(imgSponsor, 0, 0); // Draw the sponsor image after decals are drawn
+                    // Create a canvas for extracting the alpha channel
+                    const alphaCanvas = document.createElement('canvas');
+                    const alphaCtx = alphaCanvas.getContext('2d');
+                    alphaCanvas.width = imgSponsor.width;
+                    alphaCanvas.height = imgSponsor.height;
 
-                    const sponsorTexture = new THREE.Texture(canvas);
+                    // Draw the sponsor image to extract its alpha channel
+                    alphaCtx.drawImage(imgSponsor, 0, 0);
+                    const imageData = alphaCtx.getImageData(0, 0, alphaCanvas.width, alphaCanvas.height);
+                    const data = imageData.data;
+
+                    // Create a new canvas to draw the color image with the alpha channel
+                    const combinedCanvas = document.createElement('canvas');
+                    const combinedCtx = combinedCanvas.getContext('2d');
+                    combinedCanvas.width = imgSponsor.width;
+                    combinedCanvas.height = imgSponsor.height;
+
+                    // Draw the sponsor image onto the combined canvas
+                    combinedCtx.drawImage(imgSponsor, 0, 0);
+
+                    // Now, set the alpha channel
+                    const combinedData = combinedCtx.getImageData(0, 0, combinedCanvas.width, combinedCanvas.height);
+                    const combinedPixels = combinedData.data;
+
+                    // Apply the alpha values from the original image
+                    for (let i = 0; i < combinedPixels.length; i += 4) {
+                        combinedPixels[i + 3] = data[i + 3]; // Set the alpha channel
+                    }
+
+                    combinedCtx.putImageData(combinedData, 0, 0);
+
+                    // Create a texture from the combined canvas
+                    const sponsorTexture = new THREE.Texture(combinedCanvas);
                     sponsorTexture.flipY = false; // Ensure flipY is false
                     sponsorTexture.colorSpace = THREE.SRGBColorSpace; // Set color space
                     sponsorTexture.needsUpdate = true;
 
                     model.traverse((node) => {
                         if (node.isMesh && node.material.name === "EXT_Carpaint_Inst") {
-                            // Create a new material for the sponsor
                             const sponsorMaterial = new THREE.MeshPhysicalMaterial({
                                 map: sponsorTexture,
                                 clearcoat: sponsorsMats.clearCoat,
@@ -235,16 +260,11 @@ function mergeAndSetDecals() {
                                 metalness: sponsorsMats.metallic,
                                 roughness: sponsorsMats.baseRoughness,
                                 transparent: true,
-                                opacity: 1.0,
+                                opacity: 0.95,
                                 depthWrite: false, // Disable depth writing for sponsors
-                                depthTest: true, // Disable depth testing for sponsors
-                                alphaMap: sponsorTexture, // Use alpha map for transparency
-                                polygonOffset: true, // Enable polygon offset
-                                polygonOffsetFactor: 1, // Adjust this to control offset
-                                polygonOffsetUnits: 1 // Adjust this to control offset
+                                depthTest: true, // Enable depth testing for sponsors
                             });
 
-                            // Create a sponsor mesh with the same geometry as the original
                             const sponsorMesh = new THREE.Mesh(node.geometry, sponsorMaterial);
                             sponsorMesh.position.copy(node.position);
                             sponsorMesh.rotation.copy(node.rotation);
@@ -252,9 +272,6 @@ function mergeAndSetDecals() {
                             sponsorMesh.material.name = "SponsorMaterial"; // Set a name for identification
 
                             console.log("Adding sponsor mesh at position:", sponsorMesh.position);
-                            sponsorMesh.renderOrder = 100; // Ensure it renders on top
-
-                            // Add the sponsor mesh to the scene
                             scene.add(sponsorMesh);
                         }
                     });
