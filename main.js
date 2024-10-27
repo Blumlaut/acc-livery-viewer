@@ -260,7 +260,7 @@ function mergeAndSetDecals() {
                                 metalness: sponsorsMats.metallic,
                                 roughness: sponsorsMats.baseRoughness,
                                 transparent: true,
-                                opacity: 0.95,
+                                opacity: 1,
                                 depthWrite: false, // Disable depth writing for sponsors
                                 depthTest: true, // Enable depth testing for sponsors
                             });
