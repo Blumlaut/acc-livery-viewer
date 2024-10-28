@@ -113,8 +113,8 @@ function setSkybox(scene, folderName) {
 
     // If there is a model in the scene, apply the environment map to specific materials
     if (model) {
-        model.traverse((node) => {
-            if (node.isMesh && (node.material.name === "EXT_Carpaint_Inst" || node.material.name === "SponsorMaterial")) {
+        scene.children.forEach((node) => {
+            if (node.isMesh && (node.material.name === "EXT_Carpaint_Inst" || node.material.name === "DecalMaterial" || node.material.name === "SponsorMaterial")) {
                 node.material.envMap = scene.environment;
                 node.material.needsUpdate = true;
             }
@@ -229,12 +229,13 @@ function mergeAndSetDecals() {
         });
     };
 
-    model.traverse((node) => {
+    scene.children.forEach((node) => {
         if (node.isMesh && node.material.name === "EXT_Carpaint_Inst") {
             applyMaterialPreset(node.material, paintMaterials.customDecal || paintMaterials.glossy)
             node.material.needsUpdate = true;
         }
     });
+    
 
     // Handle Decals
     const drawDecals = () => {
