@@ -86,6 +86,14 @@ function init() {
         setBaseLivery(curModelPath, event.target.value);
     });
 
+    const unloadLiveryBtn = document.getElementById('unloadCustomLivery');
+    unloadLiveryBtn.addEventListener('click', () => {
+        scene.remove(decalMesh)
+        scene.remove(sponsorMesh)
+        paintMaterials.customDecal = undefined;
+        paintMaterials.customSponsor = undefined;
+    });
+
     
 
     // Animation loop
