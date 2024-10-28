@@ -11,7 +11,7 @@
   ],
   "nodes" : [
     {
-      "name" : "bmw_m6_gt3_exterior_endu",
+      "name" : "bmw_m6_gt3_exterior_endurance",
       "mesh" : 0,
       "skin" : 0,
       "children" : [ 1 ]
@@ -487,12 +487,12 @@
           "material" : 13
         }
       ],
-      "name" : "bmw_m6_gt3_exterior_endu"
+      "name" : "bmw_m6_gt3_exterior_endurance"
     }
   ],
   "buffers" : [
     {
-      "uri" : "bmw_m6_gt3_exterior_endu.bin",
+      "uri" : "bmw_m6_gt3_exterior_endurance.bin",
       "byteLength" : 6903136
     }
   ],
