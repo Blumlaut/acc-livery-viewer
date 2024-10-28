@@ -12,6 +12,7 @@
         } </script>
     <link rel="stylesheet" href="style.css">
     <script src="data.js"></script>
+    <script type="module" src="colour-picker.js"></script>
     <script type="module" src="main.js" defer></script>
 </head>
 <body>
@@ -28,12 +29,9 @@
 
         <!-- 3 colour pickers for each livery layer -->
          <div id="liveryLayerColors">
-            <label for="layer1Color">Layer 1 Color:</label>
-            <input type="color" id="layer1Color" value="#ffffff">
-            <label for="layer2Color">Layer 2 Color:</label>
-            <input type="color" id="layer2Color" value="#ffffff">
-            <label for="layer3Color">Layer 3 Color:</label>
-            <input type="color" id="layer3Color" value="#ffffff">
+            <color-picker id="layer1Color" value="#ff0000"></color-picker> 
+            <color-picker id="layer2Color" value="#00ff00"></color-picker> 
+            <color-picker id="layer3Color" value="#0000ff"></color-picker> 
          </div>
 
     </div>

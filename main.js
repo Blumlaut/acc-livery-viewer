@@ -6,7 +6,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 let scene, camera, renderer, model, curModelPath
 
 let extraMeshes = []
-
+let bodyColours = [ "#ff0000", "#00ff00", "#0000ff" ]
 
 let currentSkybox = cubemaps[0]
 let skyboxState = false
@@ -99,17 +99,21 @@ function init() {
 
     const layer1Color = document.getElementById('layer1Color');
     layer1Color.addEventListener('change', (event) => {
-        changeMaterialColor("baseLivery1", event.target.value);
+        bodyColours[0] = event.target.value;
+        console.log(event.target.value)
+        applyBodyColours()
     });
 
     const layer2Color = document.getElementById('layer2Color');
     layer2Color.addEventListener('change', (event) => {
-        changeMaterialColor("baseLivery2", event.target.value);
+        bodyColours[1] = event.target.value;
+        applyBodyColours()
     });
 
     const layer3Color = document.getElementById('layer3Color');
     layer3Color.addEventListener('change', (event) => {
-        changeMaterialColor("baseLivery3", event.target.value);
+        bodyColours[2] = event.target.value;
+        applyBodyColours()
     });
 
     
@@ -205,8 +209,9 @@ async function setBaseLivery(modelPath, liveryId) {
     // iterate through images
     for (let i = 0; i < images.length; i++) {
         let image = images[i];
-        drawImageOverlay(image, "baseLivery"+i, paintMaterials.customDecal || paintMaterials.glossy)
+        await drawImageOverlay(image, "baseLivery"+(i+1), paintMaterials.customDecal || paintMaterials.glossy)
     }
+    applyBodyColours()
 
     return
     loadStaticImage(`models/${modelPath}/skins/custom/custom_${liveryId}/EXT_Skin_Custom.png`).then((texture) => {
@@ -305,6 +310,8 @@ async function drawImageOverlay(file, materialName, material) {
         decalCtx.drawImage(imgDecal, 0, 0);
         const decalTexture = createTextureFromCanvas(decalCanvas);
         const mesh = applyTextureToModel(decalTexture, materialName, material);
+        console.log("finished drawing overlay for "+materialName)
+        extraMeshes.push(mesh)
         return mesh
     } catch (error) {
         console.error(error);
@@ -326,10 +333,9 @@ async function mergeAndSetDecals() {
     });
 
     try {
-        let decalMesh = await drawImageOverlay(decalsFile, "DecalMaterial", paintMaterials.customDecal || paintMaterials.glossy)
-        extraMeshes.push(decalMesh);
-        let sponsorMesh = await drawImageOverlay(sponsorsFile, "SponsorMaterial", paintMaterials.customSponsor || paintMaterials.matte)
-        extraMeshes.push(sponsorMesh);
+        await drawImageOverlay(decalsFile, "DecalMaterial", paintMaterials.customDecal || paintMaterials.glossy)
+        await drawImageOverlay(sponsorsFile, "SponsorMaterial", paintMaterials.customSponsor || paintMaterials.matte)
+        applyBodyColours()
     } catch (error) {
         console.error(error);
     }
@@ -455,10 +461,12 @@ async function convertImageToRGBChannels(imagePath) {
 
         for (let i = 0; i < data.length; i += 4) {
             const value = data[i + channelIndex]; // Red, Green, or Blue
-            channelPixels[i] = value;     // R
-            channelPixels[i + 1] = value; // G
-            channelPixels[i + 2] = value; // B
-            channelPixels[i + 3] = data[i + 3]; // Alpha (preserve transparency)
+
+            // Set the channel color to white (255,255,255) if it has intensity, otherwise keep transparent
+            channelPixels[i] = value > 0 ? 255 : 0;     // R
+            channelPixels[i + 1] = value > 0 ? 255 : 0; // G
+            channelPixels[i + 2] = value > 0 ? 255 : 0; // B
+            channelPixels[i + 3] = value > 0 ? data[i + 3] : 0; // Preserve original alpha for active pixels, else 0
         }
 
         channelCtx.putImageData(channelData, 0, 0);
@@ -466,15 +474,16 @@ async function convertImageToRGBChannels(imagePath) {
     };
 
     // Create images for the red, green, and blue channels
-    const redImage = createChannelImage(0); // Red channel
+    const redImage = createChannelImage(0);   // Red channel
     const greenImage = createChannelImage(1); // Green channel
-    const blueImage = createChannelImage(2); // Blue channel
+    const blueImage = createChannelImage(2);  // Blue channel
 
     // Return an array of object URLs
     return [redImage, greenImage, blueImage];
 }
 
-function changeMaterialColor(scene, materialName, hexColor) {
+
+function changeMaterialColor(materialName, hexColor) {
     // Convert hex color string to THREE.Color
     const color = new THREE.Color(hexColor);
 
@@ -492,6 +501,12 @@ function changeMaterialColor(scene, materialName, hexColor) {
             }
         }
     });
+}
+
+function applyBodyColours() {
+    for (let i = 0; i < bodyColours.length; i++) {
+        changeMaterialColor(`baseLivery${i + 1}`, bodyColours[i]);
+    }
 }
 
 // Initialize
