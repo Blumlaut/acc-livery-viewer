@@ -15,6 +15,12 @@ const modelFiles = [
     // Add more models as needed
 ];
 
+const cubemaps = [
+    "overcast",
+    "sunny",
+    "night",
+    "sunset"
+]
 
 function init() {
     // Create the scene
@@ -26,12 +32,12 @@ function init() {
 
     const cubeMapLoader = new THREE.CubeTextureLoader();
     envMap = cubeMapLoader.load([
-        'cubemap/negx.jpg',
-        'cubemap/posx.jpg',
-        'cubemap/negy.jpg',
-        'cubemap/posy.jpg',
-        'cubemap/negz.jpg',
-        'cubemap/posz.jpg'
+        'cubemap/overcast/negx.jpg',
+        'cubemap/overcast/posx.jpg',
+        'cubemap/overcast/negy.jpg',
+        'cubemap/overcast/posy.jpg',
+        'cubemap/overcast/negz.jpg',
+        'cubemap/overcast/posz.jpg'
     ]);
     envMap.encoding = THREE.sRGBEncoding;
 
@@ -44,14 +50,24 @@ function init() {
         modelSelector.appendChild(option);
     });
 
+    const cubemapSelector = document.getElementById('cubemapSelector');
+    cubemaps.forEach((file) => {
+        const option = document.createElement('option');
+        option.value = file;
+        option.textContent = file;
+        cubemapSelector.appendChild(option);
+    });
+
     // Load the initial model
     loadModel(modelFiles[0]); // Load the first model initially
 
     // Set up lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 1);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
     scene.add(ambientLight);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    scene.add(directionalLight);
+    //const directionalLight = new THREE.DirectionalLight(0xffffff, 0.1);
+    //scene.add(directionalLight);
+    const hemiLight = new THREE.HemisphereLight( 0x0000ff, 0x00ff00, 0.6 ); 
+    scene.add(hemiLight)
 
     // Set camera position
     camera.position.z = 5;
@@ -66,6 +82,28 @@ function init() {
     modelSelector.addEventListener('change', (event) => {
         const selectedModel = event.target.value;
         loadModel(selectedModel);
+    });
+
+
+    cubemapSelector.addEventListener('change', (event) => {
+        const selectedCubemap = event.target.value;
+        const cubeMapLoader = new THREE.CubeTextureLoader();
+        envMap = cubeMapLoader.load([
+            `cubemap/${selectedCubemap}/negx.jpg`,
+            `cubemap/${selectedCubemap}/posx.jpg`,
+            `cubemap/${selectedCubemap}/negy.jpg`,
+            `cubemap/${selectedCubemap}/posy.jpg`,
+            `cubemap/${selectedCubemap}/negz.jpg`,
+            `cubemap/${selectedCubemap}/posz.jpg`
+        ]);
+        envMap.encoding = THREE.sRGBEncoding;
+        model.traverse((node) => {
+            if (node.isMesh && (node.material.name === "EXT_Carpaint_Inst" || node.material.name === "SponsorMaterial")) {
+                node.material.envMap = envMap;
+                node.material.needsUpdate = true;
+            }
+        });
+        model.updateMatrixWorld();
     });
 
     // Animation loop
