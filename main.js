@@ -82,14 +82,12 @@ function init() {
 
     const liverySelector = document.getElementById('liverySelector');
     liverySelector.addEventListener('change', (event) => {
-        console.log(event.target.value)
         setBaseLivery(curModelPath, event.target.value);
     });
 
     const unloadLiveryBtn = document.getElementById('unloadCustomLivery');
     unloadLiveryBtn.addEventListener('click', () => {
-        scene.remove(decalMesh)
-        scene.remove(sponsorMesh)
+        cleanupPreviousMeshes()
         paintMaterials.customDecal = undefined;
         paintMaterials.customSponsor = undefined;
         setBaseLivery(curModelPath, liverySelector.value);
@@ -123,7 +121,6 @@ function setSkybox(scene, folderName) {
     // If there is a model in the scene, apply the environment map to specific materials
     if (model) {
         scene.traverse((node) => {
-                console.log(node)
                 if (node.isMesh && (node.material.name === "EXT_Carpaint_Inst" || node.material.name === "DecalMaterial" || node.material.name === "SponsorMaterial")) {
                     node.material.envMap = scene.environment;
                     node.material.needsUpdate = true;
@@ -170,7 +167,6 @@ function loadModel(modelPath) {
         const liverySelector = document.getElementById('liverySelector');
         for (let a in liverySelector.options) { liverySelector.options.remove(0); } 
         for (let i = 1; i < baseLiveries[modelPath]+1; i++) {
-            console.log(i)
             const option = document.createElement('option');
             option.value = i;
             option.textContent = "Skin "+i;
@@ -184,19 +180,7 @@ function cleanMaterial(material) {
 }
 
 var decalsFile = null;
-var decalsMats = {
-	"baseRoughness": 0,
-	"clearCoat": 1,
-	"clearCoatRoughness": 0,
-	"metallic": 0
-};
 var sponsorsFile = null;
-var sponsorsMats = {
-	"baseRoughness": 0,
-	"clearCoat": 1,
-	"clearCoatRoughness": 0.01,
-	"metallic": 0.9
-};
 
 function setBaseLivery(modelPath, liveryId) {
     loadStaticImage(`models/${modelPath}/skins/custom/custom_${liveryId}/EXT_Skin_Custom.png`).then((texture) => {
@@ -223,191 +207,137 @@ function setBaseLivery(modelPath, liveryId) {
     });
 }
 
-function mergeAndSetDecals() {
+function cleanupPreviousMeshes() {
+    scene.remove(decalMesh)
+    scene.remove(sponsorMesh)
+    scene.traverse((child) => {
+        if (child.isMesh && (child.material.name === "SponsorMaterial" || child.material.name === "DecalMaterial")) {
+            scene.remove(child);
+        }
+    });
+}
+
+function setupCanvas(image) {
+    const canvas = document.createElement('canvas');
+    canvas.width = image.width;
+    canvas.height = image.height;
+    return canvas;
+}
+
+function loadImage(src) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(`Failed to load image from ${src}`);
+    });
+}
+
+function createTextureFromCanvas(canvas) {
+    const texture = new THREE.Texture(canvas);
+    texture.flipY = false;
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = 16;
+    texture.needsUpdate = true;
+    return texture;
+}
+
+function applyTextureToModel(texture, materialName, preset) {
+    let mesh
+    model.traverse((node) => {
+        if (node.isMesh && node.material.name === "EXT_Carpaint_Inst") {
+            const material = new THREE.MeshPhysicalMaterial({
+                name: materialName,
+                map: texture,
+                transparent: true,
+                opacity: 1,
+                envMap: scene.environment,
+                depthWrite: false,
+                depthTest: true,
+            });
+            applyMaterialPreset(material, preset);
+            
+            mesh = new THREE.Mesh(node.geometry, material);
+            mesh.position.copy(node.position);
+            mesh.rotation.copy(node.rotation);
+            mesh.scale.copy(node.scale).multiplyScalar(1.0001);
+
+            scene.add(mesh);
+        }
+    });
+    return mesh
+}
+
+async function drawDecals() {
+    if (!decalsFile) {
+        console.log("Decals missing, skipping decals layer.");
+        return;
+    }
+    try {
+        const imgDecal = await loadImage(decalsFile);
+        const decalCanvas = setupCanvas(imgDecal);
+        const decalCtx = decalCanvas.getContext('2d');
+        decalCtx.drawImage(imgDecal, 0, 0);
+        const decalTexture = createTextureFromCanvas(decalCanvas);
+        decalMesh = applyTextureToModel(decalTexture, "DecalMaterial", paintMaterials.customDecal || paintMaterials.glossy);
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+async function drawSponsors() {
+    if (!sponsorsFile) {
+        console.log("Sponsors missing, using just the decals.");
+        return;
+    }
+    try {
+        const imgSponsor = await loadImage(sponsorsFile);
+        const alphaCanvas = setupCanvas(imgSponsor);
+        const alphaCtx = alphaCanvas.getContext('2d');
+        alphaCtx.drawImage(imgSponsor, 0, 0);
+
+        const combinedCanvas = setupCanvas(imgSponsor);
+        const combinedCtx = combinedCanvas.getContext('2d');
+        combinedCtx.drawImage(imgSponsor, 0, 0);
+
+        const alphaData = alphaCtx.getImageData(0, 0, alphaCanvas.width, alphaCanvas.height).data;
+        const combinedData = combinedCtx.getImageData(0, 0, combinedCanvas.width, combinedCanvas.height);
+        
+        for (let i = 0; i < combinedData.data.length; i += 4) {
+            combinedData.data[i + 3] = alphaData[i + 3];
+        }
+        combinedCtx.putImageData(combinedData, 0, 0);
+
+        const sponsorTexture = createTextureFromCanvas(combinedCanvas);
+        sponsorMesh = applyTextureToModel(sponsorTexture, "SponsorMaterial", paintMaterials.customSponsor || paintMaterials.matte);
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+async function mergeAndSetDecals() {
     const canvas = document.getElementById('hiddenCanvas');
     const ctx = canvas.getContext('2d');
-
-    // Clear the canvas before drawing
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Function to clean up existing sponsor and decal meshes
-    const cleanupPreviousMeshes = () => {
-        scene.traverse((child) => {
-            if (child.isMesh && (child.material.name === "SponsorMaterial" || child.material.name === "DecalMaterial")) {
-                scene.remove(child);
-            }
-        });
-    };
+    cleanupPreviousMeshes();
 
-    console.log(scene)
     scene.traverse((node) => {
-        console.log(node)
         if (node.isMesh && node.material.name === "EXT_Carpaint_Inst") {
-            applyMaterialPreset(node.material, paintMaterials.customDecal || paintMaterials.glossy)
+            applyMaterialPreset(node.material, paintMaterials.customDecal || paintMaterials.glossy);
             node.material.needsUpdate = true;
         }
     });
-    
 
-    // Handle Decals
-    const drawDecals = () => {
-        if (decalsFile) {
-            const imgDecal = new Image();
-            imgDecal.src = decalsFile;
-
-            return new Promise((resolve, reject) => {
-                imgDecal.onload = () => {
-                    console.log("Decal image loaded with dimensions:", imgDecal.width, imgDecal.height);
-                    // Create a canvas for the decal texture
-                    const decalCanvas = document.createElement('canvas');
-                    decalCanvas.width = imgDecal.width;
-                    decalCanvas.height = imgDecal.height;
-
-                    const decalCtx = decalCanvas.getContext('2d');
-                    decalCtx.drawImage(imgDecal, 0, 0);
-
-                    // Create a texture from the decal canvas
-                    const decalTexture = new THREE.Texture(decalCanvas);
-                    decalTexture.flipY = false; // Ensure flipY is false
-                    decalTexture.colorSpace = THREE.SRGBColorSpace; // Set color space
-                    decalTexture.anisotropy = 16;
-                    decalTexture.needsUpdate = true;
-
-                    model.traverse((node) => {
-                        if (node.isMesh && node.material.name === "EXT_Carpaint_Inst") {
-                            const decalMaterial = new THREE.MeshPhysicalMaterial({
-                                name: "DecalMaterial",
-                                map: decalTexture,
-                                transparent: true,
-                                opacity: 1,
-                                envMap: scene.environment,
-                                depthWrite: false, // Disable depth writing for decals
-                                depthTest: true, // Enable depth testing for decals
-                            });
-                            applyMaterialPreset(decalMaterial, paintMaterials.customDecal || paintMaterials.glossy)
-
-                            decalMesh = new THREE.Mesh(node.geometry, decalMaterial);
-                            decalMesh.position.copy(node.position);
-                            decalMesh.rotation.copy(node.rotation);
-                            decalMesh.scale.copy(node.scale);
-                            decalMesh.scale.x += 0.0001;
-                            decalMesh.scale.y += 0.0001;
-                            decalMesh.scale.z += 0.0001;
-
-                            console.log("Adding decal mesh at position:", decalMesh.position);
-                            scene.add(decalMesh);
-                        }
-                    });
-                    resolve(); // Resolve when decals are drawn
-                };
-
-                imgDecal.onerror = () => {
-                    console.error("Failed to load decal image");
-                    reject("Failed to load decal image");
-                };
-            });
-        } else {
-            console.log("Decals missing, skipping decals layer.");
-            return Promise.resolve();
-        }
-    };
-
-    // Handle Sponsors
-    const drawSponsors = () => {
-        if (sponsorsFile) {
-            const imgSponsor = new Image();
-            imgSponsor.src = sponsorsFile;
-
-            return new Promise((resolve, reject) => {
-                imgSponsor.onload = () => {
-                    console.log("Sponsor image loaded with dimensions:", imgSponsor.width, imgSponsor.height);
-                    // Create a canvas for extracting the alpha channel
-                    const alphaCanvas = document.createElement('canvas');
-                    const alphaCtx = alphaCanvas.getContext('2d');
-                    alphaCanvas.width = imgSponsor.width;
-                    alphaCanvas.height = imgSponsor.height;
-
-                    // Draw the sponsor image to extract its alpha channel
-                    alphaCtx.drawImage(imgSponsor, 0, 0);
-                    const imageData = alphaCtx.getImageData(0, 0, alphaCanvas.width, alphaCanvas.height);
-                    const data = imageData.data;
-
-                    // Create a new canvas to draw the color image with the alpha channel
-                    const combinedCanvas = document.createElement('canvas');
-                    const combinedCtx = combinedCanvas.getContext('2d');
-                    combinedCanvas.width = imgSponsor.width;
-                    combinedCanvas.height = imgSponsor.height;
-
-                    // Draw the sponsor image onto the combined canvas
-                    combinedCtx.drawImage(imgSponsor, 0, 0);
-
-                    // Now, set the alpha channel
-                    const combinedData = combinedCtx.getImageData(0, 0, combinedCanvas.width, combinedCanvas.height);
-                    const combinedPixels = combinedData.data;
-
-                    // Apply the alpha values from the original image
-                    for (let i = 0; i < combinedPixels.length; i += 4) {
-                        combinedPixels[i + 3] = data[i + 3]; // Set the alpha channel
-                    }
-
-                    combinedCtx.putImageData(combinedData, 0, 0);
-
-                    // Create a texture from the combined canvas
-                    const sponsorTexture = new THREE.Texture(combinedCanvas);
-                    sponsorTexture.flipY = false; // Ensure flipY is false
-                    sponsorTexture.colorSpace = THREE.SRGBColorSpace; // Set color space
-                    sponsorTexture.anisotropy = 16;
-                    sponsorTexture.needsUpdate = true;
-
-                    model.traverse((node) => {
-                        if (node.isMesh && node.material.name === "EXT_Carpaint_Inst") {
-                            const sponsorMaterial = new THREE.MeshPhysicalMaterial({
-                                name: "SponsorMaterial",
-                                map: sponsorTexture,
-                                transparent: true,
-                                opacity: 1,
-                                envMap: scene.environment,
-                                depthWrite: false, // Disable depth writing for sponsors
-                                depthTest: true, // Enable depth testing for sponsors
-                            });
-                            applyMaterialPreset(sponsorMaterial, paintMaterials.customSponsor || paintMaterials.matte)
-
-                            sponsorMesh = new THREE.Mesh(node.geometry, sponsorMaterial);
-                            sponsorMesh.position.copy(node.position);
-                            sponsorMesh.rotation.copy(node.rotation);
-                            sponsorMesh.scale.copy(node.scale);
-                            sponsorMesh.scale.x += 0.0002;
-                            sponsorMesh.scale.y += 0.0002;
-                            sponsorMesh.scale.z += 0.0002;
-
-                            console.log("Adding sponsor mesh at position:", sponsorMesh.position);
-                            scene.add(sponsorMesh);
-                        }
-                    });
-                    resolve(); // Resolve when sponsors are drawn
-                };
-
-                imgSponsor.onerror = () => {
-                    console.error("Failed to load sponsor image");
-                    reject("Failed to load sponsor image");
-                };
-            });
-        } else {
-            console.log("Sponsors missing, using just the decals.");
-            return Promise.resolve();
-        }
-    };
-
-    // Clean up previous meshes before drawing new ones
-    cleanupPreviousMeshes();
-
-    // Execute decal and sponsor drawing in sequence
-    drawDecals().then(() => {
-        return drawSponsors();
-    }).catch(err => {
-        console.error(err);
-    });
+    try {
+        await drawDecals();
+        await drawSponsors();
+    } catch (error) {
+        console.error(error);
+    }
 }
+
+
 
 
 
@@ -437,7 +367,6 @@ function handleFileUpload(event) {
 					// decode result from data:application/json;base64 to get the actual file content
 					const base64Data = e.target.result.split(',')[1];
 					const jsonContent = JSON.parse(atob(base64Data));
-					console.log(jsonContent)
 					if (file.name === "decals.json") {
 						paintMaterials.customDecal = jsonContent
 					} else if (file.name === "sponsors.json") {
@@ -449,7 +378,6 @@ function handleFileUpload(event) {
         }
     }
 	setTimeout(() => {
-		console.log("triggering decals")
 		mergeAndSetDecals();
 	}, 300)
 }
