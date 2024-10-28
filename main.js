@@ -73,6 +73,9 @@ const cubemaps = [
     "night",
 ]
 
+let currentSkybox = cubemaps[0]
+let skyboxState = true
+
 function init() {
     // Create the scene
     scene = new THREE.Scene();
@@ -80,7 +83,7 @@ function init() {
     renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('modelContainer').appendChild(renderer.domElement);
-    setSkybox(scene, "overcast");
+    setSkybox(scene, currentSkybox);
 
     // Populate the dropdown with available models
     const modelSelector = document.getElementById('modelSelector');
@@ -97,6 +100,17 @@ function init() {
         option.value = file;
         option.textContent = file;
         cubemapSelector.appendChild(option);
+    });
+
+    const skyboxToggle = document.getElementById('skybox-toggle');
+    skyboxToggle.setAttribute("checked", true);
+    skyboxToggle.addEventListener('change', () => {
+        skyboxState = skyboxToggle.checked;
+        if (skyboxToggle.checked) {
+            setSkybox(scene, currentSkybox);
+        } else {
+            scene.background = null;
+        }
     });
 
     // Load the initial model
@@ -131,6 +145,8 @@ function init() {
         setSkybox(scene, selectedCubemap)
     });
 
+    
+
     // Animation loop
     animate();
 }
@@ -148,8 +164,11 @@ function setSkybox(scene, folderName) {
     envMap.encoding = THREE.sRGBEncoding;
 
     // Set the cubemap as both the background and the environment map
-    scene.background = envMap;
+    if (skyboxState) {
+        scene.background = envMap;
+    }
     scene.environment = envMap;
+    currentSkybox = folderName;
 
     // If there is a model in the scene, apply the environment map to specific materials
     if (model) {
