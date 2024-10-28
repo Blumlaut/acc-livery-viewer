@@ -97,6 +97,21 @@ function init() {
         setBaseLivery(curModelPath, liverySelector.value);
     });
 
+    const layer1Color = document.getElementById('layer1Color');
+    layer1Color.addEventListener('change', (event) => {
+        changeMaterialColor("baseLivery1", event.target.value);
+    });
+
+    const layer2Color = document.getElementById('layer2Color');
+    layer2Color.addEventListener('change', (event) => {
+        changeMaterialColor("baseLivery2", event.target.value);
+    });
+
+    const layer3Color = document.getElementById('layer3Color');
+    layer3Color.addEventListener('change', (event) => {
+        changeMaterialColor("baseLivery3", event.target.value);
+    });
+
     
 
     // Animation loop
@@ -185,7 +200,15 @@ function cleanMaterial(material) {
 var decalsFile = null;
 var sponsorsFile = null;
 
-function setBaseLivery(modelPath, liveryId) {
+async function setBaseLivery(modelPath, liveryId) {
+    const images = await convertImageToRGBChannels(`models/${modelPath}/skins/custom/custom_${liveryId}/EXT_Skin_Custom.png`)
+    // iterate through images
+    for (let i = 0; i < images.length; i++) {
+        let image = images[i];
+        drawImageOverlay(image, "baseLivery"+i, paintMaterials.customDecal || paintMaterials.glossy)
+    }
+
+    return
     loadStaticImage(`models/${modelPath}/skins/custom/custom_${liveryId}/EXT_Skin_Custom.png`).then((texture) => {
         // Set texture properties
         texture.colorSpace = THREE.SRGBColorSpace;
@@ -399,6 +422,76 @@ function applyMaterialPreset(material, preset) {
     material.roughness = preset.baseRoughness
     material.needsUpdate = true;
     return material
+}
+
+async function convertImageToRGBChannels(imagePath) {
+    const img = new Image();
+    img.src = imagePath;
+
+    // Wait for the image to load
+    await new Promise((resolve) => {
+        img.onload = resolve;
+    });
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    // Draw the original image to the canvas
+    ctx.drawImage(img, 0, 0);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    const createChannelImage = (channelIndex) => {
+        const channelCanvas = document.createElement('canvas');
+        const channelCtx = channelCanvas.getContext('2d');
+        channelCanvas.width = canvas.width;
+        channelCanvas.height = canvas.height;
+
+        const channelData = channelCtx.createImageData(channelCanvas.width, channelCanvas.height);
+        const channelPixels = channelData.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+            const value = data[i + channelIndex]; // Red, Green, or Blue
+            channelPixels[i] = value;     // R
+            channelPixels[i + 1] = value; // G
+            channelPixels[i + 2] = value; // B
+            channelPixels[i + 3] = data[i + 3]; // Alpha (preserve transparency)
+        }
+
+        channelCtx.putImageData(channelData, 0, 0);
+        return channelCanvas.toDataURL('image/png');
+    };
+
+    // Create images for the red, green, and blue channels
+    const redImage = createChannelImage(0); // Red channel
+    const greenImage = createChannelImage(1); // Green channel
+    const blueImage = createChannelImage(2); // Blue channel
+
+    // Return an array of object URLs
+    return [redImage, greenImage, blueImage];
+}
+
+function changeMaterialColor(scene, materialName, hexColor) {
+    // Convert hex color string to THREE.Color
+    const color = new THREE.Color(hexColor);
+
+    // Traverse all objects in the scene
+    scene.traverse((object) => {
+        // Check if the object has a material and if it's an instance of Mesh
+        if (object.isMesh && object.material) {
+            // Check if the material has a name that matches the specified name
+            if (object.material.name === materialName) {
+                // Change the material color
+                object.material.color = color
+                // Optionally, you can also update the material if necessary
+                object.material.needsUpdate = true;
+                console.log(`Changed color of material '${materialName}' to ${hexColor}`);
+            }
+        }
+    });
 }
 
 // Initialize

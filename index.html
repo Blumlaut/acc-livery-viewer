@@ -26,6 +26,16 @@
 		<input type="file" id="multiFileUpload" accept=".png,.json" multiple />
         <button id="unloadCustomLivery">Unload Custom Livery</button>
 
+        <!-- 3 colour pickers for each livery layer -->
+         <div id="liveryLayerColors">
+            <label for="layer1Color">Layer 1 Color:</label>
+            <input type="color" id="layer1Color" value="#ffffff">
+            <label for="layer2Color">Layer 2 Color:</label>
+            <input type="color" id="layer2Color" value="#ffffff">
+            <label for="layer3Color">Layer 3 Color:</label>
+            <input type="color" id="layer3Color" value="#ffffff">
+         </div>
+
     </div>
     <div id="modelContainer"></div>
 	<canvas id="hiddenCanvas" ></canvas>
