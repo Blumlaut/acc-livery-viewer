@@ -122,12 +122,13 @@ function setSkybox(scene, folderName) {
 
     // If there is a model in the scene, apply the environment map to specific materials
     if (model) {
-        scene.children.forEach((node) => {
-            if (node.isMesh && (node.material.name === "EXT_Carpaint_Inst" || node.material.name === "DecalMaterial" || node.material.name === "SponsorMaterial")) {
-                node.material.envMap = scene.environment;
-                node.material.needsUpdate = true;
-            }
-        });
+        scene.traverse((node) => {
+                console.log(node)
+                if (node.isMesh && (node.material.name === "EXT_Carpaint_Inst" || node.material.name === "DecalMaterial" || node.material.name === "SponsorMaterial")) {
+                    node.material.envMap = scene.environment;
+                    node.material.needsUpdate = true;
+                }
+            });
         model.updateMatrixWorld();
     }
 }
@@ -231,14 +232,16 @@ function mergeAndSetDecals() {
 
     // Function to clean up existing sponsor and decal meshes
     const cleanupPreviousMeshes = () => {
-        scene.children.forEach((child) => {
+        scene.traverse((child) => {
             if (child.isMesh && (child.material.name === "SponsorMaterial" || child.material.name === "DecalMaterial")) {
                 scene.remove(child);
             }
         });
     };
 
-    scene.children.forEach((node) => {
+    console.log(scene)
+    scene.traverse((node) => {
+        console.log(node)
         if (node.isMesh && node.material.name === "EXT_Carpaint_Inst") {
             applyMaterialPreset(node.material, paintMaterials.customDecal || paintMaterials.glossy)
             node.material.needsUpdate = true;
@@ -478,6 +481,8 @@ function applyMaterialPreset(material, preset) {
     material.clearcoatRoughness = preset.clearCoatRoughness
     material.metalness = preset.metallic
     material.roughness = preset.baseRoughness
+    material.needsUpdate = true;
+    return material
 }
 
 // Initialize
