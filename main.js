@@ -90,6 +90,8 @@ function init() {
     const unloadLiveryBtn = document.getElementById('unloadCustomLivery');
     unloadLiveryBtn.addEventListener('click', () => {
         cleanupPreviousMeshes()
+        decalsFile = undefined;
+        sponsorsFile = undefined;
         paintMaterials.customDecal = undefined;
         paintMaterials.customSponsor = undefined;
         setBaseLivery(curModelPath, liverySelector.value);
