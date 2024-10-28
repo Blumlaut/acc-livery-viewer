@@ -291,25 +291,12 @@ async function drawSponsors() {
         return;
     }
     try {
-        const imgSponsor = await loadImage(sponsorsFile);
-        const alphaCanvas = setupCanvas(imgSponsor);
-        const alphaCtx = alphaCanvas.getContext('2d');
-        alphaCtx.drawImage(imgSponsor, 0, 0);
-
-        const combinedCanvas = setupCanvas(imgSponsor);
-        const combinedCtx = combinedCanvas.getContext('2d');
-        combinedCtx.drawImage(imgSponsor, 0, 0);
-
-        const alphaData = alphaCtx.getImageData(0, 0, alphaCanvas.width, alphaCanvas.height).data;
-        const combinedData = combinedCtx.getImageData(0, 0, combinedCanvas.width, combinedCanvas.height);
-        
-        for (let i = 0; i < combinedData.data.length; i += 4) {
-            combinedData.data[i + 3] = alphaData[i + 3];
-        }
-        combinedCtx.putImageData(combinedData, 0, 0);
-
-        const sponsorTexture = createTextureFromCanvas(combinedCanvas);
-        sponsorMesh = applyTextureToModel(sponsorTexture, "SponsorMaterial", paintMaterials.customSponsor || paintMaterials.matte);
+        const imgDecal = await loadImage(sponsorsFile);
+        const decalCanvas = setupCanvas(imgDecal);
+        const decalCtx = decalCanvas.getContext('2d');
+        decalCtx.drawImage(imgDecal, 0, 0);
+        const decalTexture = createTextureFromCanvas(decalCanvas);
+        sponsorMesh = applyTextureToModel(decalTexture, "SponsorMaterial", paintMaterials.customSponsor || paintMaterials.matte);
     } catch (error) {
         console.error(error);
     }
