@@ -316,43 +316,56 @@ async function mergeAndSetDecals() {
 
 document.getElementById('multiFileUpload').addEventListener('change', handleFileUpload);
 
+const fileActions = {
+    'decals.png': file => { decalsFile = URL.createObjectURL(file); },
+    'sponsors.png': file => { sponsorsFile = URL.createObjectURL(file); },
+    'decals.json': content => { paintMaterials.customDecal = content; },
+    'sponsors.json': content => { paintMaterials.customSponsor = content; }
+};
+
 function handleFileUpload(event) {
-    const files = event.target.files;
-    if (files.length > 0) {
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const reader = new FileReader();
-            reader.onload = function(e) {
-				// check if the file is an image
-				if (e.target.result.match(/image/i)) {
-					const img = new Image();
-					img.src = e.target.result;
-					img.onload = function() {
-						// Create object URL for the image and set it based on its filename
-						if (file.name === "decals.png") {
-							decalsFile = URL.createObjectURL(file);
-						} else if (file.name === "sponsors.png") {
-							sponsorsFile = URL.createObjectURL(file);
-						}
-					};
-				} else {
-					console.log("File is not an image.", e);
-					// decode result from data:application/json;base64 to get the actual file content
-					const base64Data = e.target.result.split(',')[1];
-					const jsonContent = JSON.parse(atob(base64Data));
-					if (file.name === "decals.json") {
-						paintMaterials.customDecal = jsonContent
-					} else if (file.name === "sponsors.json") {
-						paintMaterials.customSponsor = jsonContent
-					}
-				}
-            };
-            reader.readAsDataURL(file);
+    const files = Array.from(event.target.files);
+    files.forEach(processFile);
+    setTimeout(mergeAndSetDecals, 100);
+}
+
+function processFile(file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+        if (isImageFile(e.target.result)) {
+            handleImageFile(file, e.target.result);
+        } else {
+            handleJsonFile(file, e.target.result);
         }
+    };
+    reader.readAsDataURL(file);
+}
+
+function isImageFile(dataUrl) {
+    return dataUrl.match(/image/i);
+}
+
+function handleImageFile(file, dataUrl) {
+    const img = new Image();
+    img.src = dataUrl;
+    img.onload = () => {
+        if (fileActions[file.name]) {
+            fileActions[file.name](file);
+        }
+    };
+}
+
+function handleJsonFile(file, dataUrl) {
+    const base64Data = dataUrl.split(',')[1];
+    const jsonContent = JSON.parse(atob(base64Data));
+
+    if (fileActions[file.name]) {
+        fileActions[file.name](jsonContent);
+    } else if (jsonContent.hasOwnProperty('raceNumber')) {
+        // TODO: dragons
+    } else {
+        console.log("Unrecognized JSON file content.", jsonContent);
     }
-	setTimeout(() => {
-		mergeAndSetDecals();
-	}, 300)
 }
 
 function animate() {
