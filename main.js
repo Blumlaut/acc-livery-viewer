@@ -132,7 +132,7 @@ let skyboxState = false
 function init() {
     // Create the scene
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
     renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('modelContainer').appendChild(renderer.domElement);
@@ -178,7 +178,8 @@ function init() {
     scene.add(hemiLight)
 
     // Set camera position
-    camera.position.z = 5;
+    camera.position.z = 3.5;
+    camera.position.x= 1;
     camera.position.y = 1;
 
     // Add OrbitControls for camera control
