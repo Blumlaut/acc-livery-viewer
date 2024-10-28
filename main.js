@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-let scene, camera, renderer, model, envMap;
+let scene, camera, renderer, model, envMap, sponsorMesh;
 let skybox;
 let textureCanvas, context, texture;
 let isDrawing = false;
@@ -188,6 +188,7 @@ function loadModel(modelPath) {
     // Remove the existing model if it exists
     if (model) {
         scene.remove(model);
+        scene.remove(sponsorMesh)
         model.traverse((node) => {
             if (node.isMesh) {
                 node.geometry.dispose();
@@ -378,10 +379,13 @@ function mergeAndSetDecals() {
                                 depthTest: true, // Enable depth testing for sponsors
                             });
 
-                            const sponsorMesh = new THREE.Mesh(node.geometry, sponsorMaterial);
+                            sponsorMesh = new THREE.Mesh(node.geometry, sponsorMaterial);
                             sponsorMesh.position.copy(node.position);
                             sponsorMesh.rotation.copy(node.rotation);
                             sponsorMesh.scale.copy(node.scale);
+                            sponsorMesh.scale.x += 0.01
+                            sponsorMesh.scale.y += 0.01
+                            sponsorMesh.scale.z += 0.01
                             sponsorMesh.material.name = "SponsorMaterial"; // Set a name for identification
 
                             console.log("Adding sponsor mesh at position:", sponsorMesh.position);
