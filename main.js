@@ -3,6 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 let scene, camera, renderer, model, envMap;
+let skybox;
 let textureCanvas, context, texture;
 let isDrawing = false;
 let dragAndDropTexture = null;
@@ -18,8 +19,8 @@ const modelFiles = [
 const cubemaps = [
     "overcast",
     "sunny",
+    "sunset",
     "night",
-    "sunset"
 ]
 
 function init() {
@@ -29,17 +30,7 @@ function init() {
     renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('modelContainer').appendChild(renderer.domElement);
-
-    const cubeMapLoader = new THREE.CubeTextureLoader();
-    envMap = cubeMapLoader.load([
-        'cubemap/overcast/negx.jpg',
-        'cubemap/overcast/posx.jpg',
-        'cubemap/overcast/negy.jpg',
-        'cubemap/overcast/posy.jpg',
-        'cubemap/overcast/negz.jpg',
-        'cubemap/overcast/posz.jpg'
-    ]);
-    envMap.encoding = THREE.sRGBEncoding;
+    setSkybox(scene, "overcast");
 
     // Populate the dropdown with available models
     const modelSelector = document.getElementById('modelSelector');
@@ -87,16 +78,31 @@ function init() {
 
     cubemapSelector.addEventListener('change', (event) => {
         const selectedCubemap = event.target.value;
-        const cubeMapLoader = new THREE.CubeTextureLoader();
-        envMap = cubeMapLoader.load([
-            `cubemap/${selectedCubemap}/negx.jpg`,
-            `cubemap/${selectedCubemap}/posx.jpg`,
-            `cubemap/${selectedCubemap}/negy.jpg`,
-            `cubemap/${selectedCubemap}/posy.jpg`,
-            `cubemap/${selectedCubemap}/negz.jpg`,
-            `cubemap/${selectedCubemap}/posz.jpg`
-        ]);
-        envMap.encoding = THREE.sRGBEncoding;
+        setSkybox(scene, selectedCubemap)
+    });
+
+    // Animation loop
+    animate();
+}
+
+function setSkybox(scene, folderName) {
+    const cubeMapLoader = new THREE.CubeTextureLoader();
+    const directions = ['negx', 'posx', 'posy', 'negy', 'negz', 'posz'];
+
+    // Load the cubemap textures directly using CubeTextureLoader
+    const envMap = cubeMapLoader.load(
+        directions.map(dir => `cubemap/${folderName}/${dir}.jpg`)
+    );
+
+    // Set encoding for correct color space handling
+    envMap.encoding = THREE.sRGBEncoding;
+
+    // Set the cubemap as both the background and the environment map
+    scene.background = envMap;
+    scene.environment = envMap;
+
+    // If there is a model in the scene, apply the environment map to specific materials
+    if (model) {
         model.traverse((node) => {
             if (node.isMesh && (node.material.name === "EXT_Carpaint_Inst" || node.material.name === "SponsorMaterial")) {
                 node.material.envMap = envMap;
@@ -104,11 +110,10 @@ function init() {
             }
         });
         model.updateMatrixWorld();
-    });
-
-    // Animation loop
-    animate();
+    }
 }
+
+
 
 function loadModel(modelPath) {
     // Remove the existing model if it exists
