@@ -163,7 +163,7 @@ function setSkybox(scene, folderName) {
     // If there is a model in the scene, apply the environment map to specific materials
     if (model) {
         scene.traverse((node) => {
-                if (node.isMesh && (node.material.name === "EXT_Carpaint_Inst" || node.material.name === "DecalMaterial" || node.material.name === "SponsorMaterial")) {
+                if (node.isMesh) {
                     node.material.envMap = scene.environment;
                     node.material.needsUpdate = true;
                 }
