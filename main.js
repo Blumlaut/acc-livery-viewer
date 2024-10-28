@@ -7,6 +7,7 @@ let scene, camera, renderer, model, curModelPath
 
 let extraMeshes = []
 let bodyColours = [ "#ff0000", "#00ff00", "#0000ff" ]
+let bodyMaterials = ["glossy", "glossy", "glossy"]
 
 let currentSkybox = cubemaps[0]
 let skyboxState = false
@@ -100,7 +101,6 @@ function init() {
     const layer1Color = document.getElementById('layer1Color');
     layer1Color.addEventListener('change', (event) => {
         bodyColours[0] = event.target.value;
-        console.log(event.target.value)
         applyBodyColours()
     });
 
@@ -115,6 +115,25 @@ function init() {
         bodyColours[2] = event.target.value;
         applyBodyColours()
     });
+
+    const layer1Material = document.getElementById('layer1Material');
+    layer1Material.addEventListener('change', (event) => {
+        bodyMaterials[0] = event.target.value;
+        applyMaterialPreset("baseLivery1", paintMaterials[event.target.value])
+    });
+
+    const layer2Material = document.getElementById('layer2Material');
+    layer2Material.addEventListener('change', (event) => {
+        bodyMaterials[1] = event.target.value;
+        applyMaterialPreset("baseLivery2", paintMaterials[event.target.value])
+    });
+
+    const layer3Material = document.getElementById('layer3Material');
+    layer3Material.addEventListener('change', (event) => {
+        bodyMaterials[2] = event.target.value;
+        applyMaterialPreset("baseLivery3", paintMaterials[event.target.value])
+    });
+
 
     
 
@@ -422,12 +441,29 @@ function loadStaticImage(imagePath) {
 }
 
 function applyMaterialPreset(material, preset) {
+    if (typeof(material) == "string") {
+        material = getMaterialFromName(material);
+    }
     material.clearcoat = preset.clearCoat
     material.clearcoatRoughness = preset.clearCoatRoughness
     material.metalness = preset.metallic
     material.roughness = preset.baseRoughness
     material.needsUpdate = true;
     return material
+}
+
+function getMaterialFromName(materialName) {
+    let returnMat
+    scene.traverse((object) => {
+        // Check if the object has a material and if it's an instance of Mesh
+        if (object.isMesh && object.material) {
+            // Check if the material has a name that matches the specified name
+            if (object.material.name == materialName) {
+                returnMat = object.material
+            }
+        }
+    });
+    return returnMat
 }
 
 async function convertImageToRGBChannels(imagePath) {
@@ -506,8 +542,11 @@ function changeMaterialColor(materialName, hexColor) {
 function applyBodyColours() {
     for (let i = 0; i < bodyColours.length; i++) {
         changeMaterialColor(`baseLivery${i + 1}`, bodyColours[i]);
+        applyMaterialPreset(`baseLivery${i + 1}`, paintMaterials[bodyMaterials[i]])
+
     }
 }
+
 
 // Initialize
 init();

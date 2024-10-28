@@ -15,6 +15,15 @@ const enduKitCars = [
     "porsche_991_gt3_r"
 ]
 
+var skinMaterialIds = {
+    "glossy": 0,
+    "matte": 1,
+    "satin": 2,
+    "satinMetallic": 3,
+    "metallic": 4,
+    "chrome": 5
+}
+
 var paintMaterials = {
     "glossy": {
         "baseRoughness": 0,
