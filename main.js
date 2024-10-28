@@ -6,7 +6,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 let scene, camera, renderer, model, curModelPath
 
 let extraMeshes = []
-
+let bodyColours = [ "#ff0000", "#00ff00", "#0000ff" ]
 
 let currentSkybox = cubemaps[0]
 let skyboxState = false
@@ -97,6 +97,25 @@ function init() {
         setBaseLivery(curModelPath, liverySelector.value);
     });
 
+    const layer1Color = document.getElementById('layer1Color');
+    layer1Color.addEventListener('change', (event) => {
+        bodyColours[0] = event.target.value;
+        console.log(event.target.value)
+        applyBodyColours()
+    });
+
+    const layer2Color = document.getElementById('layer2Color');
+    layer2Color.addEventListener('change', (event) => {
+        bodyColours[1] = event.target.value;
+        applyBodyColours()
+    });
+
+    const layer3Color = document.getElementById('layer3Color');
+    layer3Color.addEventListener('change', (event) => {
+        bodyColours[2] = event.target.value;
+        applyBodyColours()
+    });
+
     
 
     // Animation loop
@@ -185,7 +204,16 @@ function cleanMaterial(material) {
 var decalsFile = null;
 var sponsorsFile = null;
 
-function setBaseLivery(modelPath, liveryId) {
+async function setBaseLivery(modelPath, liveryId) {
+    const images = await convertImageToRGBChannels(`models/${modelPath}/skins/custom/custom_${liveryId}/EXT_Skin_Custom.png`)
+    // iterate through images
+    for (let i = 0; i < images.length; i++) {
+        let image = images[i];
+        await drawImageOverlay(image, "baseLivery"+(i+1), paintMaterials.customDecal || paintMaterials.glossy)
+    }
+    applyBodyColours()
+
+    return
     loadStaticImage(`models/${modelPath}/skins/custom/custom_${liveryId}/EXT_Skin_Custom.png`).then((texture) => {
         // Set texture properties
         texture.colorSpace = THREE.SRGBColorSpace;
@@ -282,6 +310,8 @@ async function drawImageOverlay(file, materialName, material) {
         decalCtx.drawImage(imgDecal, 0, 0);
         const decalTexture = createTextureFromCanvas(decalCanvas);
         const mesh = applyTextureToModel(decalTexture, materialName, material);
+        console.log("finished drawing overlay for "+materialName)
+        extraMeshes.push(mesh)
         return mesh
     } catch (error) {
         console.error(error);
@@ -303,10 +333,9 @@ async function mergeAndSetDecals() {
     });
 
     try {
-        let decalMesh = await drawImageOverlay(decalsFile, "DecalMaterial", paintMaterials.customDecal || paintMaterials.glossy)
-        extraMeshes.push(decalMesh);
-        let sponsorMesh = await drawImageOverlay(sponsorsFile, "SponsorMaterial", paintMaterials.customSponsor || paintMaterials.matte)
-        extraMeshes.push(sponsorMesh);
+        await drawImageOverlay(decalsFile, "DecalMaterial", paintMaterials.customDecal || paintMaterials.glossy)
+        await drawImageOverlay(sponsorsFile, "SponsorMaterial", paintMaterials.customSponsor || paintMaterials.matte)
+        applyBodyColours()
     } catch (error) {
         console.error(error);
     }
@@ -399,6 +428,85 @@ function applyMaterialPreset(material, preset) {
     material.roughness = preset.baseRoughness
     material.needsUpdate = true;
     return material
+}
+
+async function convertImageToRGBChannels(imagePath) {
+    const img = new Image();
+    img.src = imagePath;
+
+    // Wait for the image to load
+    await new Promise((resolve) => {
+        img.onload = resolve;
+    });
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = img.width;
+    canvas.height = img.height;
+
+    // Draw the original image to the canvas
+    ctx.drawImage(img, 0, 0);
+
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+
+    const createChannelImage = (channelIndex) => {
+        const channelCanvas = document.createElement('canvas');
+        const channelCtx = channelCanvas.getContext('2d');
+        channelCanvas.width = canvas.width;
+        channelCanvas.height = canvas.height;
+
+        const channelData = channelCtx.createImageData(channelCanvas.width, channelCanvas.height);
+        const channelPixels = channelData.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+            const value = data[i + channelIndex]; // Red, Green, or Blue
+
+            // Set the channel color to white (255,255,255) if it has intensity, otherwise keep transparent
+            channelPixels[i] = value > 0 ? 255 : 0;     // R
+            channelPixels[i + 1] = value > 0 ? 255 : 0; // G
+            channelPixels[i + 2] = value > 0 ? 255 : 0; // B
+            channelPixels[i + 3] = value > 0 ? data[i + 3] : 0; // Preserve original alpha for active pixels, else 0
+        }
+
+        channelCtx.putImageData(channelData, 0, 0);
+        return channelCanvas.toDataURL('image/png');
+    };
+
+    // Create images for the red, green, and blue channels
+    const redImage = createChannelImage(0);   // Red channel
+    const greenImage = createChannelImage(1); // Green channel
+    const blueImage = createChannelImage(2);  // Blue channel
+
+    // Return an array of object URLs
+    return [redImage, greenImage, blueImage];
+}
+
+
+function changeMaterialColor(materialName, hexColor) {
+    // Convert hex color string to THREE.Color
+    const color = new THREE.Color(hexColor);
+
+    // Traverse all objects in the scene
+    scene.traverse((object) => {
+        // Check if the object has a material and if it's an instance of Mesh
+        if (object.isMesh && object.material) {
+            // Check if the material has a name that matches the specified name
+            if (object.material.name === materialName) {
+                // Change the material color
+                object.material.color = color
+                // Optionally, you can also update the material if necessary
+                object.material.needsUpdate = true;
+                console.log(`Changed color of material '${materialName}' to ${hexColor}`);
+            }
+        }
+    });
+}
+
+function applyBodyColours() {
+    for (let i = 0; i < bodyColours.length; i++) {
+        changeMaterialColor(`baseLivery${i + 1}`, bodyColours[i]);
+    }
 }
 
 // Initialize
