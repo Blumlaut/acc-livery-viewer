@@ -314,8 +314,8 @@ var decalsFile = null;
 var decalsMats = {
 	"baseRoughness": 0,
 	"clearCoat": 1,
-	"clearCoatRoughness": 0.01,
-	"metallic": 0.9
+	"clearCoatRoughness": 0,
+	"metallic": 0
 };
 var sponsorsFile = null;
 var sponsorsMats = {
@@ -336,10 +336,10 @@ function setBaseLivery(modelPath, liveryId) {
                 const decalMaterial = new THREE.MeshPhysicalMaterial({
                     name: node.material.name,
                     color: 0xffffff,
-                    clearcoat: 1,
-                    clearcoatRoughness: 0.3,
-                    metalness: 0.3,
-                    roughness: 0,
+                    clearcoat: decalsMats.clearCoat,
+                    clearcoatRoughness: decalsMats.clearCoatRoughness,
+                    metalness: decalsMats.metallic,
+                    roughness: decalsMats.baseRoughness,
                     envMap: envMap,
                     map: texture,
                     depthWrite: true,
