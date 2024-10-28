@@ -3,7 +3,9 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 
-let scene, camera, renderer, model, curModelPath, envMap, decalMesh, sponsorMesh;
+let scene, camera, renderer, model, curModelPath
+
+let extraMeshes = []
 
 
 let currentSkybox = cubemaps[0]
@@ -136,8 +138,7 @@ function loadModel(modelPath) {
     // Remove the existing model if it exists
     if (model) {
         scene.remove(model);
-        scene.remove(decalMesh)
-        scene.remove(sponsorMesh)
+        extraMeshes.forEach(mesh => scene.remove(mesh));
         model.traverse((node) => {
             if (node.isMesh) {
                 node.geometry.dispose();
@@ -208,8 +209,7 @@ function setBaseLivery(modelPath, liveryId) {
 }
 
 function cleanupPreviousMeshes() {
-    scene.remove(decalMesh)
-    scene.remove(sponsorMesh)
+    extraMeshes.forEach(mesh => scene.remove(mesh));
     scene.traverse((child) => {
         if (child.isMesh && (child.material.name === "SponsorMaterial" || child.material.name === "DecalMaterial")) {
             scene.remove(child);
@@ -301,8 +301,10 @@ async function mergeAndSetDecals() {
     });
 
     try {
-        decalMesh = await drawImageOverlay(decalsFile, "DecalMaterial", paintMaterials.customDecal || paintMaterials.glossy)
-        sponsorMesh = await drawImageOverlay(sponsorsFile, "SponsorMaterial", paintMaterials.customSponsor || paintMaterials.matte)
+        let decalMesh = await drawImageOverlay(decalsFile, "DecalMaterial", paintMaterials.customDecal || paintMaterials.glossy)
+        extraMeshes.push(decalMesh);
+        let sponsorMesh = await drawImageOverlay(sponsorsFile, "SponsorMaterial", paintMaterials.customSponsor || paintMaterials.matte)
+        extraMeshes.push(sponsorMesh);
     } catch (error) {
         console.error(error);
     }
