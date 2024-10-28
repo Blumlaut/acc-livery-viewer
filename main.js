@@ -295,6 +295,7 @@ function loadModel(modelPath) {
         curModelPath = modelPath
         setBaseLivery(modelPath, 1)
         const liverySelector = document.getElementById('liverySelector');
+        for (let a in liverySelector.options) { liverySelector.options.remove(0); } 
         for (let i = 1; i < baseLiveries[modelPath]+1; i++) {
             console.log(i)
             const option = document.createElement('option');
