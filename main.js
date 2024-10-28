@@ -10,9 +10,16 @@ let dragAndDropTexture = null;
 
 
 const modelFiles = [
-    'ginetta_g55_gt4_exterior.gltf',
-    'model1.gltf',
-    'model2.gltf',
+    'alpine_a110_gt4',
+    'audi_r8_gt4',
+    'bmw_m4_gt4',
+    'chevrolet_camaro_gt4r',
+    'ginetta_g55_gt4',
+    'ktm_xbow_gt4',
+    'maserati_mc_gt4',
+    'mclaren_570s_gt4',
+    'mercedes_amg_gt4',
+    'porsche_718_cayman_gt4_mr',
     // Add more models as needed
 ];
 
@@ -134,10 +141,10 @@ function loadModel(modelPath) {
 
     // Load new GLTF model
     const loader = new GLTFLoader();
-    loader.load(`models/${modelPath}`, (gltf) => {
+    loader.load(`models/${modelPath}/${modelPath}_exterior.gltf`, (gltf) => {
         model = gltf.scene;
         scene.add(model);
-        loadStaticImage('image.png').then((texture) => {
+        loadStaticImage(`models/${modelPath}/skins/custom/custom_1/EXT_Skin_Custom.png`).then((texture) => {
             // Set texture properties
             texture.colorSpace = THREE.SRGBColorSpace;
             texture.flipY = false;
