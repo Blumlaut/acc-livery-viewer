@@ -11,7 +11,7 @@
   ],
   "nodes" : [
     {
-      "name" : "lamborghini_huracan_gt3_2023_exterior",
+      "name" : "lamborghini_huracan_gt3_evo2_exterior",
       "mesh" : 0,
       "skin" : 0,
       "children" : [ 1 ]
@@ -456,12 +456,12 @@
           "material" : 12
         }
       ],
-      "name" : "lamborghini_huracan_gt3_2023_exterior"
+      "name" : "lamborghini_huracan_gt3_evo2_exterior"
     }
   ],
   "buffers" : [
     {
-      "uri" : "lamborghini_huracan_gt3_2023_exterior.bin",
+      "uri" : "lamborghini_huracan_gt3_evo2_exterior.bin",
       "byteLength" : 7018632
     }
   ],
