@@ -261,6 +261,7 @@ function mergeAndSetDecals() {
                                 roughness: sponsorsMats.baseRoughness,
                                 transparent: true,
                                 opacity: 1,
+                                envMap: envMap,
                                 depthWrite: false, // Disable depth writing for sponsors
                                 depthTest: true, // Enable depth testing for sponsors
                             });
