@@ -331,6 +331,7 @@ function setBaseLivery(modelPath, liveryId) {
         // Set texture properties
         texture.colorSpace = THREE.SRGBColorSpace;
         texture.flipY = false;
+        texture.anisotropy = 16;
 
         model.traverse((node) => {
             if (node.isMesh && node.material.name === "EXT_Carpaint_Inst") {
@@ -392,6 +393,7 @@ function mergeAndSetDecals() {
                     const decalTexture = new THREE.Texture(canvas);
                     decalTexture.flipY = false; // Ensure flipY is false
                     decalTexture.colorSpace = THREE.SRGBColorSpace; // Set color space
+                    decalTexture.anisotropy = 16;
                     decalTexture.needsUpdate = true;
 
                     model.traverse((node) => {
@@ -462,6 +464,7 @@ function mergeAndSetDecals() {
                     const sponsorTexture = new THREE.Texture(combinedCanvas);
                     sponsorTexture.flipY = false; // Ensure flipY is false
                     sponsorTexture.colorSpace = THREE.SRGBColorSpace; // Set color space
+                    sponsorTexture.anisotropy = 16;
                     sponsorTexture.needsUpdate = true;
 
                     model.traverse((node) => {
