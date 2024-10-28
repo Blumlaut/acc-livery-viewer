@@ -2,9 +2,9 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-let scene, camera, renderer, model, envMap, sponsorMesh;
+let scene, camera, renderer, model, curModelPath, envMap, sponsorMesh;
 
-const modelFiles = [
+let modelFiles = [
     "alpine_a110_gt4",
     "amr_v12_vantage_gt3",
     "amr_v8_vantage_gt3",
@@ -67,6 +67,64 @@ const cubemaps = [
     "sunset",
     "night",
 ]
+
+const baseLiveries = {
+    "alpine_a110_gt4": 3,
+    "amr_v12_vantage_gt3": 10,
+    "amr_v8_vantage_gt3": 10,
+    "amr_v8_vantage_gt4": 3,
+    "audi_r8_gt4": 4,
+    "audi_r8_lms": 5,
+    "audi_r8_lms_evo": 11,
+    "audi_r8_lms_gt2": 5,
+    "bentley_continental_gt3_2016": 5,
+    "bentley_continental_gt3_2018": 10,
+    "bmw_m2_cs_racing": 7,
+    "bmw_m4_gt3": 10,
+    "bmw_m4_gt4": 3,
+    "bmw_m6_gt3": 10,
+    "chevrolet_camaro_gt4r": 3,
+    "common": 0,
+    "ferrari_296_gt3": 10,
+    "ferrari_488_challenge_evo": 5,
+    "ferrari_488_gt3": 5,
+    "ferrari_488_gt3_evo": 10,
+    "ford_mustang_gt3": 5,
+    "ginetta_g55_gt4": 3,
+    "honda_nsx_gt3": 3,
+    "honda_nsx_gt3_evo": 5,
+    "jaguar_g3": 3,
+    "ktm_xbow_gt2": 5,
+    "ktm_xbow_gt4": 3,
+    "lamborghini_gallardo_rex": 3,
+    "lamborghini_huracan_gt3": 3,
+    "lamborghini_huracan_gt3_evo": 5,
+    "lamborghini_huracan_gt3_evo2": 11,
+    "lamborghini_huracan_st": 5,
+    "lamborghini_huracan_st_evo2": 10,
+    "lexus_rc_f_gt3": 3,
+    "maserati_mc20_gt2": 5,
+    "maserati_mc_gt4": 3,
+    "mclaren_570s_gt4": 3,
+    "mclaren_650s_gt3": 3,
+    "mclaren_720s_gt3": 2,
+    "mclaren_720s_gt3_evo": 3,
+    "mercedes_amg_gt2": 5,
+    "mercedes_amg_gt3": 5,
+    "mercedes_amg_gt3_evo": 10,
+    "mercedes_amg_gt4": 4,
+    "nissan_gt_r_gt3_2017": 4,
+    "nissan_gt_r_gt3_2018": 5,
+    "porsche_718_cayman_gt4_mr": 3,
+    "porsche_935": 5,
+    "porsche_991_gt3_r": 4,
+    "porsche_991ii_gt2_rs_cs_evo": 5,
+    "porsche_991ii_gt3_cup": 10,
+    "porsche_991ii_gt3_r": 6,
+    "porsche_992_gt3_cup": 10,
+    "porsche_992_gt3_r": 10
+}
+
 
 let currentSkybox = cubemaps[0]
 let skyboxState = false
@@ -138,6 +196,13 @@ function init() {
     cubemapSelector.addEventListener('change', (event) => {
         const selectedCubemap = event.target.value;
         setSkybox(scene, selectedCubemap)
+    });
+
+
+    const liverySelector = document.getElementById('liverySelector');
+    liverySelector.addEventListener('change', (event) => {
+        console.log(event.target.value)
+        setBaseLivery(curModelPath, event.target.value);
     });
 
     
@@ -227,30 +292,16 @@ function loadModel(modelPath) {
     loader.load(fullFilePath, (gltf) => {
         model = gltf.scene;
         scene.add(model);
-        loadStaticImage(`models/${modelPath}/skins/custom/custom_1/EXT_Skin_Custom.png`).then((texture) => {
-            // Set texture properties
-            texture.colorSpace = THREE.SRGBColorSpace;
-            texture.flipY = false;
-
-            model.traverse((node) => {
-                if (node.isMesh && node.material.name === "EXT_Carpaint_Inst") {
-                    const decalMaterial = new THREE.MeshPhysicalMaterial({
-                        name: node.material.name,
-                        color: 0xffffff,
-                        clearcoat: 1,
-                        clearcoatRoughness: 0.01,
-                        metalness: 0.9,
-                        roughness: 0,
-                        envMap: envMap,
-                        map: texture,
-                        depthWrite: true,
-                    });
-
-                    node.material = decalMaterial;
-                    node.material.needsUpdate = true;
-                }
-            });
-        });
+        curModelPath = modelPath
+        setBaseLivery(modelPath, 1)
+        const liverySelector = document.getElementById('liverySelector');
+        for (let i = 1; i < baseLiveries[modelPath]+1; i++) {
+            console.log(i)
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = "Skin "+i;
+            liverySelector.appendChild(option);
+        };
     });
 }
 
@@ -272,6 +323,33 @@ var sponsorsMats = {
 	"clearCoatRoughness": 0.01,
 	"metallic": 0.9
 };
+
+function setBaseLivery(modelPath, liveryId) {
+    loadStaticImage(`models/${modelPath}/skins/custom/custom_${liveryId}/EXT_Skin_Custom.png`).then((texture) => {
+        // Set texture properties
+        texture.colorSpace = THREE.SRGBColorSpace;
+        texture.flipY = false;
+
+        model.traverse((node) => {
+            if (node.isMesh && node.material.name === "EXT_Carpaint_Inst") {
+                const decalMaterial = new THREE.MeshPhysicalMaterial({
+                    name: node.material.name,
+                    color: 0xffffff,
+                    clearcoat: 1,
+                    clearcoatRoughness: 0.3,
+                    metalness: 0.3,
+                    roughness: 0,
+                    envMap: envMap,
+                    map: texture,
+                    depthWrite: true,
+                });
+
+                node.material = decalMaterial;
+                node.material.needsUpdate = true;
+            }
+        });
+    });
+}
 
 function mergeAndSetDecals() {
     const canvas = document.getElementById('hiddenCanvas');
