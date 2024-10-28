@@ -3,14 +3,6 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 let scene, camera, renderer, model, envMap, sponsorMesh;
-let skybox;
-let textureCanvas, context, texture;
-let isDrawing = false;
-let dragAndDropTexture = null;
-
-let currentTime = 0
-let lastTime = 0
-
 
 const modelFiles = [
     "alpine_a110_gt4",
@@ -489,16 +481,11 @@ function handleFileUpload(event) {
 	}, 300)
 }
 
-// Animation loop
 function animate() {
     requestAnimationFrame(animate);
-    currentTime+=1
-    if( currentTime - lastTime > 1000/360 )
-        {
-           renderer.render( scene, camera );
-           lastTime += 1000/360;
-        }
+    renderer.render(scene, camera);
 }
+
 // Load a static image and return a texture promise
 function loadStaticImage(imagePath) {
     return new Promise((resolve, reject) => {
