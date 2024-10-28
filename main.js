@@ -2,128 +2,8 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-let scene, camera, renderer, model, curModelPath, envMap, sponsorMesh;
 
-let modelFiles = [
-    "alpine_a110_gt4",
-    "amr_v12_vantage_gt3",
-    "amr_v8_vantage_gt3",
-    "amr_v8_vantage_gt4",
-    "audi_r8_gt4",
-    "audi_r8_lms",
-    "audi_r8_lms_evo",
-    "audi_r8_lms_gt2",
-    "bentley_continental_gt3_2016",
-    "bentley_continental_gt3_2018",
-    "bmw_m2_cs_racing",
-    "bmw_m4_gt3",
-    "bmw_m4_gt4",
-    "bmw_m6_gt3",
-    "chevrolet_camaro_gt4r",
-    "common",
-    "ferrari_296_gt3",
-    "ferrari_488_challenge_evo",
-    "ferrari_488_gt3",
-    "ferrari_488_gt3_evo",
-    "ford_mustang_gt3",
-    "ginetta_g55_gt4",
-    "honda_nsx_gt3",
-    "honda_nsx_gt3_evo",
-    "jaguar_g3",
-    "ktm_xbow_gt2",
-    "ktm_xbow_gt4",
-    "lamborghini_gallardo_rex",
-    "lamborghini_huracan_gt3",
-    "lamborghini_huracan_gt3_evo",
-    "lamborghini_huracan_gt3_evo2",
-    "lamborghini_huracan_st",
-    "lamborghini_huracan_st_evo2",
-    "lexus_rc_f_gt3",
-    "maserati_mc20_gt2",
-    "maserati_mc_gt4",
-    "mclaren_570s_gt4",
-    "mclaren_650s_gt3",
-    "mclaren_720s_gt3",
-    "mclaren_720s_gt3_evo",
-    "mercedes_amg_gt2",
-    "mercedes_amg_gt3",
-    "mercedes_amg_gt3_evo",
-    "mercedes_amg_gt4",
-    "nissan_gt_r_gt3_2017",
-    "nissan_gt_r_gt3_2018",
-    "porsche_718_cayman_gt4_mr",
-    "porsche_935",
-    "porsche_991_gt3_r",
-    "porsche_991ii_gt2_rs_cs_evo",
-    "porsche_991ii_gt3_cup",
-    "porsche_991ii_gt3_r",
-    "porsche_992_gt3_cup",
-    "porsche_992_gt3_r",
-];
-
-const cubemaps = [
-    "overcast",
-    "sunny",
-    "sunset",
-    "night",
-]
-
-const baseLiveries = {
-    "alpine_a110_gt4": 3,
-    "amr_v12_vantage_gt3": 10,
-    "amr_v8_vantage_gt3": 10,
-    "amr_v8_vantage_gt4": 3,
-    "audi_r8_gt4": 4,
-    "audi_r8_lms": 5,
-    "audi_r8_lms_evo": 11,
-    "audi_r8_lms_gt2": 5,
-    "bentley_continental_gt3_2016": 5,
-    "bentley_continental_gt3_2018": 10,
-    "bmw_m2_cs_racing": 7,
-    "bmw_m4_gt3": 10,
-    "bmw_m4_gt4": 3,
-    "bmw_m6_gt3": 10,
-    "chevrolet_camaro_gt4r": 3,
-    "common": 0,
-    "ferrari_296_gt3": 10,
-    "ferrari_488_challenge_evo": 5,
-    "ferrari_488_gt3": 5,
-    "ferrari_488_gt3_evo": 10,
-    "ford_mustang_gt3": 5,
-    "ginetta_g55_gt4": 3,
-    "honda_nsx_gt3": 3,
-    "honda_nsx_gt3_evo": 5,
-    "jaguar_g3": 3,
-    "ktm_xbow_gt2": 5,
-    "ktm_xbow_gt4": 3,
-    "lamborghini_gallardo_rex": 3,
-    "lamborghini_huracan_gt3": 3,
-    "lamborghini_huracan_gt3_evo": 5,
-    "lamborghini_huracan_gt3_evo2": 11,
-    "lamborghini_huracan_st": 5,
-    "lamborghini_huracan_st_evo2": 10,
-    "lexus_rc_f_gt3": 3,
-    "maserati_mc20_gt2": 5,
-    "maserati_mc_gt4": 3,
-    "mclaren_570s_gt4": 3,
-    "mclaren_650s_gt3": 3,
-    "mclaren_720s_gt3": 2,
-    "mclaren_720s_gt3_evo": 3,
-    "mercedes_amg_gt2": 5,
-    "mercedes_amg_gt3": 5,
-    "mercedes_amg_gt3_evo": 10,
-    "mercedes_amg_gt4": 4,
-    "nissan_gt_r_gt3_2017": 4,
-    "nissan_gt_r_gt3_2018": 5,
-    "porsche_718_cayman_gt4_mr": 3,
-    "porsche_935": 5,
-    "porsche_991_gt3_r": 4,
-    "porsche_991ii_gt2_rs_cs_evo": 5,
-    "porsche_991ii_gt3_cup": 10,
-    "porsche_991ii_gt3_r": 6,
-    "porsche_992_gt3_cup": 10,
-    "porsche_992_gt3_r": 10
-}
+let scene, camera, renderer, model, curModelPath, envMap, decalMesh, sponsorMesh;
 
 
 let currentSkybox = cubemaps[0]
@@ -235,7 +115,7 @@ function setSkybox(scene, folderName) {
     if (model) {
         model.traverse((node) => {
             if (node.isMesh && (node.material.name === "EXT_Carpaint_Inst" || node.material.name === "SponsorMaterial")) {
-                node.material.envMap = envMap;
+                node.material.envMap = scene.environment;
                 node.material.needsUpdate = true;
             }
         });
@@ -249,6 +129,7 @@ function loadModel(modelPath) {
     // Remove the existing model if it exists
     if (model) {
         scene.remove(model);
+        scene.remove(decalMesh)
         scene.remove(sponsorMesh)
         model.traverse((node) => {
             if (node.isMesh) {
@@ -266,25 +147,6 @@ function loadModel(modelPath) {
     // Load new GLTF model
     const loader = new GLTFLoader();
     let fullFilePath = `models/${modelPath}/${modelPath}_exterior.gltf`
-
-    let enduKitCars = [
-        "amr_v12_vantage_gt3",
-        "audi_r8_lms",
-        "audi_r8_lms_evo",
-        "bmw_m6_gt3",
-        "ferrari_488_gt3",
-        "ferrari_488_gt3_evo",
-        "lamborghini_huracan_gt3",
-        "lamborghini_huracan_gt3_evo",
-        "lamborghini_huracan_gt3_evo2",
-        "lexus_rc_f_gt3",
-        "mclaren_650s_gt3",
-        "mercedes_amg_gt3",
-        "mercedes_amg_gt3_evo",
-        "nissan_gt_r_gt3_2017",
-        "nissan_gt_r_gt3_2018",
-        "porsche_991_gt3_r"
-    ]
     // if modelPath is in enduKitCars
     if (enduKitCars.includes(modelPath)) {
         fullFilePath = `models/${modelPath}/${modelPath}_exterior_endurance.gltf`
@@ -342,7 +204,7 @@ function setBaseLivery(modelPath, liveryId) {
                     clearcoatRoughness: decalsMats.clearCoatRoughness,
                     metalness: decalsMats.metallic,
                     roughness: decalsMats.baseRoughness,
-                    envMap: envMap,
+                    envMap: scene.environment,
                     map: texture,
                     depthWrite: true,
                 });
@@ -361,18 +223,11 @@ function mergeAndSetDecals() {
     // Clear the canvas before drawing
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Function to clean up existing sponsor meshes and reset materials
+    // Function to clean up existing sponsor and decal meshes
     const cleanupPreviousMeshes = () => {
         scene.children.forEach((child) => {
-            if (child.isMesh && child.material.name === "SponsorMaterial") {
+            if (child.isMesh && (child.material.name === "SponsorMaterial" || child.material.name === "DecalMaterial")) {
                 scene.remove(child);
-            }
-        });
-
-        model.traverse((node) => {
-            if (node.isMesh && node.material.name === "EXT_Carpaint_Inst") {
-                node.material.map = null; // Clear existing decal texture
-                node.material.needsUpdate = true; // Notify Three.js to update the material
             }
         });
     };
@@ -386,11 +241,16 @@ function mergeAndSetDecals() {
             return new Promise((resolve, reject) => {
                 imgDecal.onload = () => {
                     console.log("Decal image loaded with dimensions:", imgDecal.width, imgDecal.height);
-                    canvas.width = imgDecal.width;
-                    canvas.height = imgDecal.height;
-                    ctx.drawImage(imgDecal, 0, 0);
+                    // Create a canvas for the decal texture
+                    const decalCanvas = document.createElement('canvas');
+                    decalCanvas.width = imgDecal.width;
+                    decalCanvas.height = imgDecal.height;
 
-                    const decalTexture = new THREE.Texture(canvas);
+                    const decalCtx = decalCanvas.getContext('2d');
+                    decalCtx.drawImage(imgDecal, 0, 0);
+
+                    // Create a texture from the decal canvas
+                    const decalTexture = new THREE.Texture(decalCanvas);
                     decalTexture.flipY = false; // Ensure flipY is false
                     decalTexture.colorSpace = THREE.SRGBColorSpace; // Set color space
                     decalTexture.anisotropy = 16;
@@ -398,12 +258,30 @@ function mergeAndSetDecals() {
 
                     model.traverse((node) => {
                         if (node.isMesh && node.material.name === "EXT_Carpaint_Inst") {
-                            node.material.map = decalTexture;
-                            node.material.clearcoat = decalsMats.clearCoat;
-                            node.material.clearcoatRoughness = decalsMats.clearCoatRoughness;
-                            node.material.metalness = decalsMats.metallic;
-                            node.material.roughness = decalsMats.baseRoughness;
-                            node.material.needsUpdate = true; // Notify Three.js to update the material
+                            const decalMaterial = new THREE.MeshPhysicalMaterial({
+                                name: "DecalMaterial",
+                                map: decalTexture,
+                                clearcoat: decalsMats.clearCoat,
+                                clearcoatRoughness: decalsMats.clearCoatRoughness,
+                                metalness: decalsMats.metallic,
+                                roughness: decalsMats.baseRoughness,
+                                transparent: true,
+                                opacity: 1,
+                                envMap: scene.environment,
+                                depthWrite: false, // Disable depth writing for decals
+                                depthTest: true, // Enable depth testing for decals
+                            });
+
+                            decalMesh = new THREE.Mesh(node.geometry, decalMaterial);
+                            decalMesh.position.copy(node.position);
+                            decalMesh.rotation.copy(node.rotation);
+                            decalMesh.scale.copy(node.scale);
+                            decalMesh.scale.x += 0.0001;
+                            decalMesh.scale.y += 0.0001;
+                            decalMesh.scale.z += 0.0001;
+
+                            console.log("Adding decal mesh at position:", decalMesh.position);
+                            scene.add(decalMesh);
                         }
                     });
                     resolve(); // Resolve when decals are drawn
@@ -470,6 +348,7 @@ function mergeAndSetDecals() {
                     model.traverse((node) => {
                         if (node.isMesh && node.material.name === "EXT_Carpaint_Inst") {
                             const sponsorMaterial = new THREE.MeshPhysicalMaterial({
+                                name: "SponsorMaterial",
                                 map: sponsorTexture,
                                 clearcoat: sponsorsMats.clearCoat,
                                 clearcoatRoughness: sponsorsMats.clearCoatRoughness,
@@ -477,7 +356,7 @@ function mergeAndSetDecals() {
                                 roughness: sponsorsMats.baseRoughness,
                                 transparent: true,
                                 opacity: 1,
-                                envMap: envMap,
+                                envMap: scene.environment,
                                 depthWrite: false, // Disable depth writing for sponsors
                                 depthTest: true, // Enable depth testing for sponsors
                             });
@@ -486,10 +365,9 @@ function mergeAndSetDecals() {
                             sponsorMesh.position.copy(node.position);
                             sponsorMesh.rotation.copy(node.rotation);
                             sponsorMesh.scale.copy(node.scale);
-                            sponsorMesh.scale.x += 0.0001
-                            sponsorMesh.scale.y += 0.0001
-                            sponsorMesh.scale.z += 0.0001
-                            sponsorMesh.material.name = "SponsorMaterial"; // Set a name for identification
+                            sponsorMesh.scale.x += 0.0002;
+                            sponsorMesh.scale.y += 0.0002;
+                            sponsorMesh.scale.z += 0.0002;
 
                             console.log("Adding sponsor mesh at position:", sponsorMesh.position);
                             scene.add(sponsorMesh);
@@ -519,6 +397,7 @@ function mergeAndSetDecals() {
         console.error(err);
     });
 }
+
 
 
 document.getElementById('multiFileUpload').addEventListener('change', handleFileUpload);
