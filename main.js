@@ -200,14 +200,11 @@ function setBaseLivery(modelPath, liveryId) {
                 const decalMaterial = new THREE.MeshPhysicalMaterial({
                     name: node.material.name,
                     color: 0xffffff,
-                    clearcoat: decalsMats.clearCoat,
-                    clearcoatRoughness: decalsMats.clearCoatRoughness,
-                    metalness: decalsMats.metallic,
-                    roughness: decalsMats.baseRoughness,
                     envMap: scene.environment,
                     map: texture,
                     depthWrite: true,
                 });
+                applyMaterialPreset(decalMaterial, paintMaterials.customDecal || paintMaterials.glossy)
 
                 node.material = decalMaterial;
                 node.material.needsUpdate = true;
@@ -231,6 +228,13 @@ function mergeAndSetDecals() {
             }
         });
     };
+
+    model.traverse((node) => {
+        if (node.isMesh && node.material.name === "EXT_Carpaint_Inst") {
+            applyMaterialPreset(node.material, paintMaterials.customDecal || paintMaterials.glossy)
+            node.material.needsUpdate = true;
+        }
+    });
 
     // Handle Decals
     const drawDecals = () => {
@@ -261,16 +265,13 @@ function mergeAndSetDecals() {
                             const decalMaterial = new THREE.MeshPhysicalMaterial({
                                 name: "DecalMaterial",
                                 map: decalTexture,
-                                clearcoat: decalsMats.clearCoat,
-                                clearcoatRoughness: decalsMats.clearCoatRoughness,
-                                metalness: decalsMats.metallic,
-                                roughness: decalsMats.baseRoughness,
                                 transparent: true,
                                 opacity: 1,
                                 envMap: scene.environment,
                                 depthWrite: false, // Disable depth writing for decals
                                 depthTest: true, // Enable depth testing for decals
                             });
+                            applyMaterialPreset(decalMaterial, paintMaterials.customDecal || paintMaterials.glossy)
 
                             decalMesh = new THREE.Mesh(node.geometry, decalMaterial);
                             decalMesh.position.copy(node.position);
@@ -350,16 +351,13 @@ function mergeAndSetDecals() {
                             const sponsorMaterial = new THREE.MeshPhysicalMaterial({
                                 name: "SponsorMaterial",
                                 map: sponsorTexture,
-                                clearcoat: sponsorsMats.clearCoat,
-                                clearcoatRoughness: sponsorsMats.clearCoatRoughness,
-                                metalness: sponsorsMats.metallic,
-                                roughness: sponsorsMats.baseRoughness,
                                 transparent: true,
                                 opacity: 1,
                                 envMap: scene.environment,
                                 depthWrite: false, // Disable depth writing for sponsors
                                 depthTest: true, // Enable depth testing for sponsors
                             });
+                            applyMaterialPreset(sponsorMaterial, paintMaterials.customSponsor || paintMaterials.matte)
 
                             sponsorMesh = new THREE.Mesh(node.geometry, sponsorMaterial);
                             sponsorMesh.position.copy(node.position);
@@ -428,9 +426,9 @@ function handleFileUpload(event) {
 					const jsonContent = JSON.parse(atob(base64Data));
 					console.log(jsonContent)
 					if (file.name === "decals.json") {
-						decalsMats = jsonContent
+						paintMaterials.customDecal = jsonContent
 					} else if (file.name === "sponsors.json") {
-						sponsorsMats = jsonContent
+						paintMaterials.customSponsor = jsonContent
 					}
 				}
             };
@@ -465,13 +463,12 @@ function loadStaticImage(imagePath) {
     });
 }
 
-function loadImageAsync(img) {
-	return new Promise((resolve, reject) => {
-		img.onload = () => resolve(img);
-		img.onerror = () => reject(`Could not load image: ${img.src}`);
-	});
+function applyMaterialPreset(material, preset) {
+    material.clearcoat = preset.clearCoat
+    material.clearcoatRoughness = preset.clearCoatRoughness
+    material.metalness = preset.metallic
+    material.roughness = preset.baseRoughness
 }
-
 
 // Initialize
 init();

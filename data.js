@@ -18,7 +18,7 @@ const enduKitCars = [
     "porsche_991_gt3_r"
 ]
 
-const paintMaterials = {
+var paintMaterials = {
     "glossy": {
         "baseRoughness": 0,
         "clearCoat": 1,
