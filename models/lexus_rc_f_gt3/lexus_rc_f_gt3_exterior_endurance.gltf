@@ -11,7 +11,7 @@
   ],
   "nodes" : [
     {
-      "name" : "lexus_rcf_gt3_exterior_endurance",
+      "name" : "lexus_rc_f_gt3_exterior_endurance",
       "mesh" : 0,
       "skin" : 0,
       "children" : [ 1 ]
@@ -464,12 +464,12 @@
           "material" : 11
         }
       ],
-      "name" : "lexus_rcf_gt3_exterior_endurance"
+      "name" : "lexus_rc_f_gt3_exterior_endurance"
     }
   ],
   "buffers" : [
     {
-      "uri" : "lexus_rcf_gt3_exterior_endurance.bin",
+      "uri" : "lexus_rc_f_gt3_exterior_endurance.bin",
       "byteLength" : 9757440
     }
   ],

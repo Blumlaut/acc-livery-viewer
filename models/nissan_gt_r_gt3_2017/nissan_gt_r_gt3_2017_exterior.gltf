@@ -11,7 +11,7 @@
   ],
   "nodes" : [
     {
-      "name" : "nissan_gtr_gt3_2017_exterior",
+      "name" : "nissan_gt_r_gt3_2017_exterior",
       "mesh" : 0,
       "skin" : 0,
       "children" : [ 1 ]
@@ -468,12 +468,12 @@
           "material" : 12
         }
       ],
-      "name" : "nissan_gtr_gt3_2017_exterior"
+      "name" : "nissan_gt_r_gt3_2017_exterior"
     }
   ],
   "buffers" : [
     {
-      "uri" : "nissan_gtr_gt3_2017_exterior.bin",
+      "uri" : "nissan_gt_r_gt3_2017_exterior.bin",
       "byteLength" : 6525472
     }
   ],

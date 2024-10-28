@@ -8,13 +8,10 @@ const enduKitCars = [
     "ferrari_488_gt3_evo",
     "lamborghini_huracan_gt3",
     "lamborghini_huracan_gt3_evo",
-    "lamborghini_huracan_gt3_evo2",
     "lexus_rc_f_gt3",
     "mclaren_650s_gt3",
     "mercedes_amg_gt3",
     "mercedes_amg_gt3_evo",
-    "nissan_gt_r_gt3_2017",
-    "nissan_gt_r_gt3_2018",
     "porsche_991_gt3_r"
 ]
 
