@@ -268,35 +268,19 @@ function applyTextureToModel(texture, materialName, preset) {
     return mesh
 }
 
-async function drawDecals() {
-    if (!decalsFile) {
+async function drawImageOverlay(file, materialName, material) {
+    if (!file) {
         console.log("Decals missing, skipping decals layer.");
         return;
     }
     try {
-        const imgDecal = await loadImage(decalsFile);
+        const imgDecal = await loadImage(file);
         const decalCanvas = setupCanvas(imgDecal);
         const decalCtx = decalCanvas.getContext('2d');
         decalCtx.drawImage(imgDecal, 0, 0);
         const decalTexture = createTextureFromCanvas(decalCanvas);
-        decalMesh = applyTextureToModel(decalTexture, "DecalMaterial", paintMaterials.customDecal || paintMaterials.glossy);
-    } catch (error) {
-        console.error(error);
-    }
-}
-
-async function drawSponsors() {
-    if (!sponsorsFile) {
-        console.log("Sponsors missing, using just the decals.");
-        return;
-    }
-    try {
-        const imgDecal = await loadImage(sponsorsFile);
-        const decalCanvas = setupCanvas(imgDecal);
-        const decalCtx = decalCanvas.getContext('2d');
-        decalCtx.drawImage(imgDecal, 0, 0);
-        const decalTexture = createTextureFromCanvas(decalCanvas);
-        sponsorMesh = applyTextureToModel(decalTexture, "SponsorMaterial", paintMaterials.customSponsor || paintMaterials.matte);
+        const mesh = applyTextureToModel(decalTexture, materialName, material);
+        return mesh
     } catch (error) {
         console.error(error);
     }
@@ -317,8 +301,8 @@ async function mergeAndSetDecals() {
     });
 
     try {
-        await drawDecals();
-        await drawSponsors();
+        decalMesh = await drawImageOverlay(decalsFile, "DecalMaterial", paintMaterials.customDecal || paintMaterials.glossy)
+        sponsorMesh = await drawImageOverlay(sponsorsFile, "SponsorMaterial", paintMaterials.customSponsor || paintMaterials.matte)
     } catch (error) {
         console.error(error);
     }
