@@ -403,9 +403,9 @@ function mergeAndSetDecals() {
                             sponsorMesh.position.copy(node.position);
                             sponsorMesh.rotation.copy(node.rotation);
                             sponsorMesh.scale.copy(node.scale);
-                            sponsorMesh.scale.x += 0.01
-                            sponsorMesh.scale.y += 0.01
-                            sponsorMesh.scale.z += 0.01
+                            sponsorMesh.scale.x += 0.0001
+                            sponsorMesh.scale.y += 0.0001
+                            sponsorMesh.scale.z += 0.0001
                             sponsorMesh.material.name = "SponsorMaterial"; // Set a name for identification
 
                             console.log("Adding sponsor mesh at position:", sponsorMesh.position);
