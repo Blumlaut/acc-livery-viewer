@@ -92,6 +92,7 @@ function init() {
         scene.remove(sponsorMesh)
         paintMaterials.customDecal = undefined;
         paintMaterials.customSponsor = undefined;
+        setBaseLivery(curModelPath, liverySelector.value);
     });
 
     
