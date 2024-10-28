@@ -8,6 +8,9 @@ let textureCanvas, context, texture;
 let isDrawing = false;
 let dragAndDropTexture = null;
 
+let currentTime = 0
+let lastTime = 0
+
 
 const modelFiles = [
     "alpine_a110_gt4",
@@ -74,7 +77,7 @@ const cubemaps = [
 ]
 
 let currentSkybox = cubemaps[0]
-let skyboxState = true
+let skyboxState = false
 
 function init() {
     // Create the scene
@@ -103,7 +106,7 @@ function init() {
     });
 
     const skyboxToggle = document.getElementById('skybox-toggle');
-    skyboxToggle.setAttribute("checked", true);
+    //skyboxToggle.setAttribute("checked", skyboxState);
     skyboxToggle.addEventListener('change', () => {
         skyboxState = skyboxToggle.checked;
         if (skyboxToggle.checked) {
@@ -204,7 +207,32 @@ function loadModel(modelPath) {
 
     // Load new GLTF model
     const loader = new GLTFLoader();
-    loader.load(`models/${modelPath}/${modelPath}_exterior.gltf`, (gltf) => {
+    let fullFilePath = `models/${modelPath}/${modelPath}_exterior.gltf`
+
+    let enduKitCars = [
+        "amr_v12_vantage_gt3",
+        "audi_r8_lms",
+        "audi_r8_lms_evo",
+        "bmw_m6_gt3",
+        "ferrari_488_gt3",
+        "ferrari_488_gt3_evo",
+        "lamborghini_huracan_gt3",
+        "lamborghini_huracan_gt3_evo",
+        "lamborghini_huracan_gt3_evo2",
+        "lexus_rc_f_gt3",
+        "mclaren_650s_gt3",
+        "mercedes_amg_gt3",
+        "mercedes_amg_gt3_evo",
+        "nissan_gt_r_gt3_2017",
+        "nissan_gt_r_gt3_2018",
+        "porsche_991_gt3_r"
+    ]
+    // if modelPath is in enduKitCars
+    if (enduKitCars.includes(modelPath)) {
+        fullFilePath = `models/${modelPath}/${modelPath}_exterior_endurance.gltf`
+    }
+
+    loader.load(fullFilePath, (gltf) => {
         model = gltf.scene;
         scene.add(model);
         loadStaticImage(`models/${modelPath}/skins/custom/custom_1/EXT_Skin_Custom.png`).then((texture) => {
@@ -464,7 +492,12 @@ function handleFileUpload(event) {
 // Animation loop
 function animate() {
     requestAnimationFrame(animate);
-    renderer.render(scene, camera);
+    currentTime+=1
+    if( currentTime - lastTime > 1000/360 )
+        {
+           renderer.render( scene, camera );
+           lastTime += 1000/360;
+        }
 }
 // Load a static image and return a texture promise
 function loadStaticImage(imagePath) {
