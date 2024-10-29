@@ -85,7 +85,7 @@ function init() {
 
     const liverySelector = document.getElementById('liverySelector');
     liverySelector.addEventListener('change', (event) => {
-        setBaseLivery(curModelPath, event.target.value);
+        mergeAndSetDecals()
     });
 
     const unloadLiveryBtn = document.getElementById('unloadCustomLivery');
@@ -95,7 +95,7 @@ function init() {
         sponsorsFile = undefined;
         paintMaterials.customDecal = undefined;
         paintMaterials.customSponsor = undefined;
-        setBaseLivery(curModelPath, liverySelector.value);
+        mergeAndSetDecals()
     });
 
     const layer1Color = document.getElementById('layer1Color');
@@ -231,30 +231,6 @@ async function setBaseLivery(modelPath, liveryId) {
         await drawImageOverlay(image, "baseLivery"+(i+1), paintMaterials.customDecal || paintMaterials.glossy)
     }
     applyBodyColours()
-
-    return
-    loadStaticImage(`models/${modelPath}/skins/custom/custom_${liveryId}/EXT_Skin_Custom.png`).then((texture) => {
-        // Set texture properties
-        texture.colorSpace = THREE.SRGBColorSpace;
-        texture.flipY = false;
-        texture.anisotropy = 16;
-
-        model.traverse((node) => {
-            if (node.isMesh && node.material.name === "EXT_Carpaint_Inst") {
-                const decalMaterial = new THREE.MeshPhysicalMaterial({
-                    name: node.material.name,
-                    color: 0xffffff,
-                    envMap: scene.environment,
-                    map: texture,
-                    depthWrite: true,
-                });
-                applyMaterialPreset(decalMaterial, paintMaterials.customDecal || paintMaterials.glossy)
-
-                node.material = decalMaterial;
-                node.material.needsUpdate = true;
-            }
-        });
-    });
 }
 
 function cleanupPreviousMeshes() {
@@ -338,11 +314,11 @@ async function drawImageOverlay(file, materialName, material) {
 }
 
 async function mergeAndSetDecals() {
+    cleanupPreviousMeshes();
+    await setBaseLivery(curModelPath, liverySelector.value)
     const canvas = document.getElementById('hiddenCanvas');
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    cleanupPreviousMeshes();
 
     scene.traverse((node) => {
         if (node.isMesh && node.material.name === "EXT_Carpaint_Inst") {
