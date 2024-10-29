@@ -79,7 +79,7 @@ const modelFiles = {
     "lamborghini_huracan_gt3_evo2": "lamborghini_huracan_gt3_2023_exterior_sprint",
     "lamborghini_huracan_st": "lamborghini_huracan_st_exterior",
     "lamborghini_huracan_st_evo2": "lamborghini_huracan_st_evo2_exterior",
-    "lexus_rc_f_gt3": "lexus_rcf_gt3_exterior",
+    "lexus_rc_f_gt3": "lexus_rcf_gt3_exterior_sprint",
     "maserati_mc20_gt2": "maserati_mc20_gt2_exterior",
     "maserati_mc_gt4": "maserati_mc_gt4_exterior",
     "mclaren_570s_gt4": "mclaren_570s_gt4_exterior",
