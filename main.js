@@ -9,7 +9,7 @@ const drawCallsElement = document.getElementById('drawCalls');
 const memoryElement = document.getElementById('memory');
 
 
-let scene, camera, renderer, model, curModelPath
+let scene, camera, renderer, model, curModelPath, envMap
 
 let extraMeshes = []
 let bodyColours = [ "#ff0000", "#00ff00", "#0000ff" ]
@@ -152,8 +152,14 @@ function setSkybox(scene, folderName) {
     const cubeMapLoader = new THREE.CubeTextureLoader();
     const directions = ['negx', 'posx', 'posy', 'negy', 'negz', 'posz'];
 
+    // unload current envMap
+    scene.environment = null;
+    scene.background = null;
+    if (envMap) envMap.dispose();
+    
+
     // Load the cubemap textures directly using CubeTextureLoader
-    const envMap = cubeMapLoader.load(
+    envMap = cubeMapLoader.load(
         directions.map(dir => `cubemap/${folderName}/${dir}.jpg`)
     );
 
@@ -185,15 +191,16 @@ function loadModel(modelPath) {
     // Remove the existing model if it exists
     if (model) {
         scene.remove(model);
-        extraMeshes.forEach(mesh => scene.remove(mesh));
+        cleanupPreviousMeshes()
         model.traverse((node) => {
             if (node.isMesh) {
+                // dispose textures
                 node.geometry.dispose();
                 if (node.material.isMaterial) {
-                    cleanMaterial(node.material);
+                    node.material.dispose();
                 } else {
                     // Dispose of each material
-                    node.material.forEach(material => cleanMaterial(material));
+                    node.material.forEach(material => material.dispose());
                 }
             }
         });
@@ -220,9 +227,6 @@ function loadModel(modelPath) {
     });
 }
 
-function cleanMaterial(material) {
-    material.dispose();
-}
 
 var decalsFile = null;
 var sponsorsFile = null;
@@ -238,9 +242,15 @@ async function setBaseLivery(modelPath, liveryId) {
 }
 
 function cleanupPreviousMeshes() {
-    extraMeshes.forEach(mesh => scene.remove(mesh));
+    extraMeshes.forEach(mesh => {
+        mesh.material.map.dispose();
+        mesh.material.dispose();
+        scene.remove(mesh)
+    });
     scene.traverse((child) => {
         if (child.isMesh && (child.material.name === "SponsorMaterial" || child.material.name === "DecalMaterial")) {
+            child.material.map.dispose();
+            child.material.dispose();
             scene.remove(child);
         }
     });
@@ -410,23 +420,6 @@ function animate() {
 
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
-}
-
-// Load a static image and return a texture promise
-function loadStaticImage(imagePath) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const context = canvas.getContext('2d');
-            context.drawImage(img, 0, 0);
-            resolve(new THREE.CanvasTexture(canvas));
-        };
-        img.onerror = reject;
-        img.src = imagePath;
-    });
 }
 
 function applyMaterialPreset(material, preset) {
