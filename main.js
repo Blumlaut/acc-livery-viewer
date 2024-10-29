@@ -9,7 +9,7 @@ const drawCallsElement = document.getElementById('drawCalls');
 const memoryElement = document.getElementById('memory');
 
 
-let scene, camera, renderer, model, curModelPath, envMap
+let scene, camera, renderer, model, curModelPath, selectedModel, envMap
 
 let extraMeshes = []
 let bodyColours = [ "#ff0000", "#00ff00", "#0000ff" ]
@@ -79,7 +79,7 @@ function init() {
 
     // Handle model change
     modelSelector.addEventListener('change', (event) => {
-        const selectedModel = event.target.value;
+        selectedModel = event.target.value;
         loadModel(selectedModel);
     });
 
@@ -94,6 +94,13 @@ function init() {
     liverySelector.addEventListener('change', (event) => {
         mergeAndSetDecals()
     });
+
+    const lodSelector = document.getElementById('lodSelector');
+    lodSelector.addEventListener('change', (event) => {
+        LodLevel = event.target.value;
+        loadModel(selectedModel || Object.keys(modelFiles)[0])
+    });
+
 
     const unloadLiveryBtn = document.getElementById('unloadCustomLivery');
     unloadLiveryBtn.addEventListener('click', () => {
@@ -215,7 +222,6 @@ function loadModel(modelPath) {
         model = gltf.scene;
         scene.add(model);
         curModelPath = modelPath
-        setBaseLivery(modelPath, 1)
         const liverySelector = document.getElementById('liverySelector');
         for (let a in liverySelector.options) { liverySelector.options.remove(0); }
         for (let i = 1; i < baseLiveries[modelPath] + 1; i++) {
@@ -224,6 +230,7 @@ function loadModel(modelPath) {
             option.textContent = "Skin " + i;
             liverySelector.appendChild(option);
         }
+        mergeAndSetDecals()
     });
 }
 
