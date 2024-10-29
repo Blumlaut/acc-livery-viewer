@@ -1,0 +1,355 @@
+{
+  "asset" : {
+    "generator" : "UE Viewer (umodel) build 1589",
+    "version" : "2.0"
+  },
+  "scene" : 0,
+  "scenes" : [
+    {
+      "nodes" : [ 0 ]
+    }
+  ],
+  "nodes" : [
+    {
+      "name" : "ktm_xbow_gt2_exterior_endu_Lod4",
+      "mesh" : 0,
+      "skin" : 0,
+      "children" : [ 1 ]
+    },
+    {
+      "name" : "KTM_XBOW_GT2",
+      "children" : [ 2 ],
+      "translation" : [ 0, 0, 0 ],
+      "rotation" : [ -0, -0, -0, 1 ]
+    },
+    {
+      "name" : "CAR_BODY",
+      "children" : [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 33, 34, 35 ],
+      "translation" : [ 0, 0, -0 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "WING",
+      "translation" : [ 1.83528e-07, 1.03326, -2.07901 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "DIFFUSER",
+      "translation" : [ 1.08403e-08, 0.0654074, -1.05512 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "FRONT_BUMPER",
+      "translation" : [ 1.94389e-07, 0.0696386, 1.74506 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "WHEEL_LF",
+      "translation" : [ 0.859242, 0.32175, 1.42502 ],
+      "rotation" : [ -9.10739e-21, -3.17637e-21, 8.9407e-08, -1 ]
+    },
+    {
+      "name" : "TYRE_LF",
+      "translation" : [ 0.859242, 0.32175, 1.42502 ],
+      "rotation" : [ -9.10739e-21, -3.17637e-21, 8.9407e-08, -1 ]
+    },
+    {
+      "name" : "DISC_LF",
+      "translation" : [ 0.859242, 0.32175, 1.42502 ],
+      "rotation" : [ -2.84217e-14, 2.5411e-21, 8.9407e-08, -1 ]
+    },
+    {
+      "name" : "SUSP_LF",
+      "translation" : [ 0.859242, 0.32175, 1.42502 ],
+      "rotation" : [ 9.71083e-15, -1.29173e-21, 8.9407e-08, -1 ]
+    },
+    {
+      "name" : "WHEEL_RF",
+      "translation" : [ -0.85924, 0.32175, 1.42502 ],
+      "rotation" : [ 7.29914e-20, 1.68824e-19, 5.96046e-08, -1 ]
+    },
+    {
+      "name" : "TYRE_RF",
+      "translation" : [ -0.85924, 0.32175, 1.42502 ],
+      "rotation" : [ 7.29914e-20, 1.68824e-19, 5.96046e-08, -1 ]
+    },
+    {
+      "name" : "DISC_RF",
+      "translation" : [ -0.85924, 0.32175, 1.42502 ],
+      "rotation" : [ -0, -0, 5.96046e-08, -1 ]
+    },
+    {
+      "name" : "SUSP_RF",
+      "translation" : [ -0.85924, 0.32175, 1.42502 ],
+      "rotation" : [ -1.94217e-14, 1.15762e-21, 5.96046e-08, -1 ]
+    },
+    {
+      "name" : "WHEEL_LR",
+      "translation" : [ 0.831303, 0.33295, -1.42502 ],
+      "rotation" : [ 4.58728e-20, -4.20022e-19, 4.47035e-08, -1 ]
+    },
+    {
+      "name" : "TYRE_LR",
+      "translation" : [ 0.831303, 0.33295, -1.42502 ],
+      "rotation" : [ 4.58728e-20, -4.20022e-19, 4.47035e-08, -1 ]
+    },
+    {
+      "name" : "DISC_LR",
+      "translation" : [ 0.831303, 0.33295, -1.42502 ],
+      "rotation" : [ 9.52912e-22, -4.25985e-29, 4.47035e-08, -1 ]
+    },
+    {
+      "name" : "SUSP_LR",
+      "translation" : [ 0.831303, 0.33295, -1.42502 ],
+      "rotation" : [ -3.30872e-22, -6.50811e-30, 4.47035e-08, -1 ]
+    },
+    {
+      "name" : "WHEEL_RR",
+      "translation" : [ -0.8313, 0.33295, -1.42502 ],
+      "rotation" : [ 1.76358e-20, -2.05617e-19, 4.47035e-08, -1 ]
+    },
+    {
+      "name" : "TYRE_RR",
+      "translation" : [ -0.8313, 0.33295, -1.42502 ],
+      "rotation" : [ 1.76358e-20, -2.05617e-19, 4.47035e-08, -1 ]
+    },
+    {
+      "name" : "DISC_RR",
+      "translation" : [ -0.8313, 0.33295, -1.42502 ],
+      "rotation" : [ 9.52912e-22, -4.25985e-29, 4.47035e-08, -1 ]
+    },
+    {
+      "name" : "SUSP_RR",
+      "translation" : [ -0.8313, 0.33295, -1.42502 ],
+      "rotation" : [ -3.30872e-22, -6.50811e-30, 4.47035e-08, -1 ]
+    },
+    {
+      "name" : "DOOR_JOINT_BASE",
+      "children" : [ 23 ],
+      "translation" : [ 0, 0.516848, 1.55791 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "DOOR_JOINT_ROT",
+      "children" : [ 24, 25, 26, 29, 32 ],
+      "translation" : [ -2.45021e-19, 0.108054, -0.282738 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "DOOR_WINDOW_L",
+      "translation" : [ 0.512045, 0.233237, -0.625813 ],
+      "rotation" : [ -0.671438, 0.47536, 0.021576, -0.568101 ]
+    },
+    {
+      "name" : "DOOR_WINDOW_R",
+      "translation" : [ -0.512045, 0.233237, -0.625813 ],
+      "rotation" : [ -0.378277, -0.424395, -0.215224, -0.794024 ]
+    },
+    {
+      "name" : "WIPER_1",
+      "children" : [ 27 ],
+      "translation" : [ 0.000871964, 0.0574041, 0.0978592 ],
+      "rotation" : [ 0.587432, -0.623343, 0.375603, 0.353963 ]
+    },
+    {
+      "name" : "WIPER_2",
+      "children" : [ 28 ],
+      "translation" : [ -0.0303373, 6.20873e-08, -0.0276837 ],
+      "rotation" : [ 3.43821e-09, -0.00174536, 1.45435e-07, -0.999998 ]
+    },
+    {
+      "name" : "WIPER_3",
+      "translation" : [ -0.481025, -4.46662e-08, 0.0143596 ],
+      "rotation" : [ 0.000824907, -0.0203615, -7.97576e-05, -0.999792 ]
+    },
+    {
+      "name" : "DOOR_JOINT_ORIENT",
+      "children" : [ 30, 31 ],
+      "translation" : [ -1.65436e-26, 0.0303829, -0.367873 ],
+      "rotation" : [ -0.541166, -0, 0, -0.840916 ]
+    },
+    {
+      "name" : "DOOR_CYL_L",
+      "translation" : [ 0.0689233, 0.079231, 0.0180172 ],
+      "rotation" : [ -0.304706, 0.304706, -0.638087, -0.638086 ]
+    },
+    {
+      "name" : "DOOR_CYL_R",
+      "translation" : [ -0.068923, 0.079231, 0.0180172 ],
+      "rotation" : [ -0.304706, 0.304706, -0.638087, -0.638086 ]
+    },
+    {
+      "name" : "LUMIRANK",
+      "translation" : [ -0.373715, 0.308793, -0.58724 ],
+      "rotation" : [ -0.221479, 0.329489, -0.102968, -0.912021 ]
+    },
+    {
+      "name" : "DOOR_BASE_ORIENT",
+      "translation" : [ -6.9273e-18, 0.553399, 1.29515 ],
+      "rotation" : [ -0.128092, -0, 0, -0.991762 ]
+    },
+    {
+      "name" : "DOOR_CYL_BASE_L",
+      "translation" : [ 0.0668642, 0.542087, 1.25392 ],
+      "rotation" : [ -0.599036, -0.599036, 0.375708, -0.375708 ]
+    },
+    {
+      "name" : "DOOR_CYL_BASE_R",
+      "translation" : [ -0.066864, 0.542087, 1.25392 ],
+      "rotation" : [ -0.599036, -0.599036, 0.375708, -0.375708 ]
+    }
+  ],
+  "skins" : [
+    {
+      "inverseBindMatrices" : 0,
+      "skeleton" : 1,
+      "joints" : [
+        1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,
+        33,34,35
+      ]
+    }
+  ],
+  "materials" : [
+    {
+      "name" : "EXT_Carpaint_Inst",
+      "pbrMetallicRoughness" : {
+        "baseColorFactor" : [ 0.3, 0.3, 0.3, 1.0 ],
+        "metallicFactor" : 0.1,
+        "roughnessFactor" : 0.5
+      }
+    }
+  ],
+  "meshes" : [
+    {
+      "primitives" : [
+        {
+          "attributes" : {
+            "POSITION" : 2,
+            "NORMAL" : 3,
+            "TANGENT" : 4,
+            "COLOR_0" : 5,
+            "JOINTS_0" : 6,
+            "WEIGHTS_0" : 7,
+            "TEXCOORD_0" : 8
+          },
+          "indices" : 1,
+          "material" : 0
+        }
+      ],
+      "name" : "ktm_xbow_gt2_exterior_endu_Lod4"
+    }
+  ],
+  "buffers" : [
+    {
+      "uri" : "ktm_xbow_gt2_exterior_endu_Lod4.bin",
+      "byteLength" : 888032
+    }
+  ],
+  "bufferViews" : [
+    {
+      "buffer" : 0,
+      "byteOffset" : 0,
+      "byteLength" : 2240
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 2240,
+      "byteLength" : 66528
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 68768,
+      "byteLength" : 153612
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 222380,
+      "byteLength" : 153612
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 375992,
+      "byteLength" : 204816
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 580808,
+      "byteLength" : 51204
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 632012,
+      "byteLength" : 102408
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 734420,
+      "byteLength" : 51204
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 785624,
+      "byteLength" : 102408
+    }
+  ],
+  "accessors" : [
+    {
+      "bufferView" : 0,
+      "componentType" : 5126,
+      "count" : 35,
+      "type" : "MAT4"
+    },
+    {
+      "bufferView" : 1,
+      "componentType" : 5123,
+      "count" : 33264,
+      "type" : "SCALAR"
+    },
+    {
+      "bufferView" : 2,
+      "min" : [ -1.01976, -0.0221743, -2.25325 ],
+      "max" : [ 1.01976, 1.11947, 2.37349 ],
+      "componentType" : 5126,
+      "count" : 12801,
+      "type" : "VEC3"
+    },
+    {
+      "bufferView" : 3,
+      "componentType" : 5126,
+      "count" : 12801,
+      "type" : "VEC3"
+    },
+    {
+      "bufferView" : 4,
+      "componentType" : 5126,
+      "count" : 12801,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 5,
+      "normalized" : true,
+      "componentType" : 5121,
+      "count" : 12801,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 6,
+      "componentType" : 5123,
+      "count" : 12801,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 7,
+      "normalized" : true,
+      "componentType" : 5121,
+      "count" : 12801,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 8,
+      "componentType" : 5126,
+      "count" : 12801,
+      "type" : "VEC2"
+    }
+  ]
+}

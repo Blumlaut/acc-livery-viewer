@@ -2,12 +2,19 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+const modelsElement = document.getElementById('models');
+const texturesElement = document.getElementById('textures');
+const polygonsElement = document.getElementById('polygons');
+const drawCallsElement = document.getElementById('drawCalls');
+const memoryElement = document.getElementById('memory');
+
 
 let scene, camera, renderer, model, curModelPath
 
 let extraMeshes = []
 let bodyColours = [ "#ff0000", "#00ff00", "#0000ff" ]
 let bodyMaterials = ["glossy", "glossy", "glossy"]
+let LodLevel = 3
 
 let currentSkybox = cubemaps[0]
 let skyboxState = false
@@ -23,12 +30,12 @@ function init() {
 
     // Populate the dropdown with available models
     const modelSelector = document.getElementById('modelSelector');
-    modelFiles.forEach((file) => {
+    for (const [folder, file] of Object.entries(modelFiles)) {
         const option = document.createElement('option');
-        option.value = file;
-        option.textContent = file;
+        option.value = folder;
+        option.textContent = folder;
         modelSelector.appendChild(option);
-    });
+    };
 
     const cubemapSelector = document.getElementById('cubemapSelector');
     cubemaps.forEach((file) => {
@@ -50,7 +57,7 @@ function init() {
     });
 
     // Load the initial model
-    loadModel(modelFiles[0]); // Load the first model initially
+    loadModel(Object.keys(modelFiles)[0]); // Load the first model initially
 
     // Set up lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -194,11 +201,8 @@ function loadModel(modelPath) {
 
     // Load new GLTF model
     const loader = new GLTFLoader();
-    let fullFilePath = `models/${modelPath}/${modelPath}_exterior.gltf`
-    // if modelPath is in enduKitCars
-    if (enduKitCars.includes(modelPath)) {
-        fullFilePath = `models/${modelPath}/${modelPath}_exterior_endurance.gltf`
-    }
+
+    let fullFilePath = `models/${modelPath}/${modelFiles[modelPath]}_Lod${LodLevel}.gltf`
 
     loader.load(fullFilePath, (gltf) => {
         model = gltf.scene;
@@ -206,13 +210,13 @@ function loadModel(modelPath) {
         curModelPath = modelPath
         setBaseLivery(modelPath, 1)
         const liverySelector = document.getElementById('liverySelector');
-        for (let a in liverySelector.options) { liverySelector.options.remove(0); } 
-        for (let i = 1; i < baseLiveries[modelPath]+1; i++) {
+        for (let a in liverySelector.options) { liverySelector.options.remove(0); }
+        for (let i = 1; i < baseLiveries[modelPath] + 1; i++) {
             const option = document.createElement('option');
             option.value = i;
-            option.textContent = "Skin "+i;
+            option.textContent = "Skin " + i;
             liverySelector.appendChild(option);
-        };
+        }
     });
 }
 
@@ -262,7 +266,7 @@ function createTextureFromCanvas(canvas) {
     const texture = new THREE.Texture(canvas);
     texture.flipY = false;
     texture.colorSpace = THREE.SRGBColorSpace;
-    texture.anisotropy = 16;
+    texture.anisotropy = 8;
     texture.needsUpdate = true;
     return texture;
 }
@@ -395,6 +399,15 @@ function handleJsonFile(file, dataUrl) {
 }
 
 function animate() {
+    const info = renderer.info;
+
+    // Update overlay text with performance stats
+    modelsElement.innerText = `Models: ${info.memory.geometries}`;
+    texturesElement.innerText = `Textures: ${info.memory.textures}`;
+    polygonsElement.innerText = `Polygons: ${info.render.triangles}`;
+    drawCallsElement.innerText = `Draw Calls: ${info.render.calls}`;
+    memoryElement.innerText = `Memory: ${(info.memory.programs || []).length} programs`;
+
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
 }
@@ -523,6 +536,7 @@ function applyBodyColours() {
     }
 }
 
+  
 
 // Initialize
 init();

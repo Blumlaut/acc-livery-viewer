@@ -1,0 +1,334 @@
+{
+  "asset" : {
+    "generator" : "UE Viewer (umodel) build 1589",
+    "version" : "2.0"
+  },
+  "scene" : 0,
+  "scenes" : [
+    {
+      "nodes" : [ 0 ]
+    }
+  ],
+  "nodes" : [
+    {
+      "name" : "nissan_gtr_gt3_2018_exterior_endu_Lod4",
+      "mesh" : 0,
+      "skin" : 0,
+      "children" : [ 1 ]
+    },
+    {
+      "name" : "NISSAN_GT_R_GT3",
+      "children" : [ 2 ],
+      "translation" : [ 6.79899e-06, 0, 0 ],
+      "rotation" : [ -0, -0, -0, 1 ]
+    },
+    {
+      "name" : "CAR_BODY",
+      "children" : [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26 ],
+      "translation" : [ 0, 0, -0 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "FRONT_BUMPER",
+      "translation" : [ -0.00125028, 0.631358, 2.16152 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "DOOR_L",
+      "translation" : [ 0.855521, 0.407947, 0.61959 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "DOOR_R",
+      "translation" : [ -0.855507, 0.407947, 0.61959 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "REAR_BUMPER",
+      "translation" : [ -0.00125028, 0.526344, -1.66359 ],
+      "rotation" : [ 0.00198984, 3.4996e-05, -9.38675e-05, -0.999998 ]
+    },
+    {
+      "name" : "WING",
+      "translation" : [ -0.00125028, 1.20227, -2.18385 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "LUMIRANK",
+      "translation" : [ -0.526395, 1.07186, 0.413022 ],
+      "rotation" : [ -0.231915, 0.1312, -0.0762148, -0.960829 ]
+    },
+    {
+      "name" : "HOOD",
+      "translation" : [ -0.00125028, 0.851342, 0.798515 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "TYRE_LF",
+      "translation" : [ 0.837493, 0.291856, 1.43196 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "TYRE_LR",
+      "translation" : [ 0.839993, 0.291854, -1.34543 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "TYRE_RR",
+      "translation" : [ -0.840007, 0.291854, -1.34543 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "TYRE_RF",
+      "translation" : [ -0.837507, 0.291855, 1.43195 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "SUSP_LF",
+      "translation" : [ 0.837493, 0.291856, 1.43196 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "DISC_LF",
+      "translation" : [ 0.837493, 0.291856, 1.43196 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "WHEEL_LF",
+      "translation" : [ 0.837493, 0.291856, 1.43196 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "SUSP_RF",
+      "translation" : [ -0.837507, 0.291855, 1.43195 ],
+      "rotation" : [ -2.48154e-23, -4.93109e-24, 1.47911e-30, -1 ]
+    },
+    {
+      "name" : "DISC_RF",
+      "translation" : [ -0.837507, 0.291855, 1.43195 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "WHEEL_RF",
+      "translation" : [ -0.837507, 0.291855, 1.43195 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "SUSP_LR",
+      "translation" : [ 0.839993, 0.291854, -1.34543 ],
+      "rotation" : [ -0, 1.07852e-32, -0, -1 ]
+    },
+    {
+      "name" : "DISC_LR",
+      "translation" : [ 0.839993, 0.291854, -1.34543 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "WHEEL_LR",
+      "translation" : [ 0.839993, 0.291854, -1.34543 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "SUSP_RR",
+      "translation" : [ -0.840007, 0.291854, -1.34543 ],
+      "rotation" : [ -0, 1.07852e-32, -0, -1 ]
+    },
+    {
+      "name" : "DISC_RR",
+      "translation" : [ -0.840007, 0.291854, -1.34543 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "WHEEL_RR",
+      "translation" : [ -0.840007, 0.291854, -1.34543 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "WIPER_0",
+      "children" : [ 27 ],
+      "translation" : [ 0.0481027, 0.845364, 1.0004 ],
+      "rotation" : [ -0.225586, -0, 0, -0.974223 ]
+    },
+    {
+      "name" : "WIPER_1",
+      "children" : [ 28 ],
+      "translation" : [ 7.04895e-10, 1.46019e-09, -1.70592e-07 ],
+      "rotation" : [ -5.3253e-08, -0, 0, -1 ]
+    },
+    {
+      "name" : "WIPER_2",
+      "children" : [ 29 ],
+      "translation" : [ 0, 0.00506729, -0.0694327 ],
+      "rotation" : [ -2.61987e-08, -0, 0, -1 ]
+    },
+    {
+      "name" : "WIPER_3",
+      "translation" : [ 0.0238313, 0.0108736, -0.317429 ],
+      "rotation" : [ 2.85188e-10, -0, -0, -1 ]
+    }
+  ],
+  "skins" : [
+    {
+      "inverseBindMatrices" : 0,
+      "skeleton" : 1,
+      "joints" : [
+        1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29
+      ]
+    }
+  ],
+  "materials" : [
+    {
+      "name" : "EXT_Carpaint_Inst",
+      "pbrMetallicRoughness" : {
+        "baseColorFactor" : [ 0.3, 0.3, 0.3, 1.0 ],
+        "metallicFactor" : 0.1,
+        "roughnessFactor" : 0.5
+      }
+    }
+  ],
+  "meshes" : [
+    {
+      "primitives" : [
+        {
+          "attributes" : {
+            "POSITION" : 2,
+            "NORMAL" : 3,
+            "TANGENT" : 4,
+            "COLOR_0" : 5,
+            "JOINTS_0" : 6,
+            "WEIGHTS_0" : 7,
+            "TEXCOORD_0" : 8,
+            "TEXCOORD_1" : 9
+          },
+          "indices" : 1,
+          "material" : 0
+        }
+      ],
+      "name" : "nissan_gtr_gt3_2018_exterior_endu_Lod4"
+    }
+  ],
+  "buffers" : [
+    {
+      "uri" : "nissan_gtr_gt3_2018_exterior_endu_Lod4.bin",
+      "byteLength" : 1177028
+    }
+  ],
+  "bufferViews" : [
+    {
+      "buffer" : 0,
+      "byteOffset" : 0,
+      "byteLength" : 1856
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 1856,
+      "byteLength" : 75588
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 77444,
+      "byteLength" : 183264
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 260708,
+      "byteLength" : 183264
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 443972,
+      "byteLength" : 244352
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 688324,
+      "byteLength" : 61088
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 749412,
+      "byteLength" : 122176
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 871588,
+      "byteLength" : 61088
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 932676,
+      "byteLength" : 122176
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 1054852,
+      "byteLength" : 122176
+    }
+  ],
+  "accessors" : [
+    {
+      "bufferView" : 0,
+      "componentType" : 5126,
+      "count" : 29,
+      "type" : "MAT4"
+    },
+    {
+      "bufferView" : 1,
+      "componentType" : 5123,
+      "count" : 37794,
+      "type" : "SCALAR"
+    },
+    {
+      "bufferView" : 2,
+      "min" : [ -1.02947, -0.047238, -2.42635 ],
+      "max" : [ 1.02947, 1.27441, 2.46869 ],
+      "componentType" : 5126,
+      "count" : 15272,
+      "type" : "VEC3"
+    },
+    {
+      "bufferView" : 3,
+      "componentType" : 5126,
+      "count" : 15272,
+      "type" : "VEC3"
+    },
+    {
+      "bufferView" : 4,
+      "componentType" : 5126,
+      "count" : 15272,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 5,
+      "normalized" : true,
+      "componentType" : 5121,
+      "count" : 15272,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 6,
+      "componentType" : 5123,
+      "count" : 15272,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 7,
+      "normalized" : true,
+      "componentType" : 5121,
+      "count" : 15272,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 8,
+      "componentType" : 5126,
+      "count" : 15272,
+      "type" : "VEC2"
+    },
+    {
+      "bufferView" : 9,
+      "componentType" : 5126,
+      "count" : 15272,
+      "type" : "VEC2"
+    }
+  ]
+}

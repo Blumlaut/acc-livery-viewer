@@ -11,7 +11,10 @@ done
 # find and delete all files ending with .gltf and .bin unless they end with "_exterior.gtlf/bin"
 find . -type f \( -name "*.gltf" -o -name "*.bin" -o -name "*.md5mesh" \) ! -name "*_exterior*.gltf" ! -name "*_exterior*.bin" -exec rm {} -v \;
 
-find . -type f \( -name "*Lod*.gltf" -o -name "*Lod*.bin" -o -name "*Lod*.md5mesh" \) -exec rm {} -v \;
+find . -type f \( -name "*Lod*.md5mesh" \) -exec rm {} -v \;
+
+# delete all models ending with .gltf and .bin if they do not contain "Lod" in the name
+find . -type f \( -name "*.gltf" -o -name "*.bin" \) ! -name "*Lod*.gltf" ! -name "*Lod*.bin" -exec rm {} -v \;
 
 rm -rfv */*Skeleton*/
 rm -rfv */display/

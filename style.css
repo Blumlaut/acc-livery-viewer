@@ -11,3 +11,19 @@ canvas {
     border: 1px solid black;
     margin-bottom: 10px;
 }
+
+
+#overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    z-index: 100;
+  }
+  #overlay p {
+    margin: 5px 0;
+  }

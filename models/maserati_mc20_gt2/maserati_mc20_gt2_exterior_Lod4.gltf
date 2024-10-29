@@ -1,0 +1,316 @@
+{
+  "asset" : {
+    "generator" : "UE Viewer (umodel) build 1589",
+    "version" : "2.0"
+  },
+  "scene" : 0,
+  "scenes" : [
+    {
+      "nodes" : [ 0 ]
+    }
+  ],
+  "nodes" : [
+    {
+      "name" : "maserati_mc20_gt2_exterior_Lod4",
+      "mesh" : 0,
+      "skin" : 0,
+      "children" : [ 1 ]
+    },
+    {
+      "name" : "MASERATI_MC20_GT2",
+      "children" : [ 2 ],
+      "translation" : [ 0, 0, 0 ],
+      "rotation" : [ -0, -0, -0, 1 ]
+    },
+    {
+      "name" : "CAR_BODY",
+      "children" : [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 27, 28 ],
+      "translation" : [ 0, 0, -0 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "WHEEL_LF",
+      "translation" : [ 0.850194, 0.324422, 1.35325 ],
+      "rotation" : [ -9.10739e-21, -3.17637e-21, 8.9407e-08, -1 ]
+    },
+    {
+      "name" : "WHEEL_LR",
+      "translation" : [ 0.835789, 0.324422, -1.35341 ],
+      "rotation" : [ 4.58728e-20, -4.20022e-19, 4.47035e-08, -1 ]
+    },
+    {
+      "name" : "WHEEL_RF",
+      "translation" : [ -0.850194, 0.324422, 1.35325 ],
+      "rotation" : [ 7.29914e-20, 1.68824e-19, 5.96046e-08, -1 ]
+    },
+    {
+      "name" : "WHEEL_RR",
+      "translation" : [ -0.835789, 0.324422, -1.35341 ],
+      "rotation" : [ 1.76358e-20, -2.05617e-19, 4.47035e-08, -1 ]
+    },
+    {
+      "name" : "TYRE_LF",
+      "translation" : [ 0.850194, 0.324422, 1.35325 ],
+      "rotation" : [ -9.10739e-21, -3.17637e-21, 8.9407e-08, -1 ]
+    },
+    {
+      "name" : "TYRE_LR",
+      "translation" : [ 0.835789, 0.324422, -1.35341 ],
+      "rotation" : [ 4.58728e-20, -4.20022e-19, 4.47035e-08, -1 ]
+    },
+    {
+      "name" : "TYRE_RF",
+      "translation" : [ -0.850194, 0.324422, 1.35325 ],
+      "rotation" : [ 7.29914e-20, 1.68824e-19, 5.96046e-08, -1 ]
+    },
+    {
+      "name" : "TYRE_RR",
+      "translation" : [ -0.835789, 0.324422, -1.35341 ],
+      "rotation" : [ 1.76358e-20, -2.05617e-19, 4.47035e-08, -1 ]
+    },
+    {
+      "name" : "LUMIRANK",
+      "translation" : [ -0.49358, 0.984188, 0.688115 ],
+      "rotation" : [ -0.242323, 0.137774, -0.100919, -0.955046 ]
+    },
+    {
+      "name" : "HOOD",
+      "translation" : [ 1.69161e-07, 0.786, 1.23042 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "WING",
+      "translation" : [ 1.83528e-07, 1.21477, -2.13616 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "DIFFUSER",
+      "translation" : [ 1.08403e-08, 0.503183, -2.15003 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "FRONT_BUMPER",
+      "translation" : [ 1.94389e-07, 0.607805, 1.6992 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "DISC_LF",
+      "translation" : [ 0.850194, 0.324422, 1.35325 ],
+      "rotation" : [ -6.61744e-24, -1.57844e-24, 8.9407e-08, -1 ]
+    },
+    {
+      "name" : "DISC_LR",
+      "translation" : [ 0.835789, 0.324422, -1.35341 ],
+      "rotation" : [ 1.32349e-23, -1.57844e-24, 4.47035e-08, -1 ]
+    },
+    {
+      "name" : "DISC_RF",
+      "translation" : [ -0.850194, 0.324422, 1.35325 ],
+      "rotation" : [ 4.60162e-31, -1.57844e-24, 5.96046e-08, -1 ]
+    },
+    {
+      "name" : "DISC_RR",
+      "translation" : [ -0.835789, 0.324422, -1.35341 ],
+      "rotation" : [ 1.32349e-23, -1.57844e-24, 4.47035e-08, -1 ]
+    },
+    {
+      "name" : "SUSP_LF",
+      "translation" : [ 0.850194, 0.324422, 1.35325 ],
+      "rotation" : [ -6.61745e-24, -1.57844e-24, 8.9407e-08, -1 ]
+    },
+    {
+      "name" : "SUSP_LR",
+      "translation" : [ 0.835789, 0.324422, -1.35341 ],
+      "rotation" : [ -1.27055e-21, 5.52203e-29, 4.47035e-08, -1 ]
+    },
+    {
+      "name" : "SUSP_RF",
+      "translation" : [ -0.850194, 0.324422, 1.35325 ],
+      "rotation" : [ 2.07245e-31, -1.57844e-24, 5.96046e-08, -1 ]
+    },
+    {
+      "name" : "SUSP_RR",
+      "translation" : [ -0.835789, 0.324422, -1.35341 ],
+      "rotation" : [ -0, -0, 4.47035e-08, -1 ]
+    },
+    {
+      "name" : "WIPER_L1",
+      "children" : [ 25 ],
+      "translation" : [ -0.000179672, 0.777082, 1.31855 ],
+      "rotation" : [ -0.242443, -0.451958, -0.128795, -0.848745 ]
+    },
+    {
+      "name" : "WIPER_L2",
+      "children" : [ 26 ],
+      "translation" : [ 5.39053e-08, -0.00693997, -0.0991196 ],
+      "rotation" : [ 1.50692e-07, -2.59148e-09, -2.22461e-08, -1 ]
+    },
+    {
+      "name" : "WIPER_L3",
+      "translation" : [ -0.0244129, -0.0966083, -0.458256 ],
+      "rotation" : [ 0.129322, 0.0060297, -0.000786471, -0.991584 ]
+    },
+    {
+      "name" : "DOOR_L",
+      "translation" : [ 0.87936, 0.668406, 0.86201 ],
+      "rotation" : [ -0.470288, -0.265711, -0.140732, -0.829711 ]
+    },
+    {
+      "name" : "DOOR_R",
+      "translation" : [ -0.87936, 0.668406, 0.86201 ],
+      "rotation" : [ -0.829711, 0.140732, -0.265711, 0.470288 ]
+    }
+  ],
+  "skins" : [
+    {
+      "inverseBindMatrices" : 0,
+      "skeleton" : 1,
+      "joints" : [
+        1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28
+      ]
+    }
+  ],
+  "materials" : [
+    {
+      "name" : "EXT_Carpaint_Inst",
+      "pbrMetallicRoughness" : {
+        "baseColorFactor" : [ 0.3, 0.3, 0.3, 1.0 ],
+        "metallicFactor" : 0.1,
+        "roughnessFactor" : 0.5
+      }
+    }
+  ],
+  "meshes" : [
+    {
+      "primitives" : [
+        {
+          "attributes" : {
+            "POSITION" : 2,
+            "NORMAL" : 3,
+            "TANGENT" : 4,
+            "COLOR_0" : 5,
+            "JOINTS_0" : 6,
+            "WEIGHTS_0" : 7,
+            "TEXCOORD_0" : 8
+          },
+          "indices" : 1,
+          "material" : 0
+        }
+      ],
+      "name" : "maserati_mc20_gt2_exterior_Lod4"
+    }
+  ],
+  "buffers" : [
+    {
+      "uri" : "maserati_mc20_gt2_exterior_Lod4.bin",
+      "byteLength" : 740280
+    }
+  ],
+  "bufferViews" : [
+    {
+      "buffer" : 0,
+      "byteOffset" : 0,
+      "byteLength" : 1792
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 1792,
+      "byteLength" : 60600
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 62392,
+      "byteLength" : 127104
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 189496,
+      "byteLength" : 127104
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 316600,
+      "byteLength" : 169472
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 486072,
+      "byteLength" : 42368
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 528440,
+      "byteLength" : 84736
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 613176,
+      "byteLength" : 42368
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 655544,
+      "byteLength" : 84736
+    }
+  ],
+  "accessors" : [
+    {
+      "bufferView" : 0,
+      "componentType" : 5126,
+      "count" : 28,
+      "type" : "MAT4"
+    },
+    {
+      "bufferView" : 1,
+      "componentType" : 5123,
+      "count" : 30300,
+      "type" : "SCALAR"
+    },
+    {
+      "bufferView" : 2,
+      "min" : [ -1.07906, -0.0185837, -2.33597 ],
+      "max" : [ 1.08824, 1.2988, 2.495 ],
+      "componentType" : 5126,
+      "count" : 10592,
+      "type" : "VEC3"
+    },
+    {
+      "bufferView" : 3,
+      "componentType" : 5126,
+      "count" : 10592,
+      "type" : "VEC3"
+    },
+    {
+      "bufferView" : 4,
+      "componentType" : 5126,
+      "count" : 10592,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 5,
+      "normalized" : true,
+      "componentType" : 5121,
+      "count" : 10592,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 6,
+      "componentType" : 5123,
+      "count" : 10592,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 7,
+      "normalized" : true,
+      "componentType" : 5121,
+      "count" : 10592,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 8,
+      "componentType" : 5126,
+      "count" : 10592,
+      "type" : "VEC2"
+    }
+  ]
+}

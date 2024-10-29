@@ -1,0 +1,333 @@
+{
+  "asset" : {
+    "generator" : "UE Viewer (umodel) build 1589",
+    "version" : "2.0"
+  },
+  "scene" : 0,
+  "scenes" : [
+    {
+      "nodes" : [ 0 ]
+    }
+  ],
+  "nodes" : [
+    {
+      "name" : "mercedes_amg_gt3_exterior_endurance_Lod4",
+      "mesh" : 0,
+      "skin" : 0,
+      "children" : [ 1 ]
+    },
+    {
+      "name" : "MERCEDES_AMG_GT3",
+      "children" : [ 2 ],
+      "translation" : [ 0, 0, 0 ],
+      "rotation" : [ -0, -0, -0, 1 ]
+    },
+    {
+      "name" : "CAR_BODY",
+      "children" : [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 25, 28, 29, 30, 31 ],
+      "translation" : [ 0, 0, -0 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "DOOR_L",
+      "translation" : [ 0.919783, 0.54786, 0.36497 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "DOOR_R",
+      "translation" : [ -0.919783, 0.54786, 0.36497 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "REAR_BUMPER",
+      "translation" : [ 5.91278e-07, 0.95624, -2.2089 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "HOOD",
+      "translation" : [ -9.2417e-05, 0.896142, 0.446827 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "WING",
+      "translation" : [ 5.91278e-07, 1.19143, -2.06144 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "LUMIRANK",
+      "translation" : [ -0.505288, 0.988829, 0.173566 ],
+      "rotation" : [ 0.487948, 0.110857, -0.0760012, -0.862463 ]
+    },
+    {
+      "name" : "DISC_LF",
+      "translation" : [ 0.868326, 0.339786, 1.39 ],
+      "rotation" : [ -5.96046e-08, -0, 0, -1 ]
+    },
+    {
+      "name" : "SUSP_LF",
+      "translation" : [ 0.868326, 0.339786, 1.39 ],
+      "rotation" : [ -5.96046e-08, -0, 0, -1 ]
+    },
+    {
+      "name" : "WHEEL_LF",
+      "translation" : [ 0.868326, 0.339786, 1.39 ],
+      "rotation" : [ -5.96046e-08, -0, 0, -1 ]
+    },
+    {
+      "name" : "DISC_RF",
+      "translation" : [ -0.868326, 0.339786, 1.39 ],
+      "rotation" : [ -5.96046e-08, -0, 0, -1 ]
+    },
+    {
+      "name" : "SUSP_RF",
+      "translation" : [ -0.868326, 0.339786, 1.39 ],
+      "rotation" : [ -5.96046e-08, -0, 0, -1 ]
+    },
+    {
+      "name" : "WHEEL_RF",
+      "translation" : [ -0.868326, 0.339786, 1.39 ],
+      "rotation" : [ -5.96046e-08, -0, 0, -1 ]
+    },
+    {
+      "name" : "DISC_RR",
+      "translation" : [ -0.863146, 0.355145, -1.24 ],
+      "rotation" : [ -5.96046e-08, -1.20098e-20, 4.67366e-27, -1 ]
+    },
+    {
+      "name" : "DISC_LR",
+      "translation" : [ 0.863146, 0.355145, -1.24 ],
+      "rotation" : [ -5.96046e-08, -0, 0, -1 ]
+    },
+    {
+      "name" : "WHEEL_RR",
+      "translation" : [ -0.863146, 0.355145, -1.24 ],
+      "rotation" : [ -5.96046e-08, -0, 0, -1 ]
+    },
+    {
+      "name" : "SUSP_RR",
+      "translation" : [ -0.863146, 0.355145, -1.24 ],
+      "rotation" : [ -5.96046e-08, -0, 0, -1 ]
+    },
+    {
+      "name" : "WHEEL_LR",
+      "translation" : [ 0.863146, 0.355145, -1.24 ],
+      "rotation" : [ -5.96046e-08, -0, 0, -1 ]
+    },
+    {
+      "name" : "SUSP_LR",
+      "translation" : [ 0.863146, 0.355145, -1.24 ],
+      "rotation" : [ -5.96046e-08, -0, 0, -1 ]
+    },
+    {
+      "name" : "FRONT_BUMPER",
+      "translation" : [ 4.60172e-07, 0.448918, 1.60662 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "WIPER_L_1",
+      "children" : [ 23 ],
+      "translation" : [ 0.440797, 0.777346, 0.629482 ],
+      "rotation" : [ -0.178555, -0.589183, -0.0446107, -0.78676 ]
+    },
+    {
+      "name" : "WIPER_L_2",
+      "children" : [ 24 ],
+      "translation" : [ -0.000107958, 0.0199291, -0.0704005 ],
+      "rotation" : [ 0.0484906, -7.98626e-08, -1.51865e-08, -0.998824 ]
+    },
+    {
+      "name" : "WIPER_L_3",
+      "translation" : [ -0.0228765, -0.0080191, -0.370697 ],
+      "rotation" : [ -0.130313, 0.575161, -0.118405, -0.798867 ]
+    },
+    {
+      "name" : "WIPER_R_1",
+      "children" : [ 26 ],
+      "translation" : [ -0.317623, 0.779066, 0.660718 ],
+      "rotation" : [ -0.15317, -0.295723, -0.0919434, -0.93842 ]
+    },
+    {
+      "name" : "WIPER_R_2",
+      "children" : [ 27 ],
+      "translation" : [ -0.000108126, 0.0199287, -0.0704006 ],
+      "rotation" : [ 0.0185793, -1.39076e-07, 5.87498e-08, -0.999827 ]
+    },
+    {
+      "name" : "WIPER_R_3",
+      "translation" : [ -0.0208897, 0.00144088, -0.310472 ],
+      "rotation" : [ -0.130699, 0.549028, -0.116256, -0.817295 ]
+    },
+    {
+      "name" : "TYRE_LF",
+      "translation" : [ 0.868326, 0.339786, 1.39 ],
+      "rotation" : [ -5.96046e-08, -0, 0, -1 ]
+    },
+    {
+      "name" : "TYRE_RF",
+      "translation" : [ -0.868326, 0.339786, 1.39 ],
+      "rotation" : [ -5.96046e-08, -0, 0, -1 ]
+    },
+    {
+      "name" : "TYRE_LR",
+      "translation" : [ 0.863146, 0.355145, -1.24 ],
+      "rotation" : [ -5.96046e-08, -0, 0, -1 ]
+    },
+    {
+      "name" : "TYRE_RR",
+      "translation" : [ -0.863146, 0.355145, -1.24 ],
+      "rotation" : [ -5.96046e-08, -0, 0, -1 ]
+    }
+  ],
+  "skins" : [
+    {
+      "inverseBindMatrices" : 0,
+      "skeleton" : 1,
+      "joints" : [
+        1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31
+      ]
+    }
+  ],
+  "materials" : [
+    {
+      "name" : "EXT_Carpaint_Inst",
+      "pbrMetallicRoughness" : {
+        "baseColorFactor" : [ 0.3, 0.3, 0.3, 1.0 ],
+        "metallicFactor" : 0.1,
+        "roughnessFactor" : 0.5
+      }
+    }
+  ],
+  "meshes" : [
+    {
+      "primitives" : [
+        {
+          "attributes" : {
+            "POSITION" : 2,
+            "NORMAL" : 3,
+            "TANGENT" : 4,
+            "COLOR_0" : 5,
+            "JOINTS_0" : 6,
+            "WEIGHTS_0" : 7,
+            "TEXCOORD_0" : 8
+          },
+          "indices" : 1,
+          "material" : 0
+        }
+      ],
+      "name" : "mercedes_amg_gt3_exterior_endurance_Lod4"
+    }
+  ],
+  "buffers" : [
+    {
+      "uri" : "mercedes_amg_gt3_exterior_endurance_Lod4.bin",
+      "byteLength" : 578528
+    }
+  ],
+  "bufferViews" : [
+    {
+      "buffer" : 0,
+      "byteOffset" : 0,
+      "byteLength" : 1984
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 1984,
+      "byteLength" : 41376
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 43360,
+      "byteLength" : 100344
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 143704,
+      "byteLength" : 100344
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 244048,
+      "byteLength" : 133792
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 377840,
+      "byteLength" : 33448
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 411288,
+      "byteLength" : 66896
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 478184,
+      "byteLength" : 33448
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 511632,
+      "byteLength" : 66896
+    }
+  ],
+  "accessors" : [
+    {
+      "bufferView" : 0,
+      "componentType" : 5126,
+      "count" : 31,
+      "type" : "MAT4"
+    },
+    {
+      "bufferView" : 1,
+      "componentType" : 5123,
+      "count" : 20688,
+      "type" : "SCALAR"
+    },
+    {
+      "bufferView" : 2,
+      "min" : [ -1.02659, -0.000239639, -2.41158 ],
+      "max" : [ 1.02659, 1.26299, 2.38795 ],
+      "componentType" : 5126,
+      "count" : 8362,
+      "type" : "VEC3"
+    },
+    {
+      "bufferView" : 3,
+      "componentType" : 5126,
+      "count" : 8362,
+      "type" : "VEC3"
+    },
+    {
+      "bufferView" : 4,
+      "componentType" : 5126,
+      "count" : 8362,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 5,
+      "normalized" : true,
+      "componentType" : 5121,
+      "count" : 8362,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 6,
+      "componentType" : 5123,
+      "count" : 8362,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 7,
+      "normalized" : true,
+      "componentType" : 5121,
+      "count" : 8362,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 8,
+      "componentType" : 5126,
+      "count" : 8362,
+      "type" : "VEC2"
+    }
+  ]
+}

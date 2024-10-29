@@ -7,7 +7,7 @@
 	<script type="importmap"> { 
         "imports": { 
             "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js", 
-            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/" 
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
             } 
         } </script>
     <link rel="stylesheet" href="style.css">
@@ -61,7 +61,15 @@
          </div>
 
     </div>
-    <div id="modelContainer"></div>
+    <div id="modelContainer">
+        <div id="overlay">
+            <p id="models">Models: </p>
+            <p id="textures">Textures: </p>
+            <p id="polygons">Polygons: </p>
+            <p id="drawCalls">Draw Calls: </p>
+            <p id="memory">Memory: </p>
+          </div>
+    </div>
 	<canvas id="hiddenCanvas" ></canvas>
 </body>
 </html>

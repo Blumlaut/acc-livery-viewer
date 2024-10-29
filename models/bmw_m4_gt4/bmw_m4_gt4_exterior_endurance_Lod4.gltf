@@ -1,0 +1,333 @@
+{
+  "asset" : {
+    "generator" : "UE Viewer (umodel) build 1589",
+    "version" : "2.0"
+  },
+  "scene" : 0,
+  "scenes" : [
+    {
+      "nodes" : [ 0 ]
+    }
+  ],
+  "nodes" : [
+    {
+      "name" : "bmw_m4_gt4_exterior_endurance_Lod4",
+      "mesh" : 0,
+      "skin" : 0,
+      "children" : [ 1 ]
+    },
+    {
+      "name" : "BMW_M4_GT4",
+      "children" : [ 2 ],
+      "translation" : [ 0, 0, 0 ],
+      "rotation" : [ -0, -0, -0, 1 ]
+    },
+    {
+      "name" : "CAR_BODY",
+      "children" : [ 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 23, 24, 25, 26, 27, 28, 29 ],
+      "translation" : [ 0, 0, -0 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "WHEEL_LF",
+      "translation" : [ 0.749489, 0.331891, 1.50487 ],
+      "rotation" : [ -1.19209e-07, 2.22045e-16, 1.86265e-09, -1 ]
+    },
+    {
+      "name" : "SUSP_LF",
+      "translation" : [ 0.749489, 0.331891, 1.50487 ],
+      "rotation" : [ -1.19209e-07, 2.22045e-16, 1.86265e-09, -1 ]
+    },
+    {
+      "name" : "DISC_LF",
+      "translation" : [ 0.749489, 0.331891, 1.50487 ],
+      "rotation" : [ -1.19209e-07, 2.22045e-16, 1.86265e-09, -1 ]
+    },
+    {
+      "name" : "WHEEL_LR",
+      "translation" : [ 0.777842, 0.331907, -1.31086 ],
+      "rotation" : [ -1.78814e-07, 3.33067e-16, 1.86265e-09, -1 ]
+    },
+    {
+      "name" : "SUSP_LR",
+      "translation" : [ 0.777842, 0.331907, -1.31086 ],
+      "rotation" : [ -1.78814e-07, 3.33067e-16, 1.86265e-09, -1 ]
+    },
+    {
+      "name" : "DISC_LR",
+      "translation" : [ 0.777842, 0.331907, -1.31086 ],
+      "rotation" : [ -1.78814e-07, 3.33067e-16, 1.86265e-09, -1 ]
+    },
+    {
+      "name" : "DISC_RF",
+      "translation" : [ -0.749489, 0.331898, 1.50477 ],
+      "rotation" : [ -1.19209e-07, -2.22045e-16, -1.86265e-09, -1 ]
+    },
+    {
+      "name" : "SUSP_RF",
+      "translation" : [ -0.749489, 0.331898, 1.50477 ],
+      "rotation" : [ -1.19209e-07, -2.22045e-16, -1.86265e-09, -1 ]
+    },
+    {
+      "name" : "WHEEL_RF",
+      "translation" : [ -0.749489, 0.331898, 1.50477 ],
+      "rotation" : [ -1.19209e-07, -2.22045e-16, -1.86265e-09, -1 ]
+    },
+    {
+      "name" : "DISC_RR",
+      "translation" : [ -0.777842, 0.331907, -1.31086 ],
+      "rotation" : [ -1.78814e-07, -0, 0, -1 ]
+    },
+    {
+      "name" : "WHEEL_RR",
+      "translation" : [ -0.777842, 0.331907, -1.31086 ],
+      "rotation" : [ -1.78814e-07, -0, 0, -1 ]
+    },
+    {
+      "name" : "SUSP_RR",
+      "translation" : [ -0.777842, 0.331907, -1.31086 ],
+      "rotation" : [ -1.78814e-07, -0, 0, -1 ]
+    },
+    {
+      "name" : "LUMIRANK",
+      "translation" : [ -0.446889, 1.16451, 0.481315 ],
+      "rotation" : [ -0.231888, -0.00389389, -0.0810188, -0.969355 ]
+    },
+    {
+      "name" : "TYRE_LF",
+      "translation" : [ 0.749489, 0.331891, 1.50487 ],
+      "rotation" : [ -1.19209e-07, 2.22045e-16, 1.86265e-09, -1 ]
+    },
+    {
+      "name" : "TYRE_RF",
+      "translation" : [ -0.749489, 0.331898, 1.50477 ],
+      "rotation" : [ -1.19209e-07, -2.22045e-16, -1.86265e-09, -1 ]
+    },
+    {
+      "name" : "TYRE_RR",
+      "translation" : [ -0.777842, 0.331907, -1.31086 ],
+      "rotation" : [ -1.78814e-07, -0, 0, -1 ]
+    },
+    {
+      "name" : "TYRE_LR",
+      "translation" : [ 0.777842, 0.331907, -1.31086 ],
+      "rotation" : [ -1.78814e-07, 3.33067e-16, 1.86265e-09, -1 ]
+    },
+    {
+      "name" : "WIPER_1",
+      "children" : [ 21 ],
+      "translation" : [ 0.594548, 0.840969, 1.01258 ],
+      "rotation" : [ -0.846274, 0.108747, 0.0250387, -0.52093 ]
+    },
+    {
+      "name" : "WIPER_2",
+      "children" : [ 22 ],
+      "translation" : [ -0.151696, -0.0515379, -0.0207249 ],
+      "rotation" : [ -0.0565311, 0.00176076, 0.0324723, -0.997871 ]
+    },
+    {
+      "name" : "WIPER_3",
+      "translation" : [ -0.376368, 0.0272654, 0.0316344 ],
+      "rotation" : [ 0.0781076, -0.0637892, 0.0757524, -0.992014 ]
+    },
+    {
+      "name" : "DOOR_L",
+      "translation" : [ 0.851999, 0.787223, 0.851136 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "DOOR_R",
+      "translation" : [ -0.850244, 0.787223, 0.851136 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "REAR_BUMPER",
+      "translation" : [ -0.0057409, 0.634205, -1.54112 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "FRONT_BUMPER",
+      "translation" : [ -0.0057409, 0.137196, 2.15012 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "HOOD",
+      "translation" : [ 0, 0.947324, 0.861911 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "WING",
+      "translation" : [ -0.0057409, 1.14706, -2.07939 ],
+      "rotation" : [ -0, -0, 0, -1 ]
+    },
+    {
+      "name" : "WIPER_4",
+      "children" : [ 30 ],
+      "translation" : [ 0.135567, 0.856183, 1.08016 ],
+      "rotation" : [ -0.797451, 0.348193, -0.186737, -0.45603 ]
+    },
+    {
+      "name" : "WIPER_5",
+      "children" : [ 31 ],
+      "translation" : [ -0.151268, 0.0516503, -0.0306192 ],
+      "rotation" : [ -0.0432889, 0.0154901, 0.336977, -0.94039 ]
+    },
+    {
+      "name" : "WIPER_6",
+      "translation" : [ -0.479601, -0.062645, 0.0677709 ],
+      "rotation" : [ 0.0425936, -0.0855624, -0.128087, -0.987147 ]
+    }
+  ],
+  "skins" : [
+    {
+      "inverseBindMatrices" : 0,
+      "skeleton" : 1,
+      "joints" : [
+        1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31
+      ]
+    }
+  ],
+  "materials" : [
+    {
+      "name" : "EXT_Carpaint_Inst",
+      "pbrMetallicRoughness" : {
+        "baseColorFactor" : [ 0.3, 0.3, 0.3, 1.0 ],
+        "metallicFactor" : 0.1,
+        "roughnessFactor" : 0.5
+      }
+    }
+  ],
+  "meshes" : [
+    {
+      "primitives" : [
+        {
+          "attributes" : {
+            "POSITION" : 2,
+            "NORMAL" : 3,
+            "TANGENT" : 4,
+            "COLOR_0" : 5,
+            "JOINTS_0" : 6,
+            "WEIGHTS_0" : 7,
+            "TEXCOORD_0" : 8
+          },
+          "indices" : 1,
+          "material" : 0
+        }
+      ],
+      "name" : "bmw_m4_gt4_exterior_endurance_Lod4"
+    }
+  ],
+  "buffers" : [
+    {
+      "uri" : "bmw_m4_gt4_exterior_endurance_Lod4.bin",
+      "byteLength" : 291608
+    }
+  ],
+  "bufferViews" : [
+    {
+      "buffer" : 0,
+      "byteOffset" : 0,
+      "byteLength" : 1984
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 1984,
+      "byteLength" : 21464
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 23448,
+      "byteLength" : 50280
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 73728,
+      "byteLength" : 50280
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 124008,
+      "byteLength" : 67040
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 191048,
+      "byteLength" : 16760
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 207808,
+      "byteLength" : 33520
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 241328,
+      "byteLength" : 16760
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 258088,
+      "byteLength" : 33520
+    }
+  ],
+  "accessors" : [
+    {
+      "bufferView" : 0,
+      "componentType" : 5126,
+      "count" : 31,
+      "type" : "MAT4"
+    },
+    {
+      "bufferView" : 1,
+      "componentType" : 5123,
+      "count" : 10731,
+      "type" : "SCALAR"
+    },
+    {
+      "bufferView" : 2,
+      "min" : [ -1.01345, 0.00301315, -2.35458 ],
+      "max" : [ 1.01345, 1.36296, 2.37299 ],
+      "componentType" : 5126,
+      "count" : 4190,
+      "type" : "VEC3"
+    },
+    {
+      "bufferView" : 3,
+      "componentType" : 5126,
+      "count" : 4190,
+      "type" : "VEC3"
+    },
+    {
+      "bufferView" : 4,
+      "componentType" : 5126,
+      "count" : 4190,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 5,
+      "normalized" : true,
+      "componentType" : 5121,
+      "count" : 4190,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 6,
+      "componentType" : 5123,
+      "count" : 4190,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 7,
+      "normalized" : true,
+      "componentType" : 5121,
+      "count" : 4190,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 8,
+      "componentType" : 5126,
+      "count" : 4190,
+      "type" : "VEC2"
+    }
+  ]
+}
