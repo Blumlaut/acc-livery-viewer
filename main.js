@@ -486,12 +486,13 @@ async function convertImageToRGBChannels(imagePath) {
 
         for (let i = 0; i < data.length; i += 4) {
             const value = data[i + channelIndex]; // Red, Green, or Blue
+            const alpha = data[i + 3]; // Original alpha
 
             // Set the channel color to white (255,255,255) if it has intensity, otherwise keep transparent
             channelPixels[i] = value > 0 ? 255 : 0;     // R
             channelPixels[i + 1] = value > 0 ? 255 : 0; // G
             channelPixels[i + 2] = value > 0 ? 255 : 0; // B
-            channelPixels[i + 3] = value > 0 ? data[i + 3] : 0; // Preserve original alpha for active pixels, else 0
+            channelPixels[i + 3] = Math.min(alpha, value);          // Scale alpha based on intensity
         }
 
         channelCtx.putImageData(channelData, 0, 0);
