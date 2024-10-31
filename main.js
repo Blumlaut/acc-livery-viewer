@@ -541,7 +541,6 @@ const modelsElement = document.getElementById('models');
 const texturesElement = document.getElementById('textures');
 const polygonsElement = document.getElementById('polygons');
 const drawCallsElement = document.getElementById('drawCalls');
-const memoryElement = document.getElementById('memory');
 const loadedCarElement = document.getElementById('loadedCar');
 const skinIdElement = document.getElementById('skinId');
 const skinColoursElement = document.getElementById('skinColours');
@@ -553,14 +552,12 @@ function animate() {
     texturesElement.innerText = `Textures: ${info.memory.textures}`;
     polygonsElement.innerText = `Polygons: ${info.render.triangles}`;
     drawCallsElement.innerText = `Draw Calls: ${info.render.calls}`;
-    memoryElement.innerText = `Memory: ${(info.memory.programs || []).length} programs`;
-
-    loadedCarElement.innerText = Object.keys(modelFiles)[0]
+    loadedCarElement.innerText = `Car: ${Object.keys(modelFiles)[0]}`
     if (currentLivery) {
-        skinIdElement.innerText = currentLivery
+        skinIdElement.innerText = `Skin ID: ${currentLivery}`
     }
     
-    skinColoursElement.innerText = `${findColorId(bodyColours[0])}, ${findColorId(bodyColours[1])}, ${findColorId(bodyColours[2])}, ${findColorId(bodyColours[3])}`
+    skinColoursElement.innerText = `Colours: ${findColorId(bodyColours[0])}, ${findColorId(bodyColours[1])}, ${findColorId(bodyColours[2])}, ${findColorId(bodyColours[3])}`
 
 
 
