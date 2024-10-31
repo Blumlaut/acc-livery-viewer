@@ -452,6 +452,32 @@ async function mergeAndSetDecals() {
 }
 
 
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+window.addEventListener('dragover', (event) => event.preventDefault());
+window.addEventListener('drop', (event) => event.preventDefault());
+
+dropZone.addEventListener('dragover', (event) => {
+    event.preventDefault();
+    dropZone.classList.add('dragging');
+  });
+
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('dragging');
+  });
+
+  dropZone.addEventListener('drop', (event) => {
+    event.preventDefault();
+    dropZone.classList.remove('dragging');
+    if (event.dataTransfer && event.dataTransfer.files.length > 0) {
+        fileInput.files = event.dataTransfer.files;
+
+        handleFileUpload({target: {
+            files: [...event.dataTransfer.files]
+        }});
+      }
+  });
 
 
 

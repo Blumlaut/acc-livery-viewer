@@ -16,6 +16,10 @@
     <script type="module" src="main.js" defer></script>
 </head>
 <body>
+
+    <input type="file" id="fileInput" style="display: none;" multiple>
+
+
     <div>
         <!-- skybox toggle-->
         <label for="skybox-toggle">Skybox:</label>
@@ -102,14 +106,16 @@
           </div>
           
     </div>
-    <div id="modelContainer">
-        <div id="overlay">
-            <p id="models">Models: </p>
-            <p id="textures">Textures: </p>
-            <p id="polygons">Polygons: </p>
-            <p id="drawCalls">Draw Calls: </p>
-            <p id="memory">Memory: </p>
-          </div>
+    <div id="dropZone">
+      <div id="modelContainer">
+          <div id="overlay">
+              <p id="models">Models: </p>
+              <p id="textures">Textures: </p>
+              <p id="polygons">Polygons: </p>
+              <p id="drawCalls">Draw Calls: </p>
+              <p id="memory">Memory: </p>
+            </div>
+      </div>
     </div>
 	<canvas id="hiddenCanvas" ></canvas>
 </body>
