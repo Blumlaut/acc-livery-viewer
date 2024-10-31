@@ -332,6 +332,10 @@ async function setBaseLivery(modelPath, livery) {
         let image = images[i];
         await drawImageOverlay(image, "baseLivery"+(i+1), paintMaterials.customDecal || paintMaterials.glossy)
     }
+
+    if (liveryPath.includes("fana")) {
+        await drawImageOverlay(`models/${modelPath}/skins/custom/${liveryPath}/EXT_Skin_Decals.png`, "fanatec_overlay", paintMaterials.glossy)
+    }
     applyBodyColours()
 }
 
