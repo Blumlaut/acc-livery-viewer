@@ -1124,7 +1124,7 @@ const baseLiveries = {
         },
         102: {
             path: "custom_2",
-            name: "Skin 02",
+            name: "Skin 02 (CUT)",
         }  
     },
     "mclaren_720s_gt3_evo": {
