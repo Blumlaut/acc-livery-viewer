@@ -538,6 +538,10 @@ const baseLiveries = {
             path: "custom_3",
             name: "Skin 03",
         },
+        110: {
+            path: "custom_fana",
+            name: "Fana",
+        },
     },
     "bmw_m6_gt3": {
         101: {
