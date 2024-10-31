@@ -24,6 +24,88 @@ canvas {
     font-size: 14px;
     z-index: 100;
   }
-  #overlay p {
-    margin: 5px 0;
-  }
+#overlay p {
+  margin: 5px 0;
+}
+
+#liveryLayer {
+  display: grid;
+  grid-template-rows: auto; /* Ensure rows do not stack vertically */
+  grid-template-columns: repeat(4, minmax(auto, 1fr)); /* Adjust the number of columns as needed */
+  gap: 10px; /* Optional: to add space between tiles */
+}
+
+.tile {
+  border: 1px solid #ccc; /* Optional: to add a border around each tile */
+  padding: 10px; /* Optional: to add padding inside each tile */
+}
+
+button {
+  padding: 10px;
+  font-size: 16px;
+  align-items: center;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+select {
+  background-color: #e9e9ed;
+  border: 1px solid #ccc;
+  padding: 10px;
+  padding-right: 35px;
+  border-radius: 8px;
+  font-size: 16px;
+  appearance: none; /* Remove default arrow in some browsers */
+  -webkit-appearance: none; /* For Safari and Chrome */
+  -moz-appearance: none; /* For Firefox */
+}
+
+/* Focus state for accessibility */
+select:focus {
+  outline: none;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.6);
+  border-color: #007BFF;
+}
+
+/* Custom dropdown arrow */
+.select-container {
+  position: relative;
+  display: inline-block;
+}
+
+.select-container::after {
+  content: '\25BC'; /* Down arrow character */
+  color: #999;
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none; /* Ensure click events pass through to the select element */
+}
+
+/* Custom dropdown */
+.select-options {
+  display: none;
+  position: absolute;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-top: none;
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.select-options.open {
+  display: block;
+}
+
+/* Custom option styling */
+.select-options option {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.select-options option:hover {
+  background-color: #f0f0f0;
+}

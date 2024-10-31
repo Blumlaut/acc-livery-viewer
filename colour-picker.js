@@ -3,58 +3,60 @@ class ColorPicker extends HTMLElement {
         super();
         this.attachShadow({ mode: "open" });
 
-        this.value = this.getAttribute("value") || "#ffffff";
-        this.pickerId = this.getAttribute("id") || "";
+        const colorId = this.getAttribute("color-id") || "1"; // Default to color ID "1"
+        const hexValue = this.rgbToHex(colours[colorId]); // Convert color ID to hex
+        this.value = hexValue || "#ffffff";
+        this.pickerId = colorId;
         this.selectedColor = this.value; // Initialize selectedColor with the initial value
 
         this.shadowRoot.innerHTML = `
             <style>
-                .color-picker-container {
-                    display: inline-block;
-                    position: relative;
-                }
-                .color-picker-button {
-                    padding: 10px;
-                    font-size: 16px;
-                    display: flex;
-                    align-items: center;
-                    cursor: pointer;
-                    border: 1px solid #ccc;
-                    border-radius: 5px;
-                }
-                .color-picker-button span.color-preview {
-                    display: inline-block;
-                    width: 20px;
-                    height: 20px;
-                    margin-left: 8px;
-                    background-color: ${this.value};
-                    border-radius: 4px;
-                }
-                .color-picker-popup {
-                    position: absolute;
-                    top: 40px;
-                    left: 0;
-                    display: grid;
-                    grid-template-columns: repeat(25, 40px);
-                    gap: 8px;
-                    background-color: #fff;
-                    border: 1px solid #ccc;
-                    padding: 10px;
-                    border-radius: 8px;
-                    z-index: 100;
-                    display: none;
-                }
-                .color-picker-popup div {
-                    width: 40px;
-                    height: 40px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 14px;
-                    color: #fff;
-                    cursor: pointer;
-                    border-radius: 4px;
-                }
+            .color-picker-container {
+                display: inline-block;
+                position: relative;
+            }
+            .color-picker-button {
+                padding: 10px;
+                font-size: 16px;
+                display: flex;
+                align-items: center;
+                cursor: pointer;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+            .color-picker-button span.color-preview {
+                display: inline-block;
+                width: 20px;
+                height: 20px;
+                margin-left: 8px;
+                background-color: ${this.value};
+                border-radius: 4px;
+            }
+            .color-picker-popup {
+                position: absolute;
+                top: 40px;
+                left: 0;
+                display: grid;
+                grid-template-columns: repeat(25, 40px);
+                gap: 8px;
+                background-color: #fff;
+                border: 1px solid #ccc;
+                padding: 10px;
+                border-radius: 8px;
+                z-index: 100;
+                display: none;
+            }
+            .color-picker-popup div {
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+                color: #fff;
+                cursor: pointer;
+                border-radius: 4px;
+            }
             </style>
             <div class="color-picker-container">
                 <button class="color-picker-button">
