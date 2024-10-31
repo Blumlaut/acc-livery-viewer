@@ -236,7 +236,6 @@ function loadModel(modelPath) {
     loader.load(fullFilePath, (gltf) => {
         model = gltf.scene;
         scene.add(model);
-        curModelPath = modelPath
         // iterate through all materials and apply their texture from textures/*.png
         model.traverse((node) => {
             if (node.isMesh && node.material) {
@@ -303,14 +302,18 @@ function loadModel(modelPath) {
             }
         });
 
-        const liverySelector = document.getElementById('liverySelector');
-        for (let a in liverySelector.options) { liverySelector.options.remove(0); }
-        for (let i = 1; i < baseLiveries[modelPath] + 1; i++) {
-            const option = document.createElement('option');
-            option.value = i;
-            option.textContent = "Skin " + i;
-            liverySelector.appendChild(option);
+
+        if (curModelPath != modelPath) {
+            const liverySelector = document.getElementById('liverySelector');
+            for (let a in liverySelector.options) { liverySelector.options.remove(0); }
+            for (let i = 1; i < baseLiveries[modelPath] + 1; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = "Skin " + i;
+                liverySelector.appendChild(option);
+            }
         }
+        curModelPath = modelPath
         mergeAndSetDecals()
     });
 }
