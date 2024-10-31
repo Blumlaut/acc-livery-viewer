@@ -560,7 +560,7 @@ function animate() {
         skinIdElement.innerText = currentLivery
     }
     
-    skinColoursElement.innerText = `${findColorId(bodyColours[0])}, ${findColorId(bodyColours[1])}, ${findColorId(bodyColours[2])}, ${findColorId(bodyColours[3])}, `
+    skinColoursElement.innerText = `${findColorId(bodyColours[0])}, ${findColorId(bodyColours[1])}, ${findColorId(bodyColours[2])}, ${findColorId(bodyColours[3])}`
 
 
 
