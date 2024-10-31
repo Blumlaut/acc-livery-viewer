@@ -15,7 +15,7 @@ canvas {
 
 #overlay {
     position: absolute;
-    top: 0;
+    top: 50;
     left: 0;
     padding: 10px;
     background-color: rgba(0, 0, 0, 0.7);
@@ -26,6 +26,17 @@ canvas {
   }
 #overlay p {
   margin: 5px 0;
+}
+
+.title {
+  font-weight: bold;
+}
+
+#settingsLayer {
+  display: grid;
+  grid-template-rows: auto; /* Ensure rows do not stack vertically */
+  grid-template-columns: repeat(4, minmax(auto, 1fr)); /* Adjust the number of columns as needed */
+  gap: 10px; /* Optional: to add space between tiles */
 }
 
 #liveryLayer {
@@ -72,6 +83,7 @@ select:focus {
 .select-container {
   position: relative;
   display: inline-block;
+  margin-top: 10px;
 }
 
 .select-container::after {

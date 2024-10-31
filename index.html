@@ -21,30 +21,56 @@
 
 
     <div>
-        <!-- skybox toggle-->
-        <label for="skybox-toggle">Skybox:</label>
-        <input type="checkbox" id="skybox-toggle">
-        <div class="select-container">
-            <select class="dropdown-button" id="cubemapSelector"></select>
+      <div id="settingsLayer">
+          <div class="tile">
+            <div class="title">Render Settings</div>
+            <label for="skybox-toggle">Enable Skybox</label>
+            <input type="checkbox" id="skybox-toggle">
+            <br>
+
+
+            <div class="select-container">
+                <select class="dropdown-button" id="cubemapSelector"></select>
+            </div>
         </div>
-        <div class="select-container">
-            <select class="dropdown-button" id="modelSelector"></select>
+        <div class="tile">
+          <div class="title">Car Settings</div>
+            <div class="select-container">
+                <label for="modelSelector">Car:</label>
+                <select class="dropdown-button" id="modelSelector"></select>
+            </div>
+            <div class="select-container">
+              <label for="liverySelector">Skin:</label>
+                <select class="dropdown-button" id="liverySelector"></select>
+            </div>
+            <div class="select-container">
+              <label for="lodSelector">Level of Detail:</label>
+              <select class="dropdown-button" id="lodSelector">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3" selected="selected">3</option>
+                  <option value="4">4</option>
+              </select>
+          </div>
         </div>
-        <div class="select-container">
-            <select class="dropdown-button" id="liverySelector"></select>
+        <div class="tile">
+          <div class="title">Livery Settings</div>
+          <label for="multiFileUpload">Upload Livery Files:</label>
+          <input type="file" id="multiFileUpload" accept=".png,.json" multiple />
+          <br><br>
+          <button id="unloadCustomLivery">Unload Custom Livery Files</button>
         </div>
-        <label for="lodSelector">LOD:</label>
-        <div class="select-container">
-            <select class="dropdown-button" id="lodSelector">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3" selected="selected">3</option>
-                <option value="4">4</option>
-            </select>
+        <div class="tile">
+          <div class="title">Info</div>
+          <label>App made by blumlaut</label>
+          <a href="https://github.com/blumlaut/acc-livery-viewer">https://github.com/blumlaut/acc-livery-viewer</a>
+          <br>
+          <label>Cubemaps made by Emil Persson, aka Humus</label>
+          <a href="http://www.humus.name">http://www.humus.name</a>
+          <br><br>
+          <label>App is still in development, please report any bugs or issues you find!</label>
         </div>
-		<label for="multiFileUpload">Upload Livery PNG and JSON Files:</label>
-		<input type="file" id="multiFileUpload" accept=".png,.json" multiple />
-        <button id="unloadCustomLivery">Unload Custom Livery</button>
+      </div>
 
         <div id="liveryLayer">
             <div class="tile">

@@ -62,8 +62,8 @@ function init() {
     scene.add(hemiLight)
 
     // Set camera position
-    camera.position.z = 3.5;
-    camera.position.x= 1;
+    camera.position.z = 4;
+    camera.position.x= 0;
     camera.position.y = 1;
 
     // Add OrbitControls for camera control
