@@ -261,8 +261,7 @@ function loadModel(modelPath) {
                             texture.flipY = false;
                             texture.colorSpace = THREE.SRGBColorSpace;
                             bodyTextures.push(texture)
-                            const newMaterial = new THREE.MeshPhysicalMaterial({ 
-                                ...node.material,
+                            const newMaterial = new THREE.MeshBasicMaterial({ 
                                 color: 0xffffff,
                                 map: texture
 
