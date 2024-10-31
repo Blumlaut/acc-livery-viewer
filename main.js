@@ -12,8 +12,8 @@ const memoryElement = document.getElementById('memory');
 let scene, camera, renderer, model, curModelPath, selectedModel, envMap
 
 let extraMeshes = []
-let bodyColours = [ "#ff0000", "#00ff00", "#0000ff" ]
-let bodyMaterials = ["glossy", "glossy", "glossy"]
+let bodyColours = [ "#ff0000", "#00ff00", "#0000ff", "#ffffff" ]
+let bodyMaterials = ["glossy", "glossy", "glossy", "glossy"]
 let bodyTextures = []
 let LodLevel = 3
 
@@ -131,6 +131,13 @@ function init() {
         applyBodyColours()
     });
 
+    const rimColor = document.getElementById('rimColor');
+    rimColor.addEventListener('change', (event) => {
+        bodyColours[3] = event.target.value;
+        changeMaterialColor(`EXT_RIM`, bodyColours[3]);
+        applyMaterialPreset(`EXT_RIM`, paintMaterials[bodyMaterials[3]])
+    });
+
     const layer1Material = document.getElementById('layer1Material');
     layer1Material.addEventListener('change', (event) => {
         bodyMaterials[0] = event.target.value;
@@ -147,6 +154,13 @@ function init() {
     layer3Material.addEventListener('change', (event) => {
         bodyMaterials[2] = event.target.value;
         applyMaterialPreset("baseLivery3", paintMaterials[event.target.value])
+    });
+
+
+    const rimMaterial = document.getElementById('rimMaterial');
+    rimMaterial.addEventListener('change', (event) => {
+        bodyMaterials[3] = event.target.value;
+        applyMaterialPreset(`EXT_RIM`, paintMaterials[bodyMaterials[3]])
     });
 
 
@@ -235,6 +249,7 @@ function loadModel(modelPath) {
                             node.visible = false;
                         } else {
                             const newMaterial = new THREE.MeshPhysicalMaterial({ 
+                                name: materialName,
                                 color: 0xffffff,
                              });
                              node.material = newMaterial;
@@ -262,6 +277,7 @@ function loadModel(modelPath) {
                             texture.colorSpace = THREE.SRGBColorSpace;
                             bodyTextures.push(texture)
                             const newMaterial = new THREE.MeshBasicMaterial({ 
+                                name: materialName,
                                 color: 0xffffff,
                                 map: texture
 
@@ -493,19 +509,22 @@ function applyMaterialPreset(material, preset) {
     if (typeof(material) == "string") {
         material = getMaterialFromName(material);
     }
-    material.clearcoat = preset.clearCoat
-    material.clearcoatRoughness = preset.clearCoatRoughness
-    material.metalness = preset.metallic
-    material.roughness = preset.baseRoughness
-    material.needsUpdate = true;
-    return material
+    if (material) {
+        material.clearcoat = preset.clearCoat
+        material.clearcoatRoughness = preset.clearCoatRoughness
+        material.metalness = preset.metallic
+        material.roughness = preset.baseRoughness
+        material.needsUpdate = true;
+        return material
+    }
+    return false
 }
 
 function getMaterialFromName(materialName) {
     let returnMat
     scene.traverse((object) => {
         // Check if the object has a material and if it's an instance of Mesh
-        if (object.isMesh && object.material) {
+        if (object.material) {
             // Check if the material has a name that matches the specified name
             if (object.material.name == materialName) {
                 returnMat = object.material
@@ -593,7 +612,6 @@ function applyBodyColours() {
     for (let i = 0; i < bodyColours.length; i++) {
         changeMaterialColor(`baseLivery${i + 1}`, bodyColours[i]);
         applyMaterialPreset(`baseLivery${i + 1}`, paintMaterials[bodyMaterials[i]])
-
     }
 }
 
