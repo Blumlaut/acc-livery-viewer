@@ -14,6 +14,7 @@ let scene, camera, renderer, model, curModelPath, selectedModel, envMap
 let extraMeshes = []
 let bodyColours = [ "#ff0000", "#00ff00", "#0000ff" ]
 let bodyMaterials = ["glossy", "glossy", "glossy"]
+let bodyTextures = []
 let LodLevel = 3
 
 let currentSkybox = cubemaps[0]
@@ -222,6 +223,58 @@ function loadModel(modelPath) {
         model = gltf.scene;
         scene.add(model);
         curModelPath = modelPath
+        // iterate through all materials and apply their texture from textures/*.png
+        model.traverse((node) => {
+            if (node.isMesh && node.material) {
+                if (node.material.name && node.material.name.startsWith('EXT_')) {
+                    
+                    if (node.material.name.startsWith("EXT_RIM")) {
+                        let materialName = node.material.name
+                        if (materialName.startsWith("EXT_RIM_BLUR")) {
+                            // hide object
+                            node.visible = false;
+                        } else {
+                            const newMaterial = new THREE.MeshPhysicalMaterial({ 
+                                color: 0xffffff,
+                             });
+                             node.material = newMaterial;
+                             applyMaterialPreset(node.material, paintMaterials["glossy"])
+
+                        }
+                    } else if (node.material.name.startsWith('EXT_Emissive') || node.material.name.startsWith('EXT_Glass') || node.material.name.startsWith('EXT_Window')) {
+                        const newMaterial = new THREE.MeshPhysicalMaterial({ 
+                            transmission: 1,
+                            roughness: 0.0,
+                            thickness: 0,
+                            dispersion: 0
+                         });
+                         node.material = newMaterial;
+
+                    } else {
+                        let materialName = node.material.name
+                        if (materialName == "EXT_RIM") {
+                            materialName = "EXT_Rim"
+                        }
+                        const texturePath = `models/${modelPath}/textures/${materialName}_Colour.png`;
+                        const textureLoader = new THREE.TextureLoader();
+                        textureLoader.load(texturePath, (texture) => {
+                            texture.flipY = false;
+                            texture.colorSpace = THREE.SRGBColorSpace;
+                            bodyTextures.push(texture)
+                            const newMaterial = new THREE.MeshPhysicalMaterial({ map: texture });
+                            
+                            // apply the new material to the mesh
+                            node.material = newMaterial;
+                        },
+                        undefined, // onProgress callback, can be omitted if not needed
+                        (error) => {
+                            console.error(`Failed to load texture: ${texturePath}`, error);
+                        });
+                    }
+                }
+            }
+        });
+
         const liverySelector = document.getElementById('liverySelector');
         for (let a in liverySelector.options) { liverySelector.options.remove(0); }
         for (let i = 1; i < baseLiveries[modelPath] + 1; i++) {
@@ -254,6 +307,9 @@ function cleanupPreviousMeshes() {
         mesh.material.dispose();
         scene.remove(mesh)
     });
+    bodyTextures.forEach(texture => {
+        texture.dispose();
+    })
     scene.traverse((child) => {
         if (child.isMesh && (child.material.name === "SponsorMaterial" || child.material.name === "DecalMaterial")) {
             child.material.map.dispose();

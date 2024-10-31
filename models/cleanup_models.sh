@@ -18,7 +18,14 @@ find . -type f \( -name "*.gltf" -o -name "*.bin" \) ! -name "*Lod*.gltf" ! -nam
 
 rm -rfv */*Skeleton*/
 rm -rfv */display/
-rm -rfv */textures/
+rm -rfv */textures/*Map*
+rm -rfv */textures/*NM*
+rm -rfv */textures/*Mask*
+rm -rfv */textures/*Scuffle*
+rm -rfv */textures/*Dirt*
+rm -rfv */textures/*Emissive*
+rm -rfv */textures/INT*
+rm -rfv */textures/dirt_damage
 rm -rfv */skins/20*/
 rm -rfv */skins/0_banner/
 rm -rfv */skins/preseason/
