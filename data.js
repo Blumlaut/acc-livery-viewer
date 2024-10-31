@@ -124,7 +124,7 @@ const baseLiveries = {
             "path": "custom_3",
             "name": "Skin 03"
         },
-        "109": {
+        "110": {
             "path": "custom_fana",
             "name": "Fana",
             "hasDecals": true,
@@ -227,7 +227,7 @@ const baseLiveries = {
             "path": "custom_3",
             "name": "Skin 03"
         },
-        "109": {
+        "110": {
             "path": "custom_fana",
             "name": "Fana",
             "hasDecals": true,
@@ -250,7 +250,7 @@ const baseLiveries = {
             "path": "custom_4",
             "name": "Skin 04"
         },
-        "109": {
+        "110": {
             "path": "custom_fana",
             "name": "Fana",
             "hasDecals": true,
@@ -541,7 +541,7 @@ const baseLiveries = {
             "path": "custom_3",
             "name": "Skin 03"
         },
-        "109": {
+        "110": {
             "path": "custom_fana",
             "name": "Fana",
             "hasDecals": true,
@@ -766,7 +766,7 @@ const baseLiveries = {
             "path": "custom_3",
             "name": "Skin 03"
         },
-        "109": {
+        "110": {
             "path": "custom_fana",
             "name": "Fana",
             "hasDecals": true,
@@ -857,7 +857,7 @@ const baseLiveries = {
             "path": "custom_3",
             "name": "Skin 03"
         },
-        "109": {
+        "110": {
             "path": "custom_fana",
             "name": "Fana",
             "hasDecals": true,
@@ -1088,7 +1088,7 @@ const baseLiveries = {
             "path": "custom_3",
             "name": "Skin 03"
         },
-        "109": {
+        "110": {
             "path": "custom_fana",
             "name": "Fana",
             "hasDecals": true,
@@ -1249,7 +1249,7 @@ const baseLiveries = {
             "path": "custom_4",
             "name": "Skin 04"
         },
-        "109": {
+        "110": {
             "path": "custom_fana",
             "name": "Fana",
             "hasDecals": true,
@@ -1308,7 +1308,7 @@ const baseLiveries = {
             "path": "custom_3",
             "name": "Skin 03"
         },
-        "109": {
+        "110": {
             "path": "custom_fana",
             "name": "Fana",
             "hasDecals": true,
