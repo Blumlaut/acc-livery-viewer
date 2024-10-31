@@ -54,6 +54,7 @@ const modelFiles = {
     "audi_r8_gt4": "audi_r8_gt4_exterior",
     "audi_r8_lms": "audi_r8_lms_exterior_sprint",
     "audi_r8_lms_evo": "audi_r8_lms_evo_exterior_sprint",
+    "audi_r8_lms_evo_ii": "audi_r8_lms_evo_ii_exterior_sprint",
     "audi_r8_lms_gt2": "audi_r8_lms_gt2_exterior",
     "bentley_continental_gt3_2016": "bentley_continental_gt3_2016_exterior",
     "bentley_continental_gt3_2018": "bentley_continental_gt3_2018_exterior",
@@ -110,60 +111,1414 @@ const cubemaps = [
 ]
 
 const baseLiveries = {
-    "alpine_a110_gt4": 3,
-    "amr_v12_vantage_gt3": 10,
-    "amr_v8_vantage_gt3": 10,
-    "amr_v8_vantage_gt4": 3,
-    "audi_r8_gt4": 4,
-    "audi_r8_lms": 5,
-    "audi_r8_lms_evo": 11,
-    "audi_r8_lms_gt2": 5,
-    "bentley_continental_gt3_2016": 5,
-    "bentley_continental_gt3_2018": 10,
-    "bmw_m2_cs_racing": 7,
-    "bmw_m4_gt3": 10,
-    "bmw_m4_gt4": 3,
-    "bmw_m6_gt3": 10,
-    "chevrolet_camaro_gt4r": 3,
-    "common": 0,
-    "ferrari_296_gt3": 10,
-    "ferrari_488_challenge_evo": 5,
-    "ferrari_488_gt3": 5,
-    "ferrari_488_gt3_evo": 10,
-    "ford_mustang_gt3": 5,
-    "ginetta_g55_gt4": 3,
-    "honda_nsx_gt3": 3,
-    "honda_nsx_gt3_evo": 5,
-    "jaguar_g3": 3,
-    "ktm_xbow_gt2": 5,
-    "ktm_xbow_gt4": 3,
-    "lamborghini_gallardo_rex": 3,
-    "lamborghini_huracan_gt3": 3,
-    "lamborghini_huracan_gt3_evo": 5,
-    "lamborghini_huracan_gt3_evo2": 11,
-    "lamborghini_huracan_st": 5,
-    "lamborghini_huracan_st_evo2": 10,
-    "lexus_rc_f_gt3": 3,
-    "maserati_mc20_gt2": 5,
-    "maserati_mc_gt4": 3,
-    "mclaren_570s_gt4": 3,
-    "mclaren_650s_gt3": 3,
-    "mclaren_720s_gt3": 2,
-    "mclaren_720s_gt3_evo": 3,
-    "mercedes_amg_gt2": 5,
-    "mercedes_amg_gt3": 5,
-    "mercedes_amg_gt3_evo": 10,
-    "mercedes_amg_gt4": 4,
-    "nissan_gt_r_gt3_2017": 4,
-    "nissan_gt_r_gt3_2018": 5,
-    "porsche_718_cayman_gt4_mr": 3,
-    "porsche_935": 5,
-    "porsche_991_gt3_r": 4,
-    "porsche_991ii_gt2_rs_cs_evo": 5,
-    "porsche_991ii_gt3_cup": 10,
-    "porsche_991ii_gt3_r": 6,
-    "porsche_992_gt3_cup": 10,
-    "porsche_992_gt3_r": 10
+    "alpine_a110_gt4": {
+        101 : {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102 : {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103 : {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        110 : {
+            path: "custom_fana",
+            name: "Fana",
+        }
+    },
+    "amr_v12_vantage_gt3": {
+        101 : {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102 : {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103 : {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104 : {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105 : {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+        106 : {
+            path: "custom_6",
+            name: "Skin 06",
+        },
+        107 : {
+            path: "custom_7",
+            name: "Skin 07",
+        },
+        108 : {
+            path: "custom_8",
+            name: "Skin 08",
+        },
+        109 : {
+            path: "custom_9",
+            name: "Skin 09",
+        },
+        110 : {
+            path: "custom_10",
+            name: "Skin 10",
+        }
+    },
+    "amr_v8_vantage_gt3": {
+        101 : {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102 : {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103 : {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104 : {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105 : {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+        106 : {
+            path: "custom_6",
+            name: "Skin 06",
+        },
+        107 : {
+            path: "custom_7",
+            name: "Skin 07",
+        },
+        108 : {
+            path: "custom_8",
+            name: "Skin 08",
+        },
+        109 : {
+            path: "custom_9",
+            name: "Skin 09",
+        },
+        110 : {
+            path: "custom_10",
+            name: "Skin 10",
+        }
+    },
+    "amr_v8_vantage_gt4": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        110: {
+            path: "custom_fana",
+            name: "Fana",
+        },
+    },
+    "audi_r8_gt4": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        110: {
+            path: "custom_fana",
+            name: "Fana",
+        }
+    },
+    "audi_r8_lms": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        }
+    },
+    "audi_r8_lms_evo": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+        106: {
+            path: "custom_6",
+            name: "Skin 06",
+        },
+        107: {
+            path: "custom_7",
+            name: "Skin 07",
+        },
+        108: {
+            path: "custom_8",
+            name: "Skin 08",
+        },
+        109: {
+            path: "custom_9",
+            name: "Skin 09",
+        },
+        110: {
+            path: "custom_10",
+            name: "Skin 10",
+        },
+        111: {
+            path: "custom_11",
+            name: "Skin 11",
+        }
+    },
+    "audi_r8_lms_evo_ii": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+        106: {
+            path: "custom_6",
+            name: "Skin 06",
+        },
+        107: {
+            path: "custom_7",
+            name: "Skin 07",
+        },
+        108: {
+            path: "custom_8",
+            name: "Skin 08",
+        },
+        109: {
+            path: "custom_9",
+            name: "Skin 09",
+        },
+        110: {
+            path: "custom_10",
+            name: "Skin 10",
+        },
+        111: {
+            path: "custom_11",
+            name: "Skin 11",
+        }
+    },
+    "audi_r8_lms_gt2": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+    },
+    "bentley_continental_gt3_2016": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+    },
+    "bentley_continental_gt3_2018": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+        106: {
+            path: "custom_6",
+            name: "Skin 06",
+        },
+        107: {
+            path: "custom_7",
+            name: "Skin 07",
+        },
+        108: {
+            path: "custom_8",
+            name: "Skin 08",
+        },
+        109: {
+            path: "custom_9",
+            name: "Skin 09",
+        },
+        110: {
+            path: "custom_10",
+            name: "Skin 10",
+        },
+    },
+    "bmw_m2_cs_racing": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+        106: {
+            path: "custom_6",
+            name: "Skin 06",
+        },
+        107: {
+            path: "custom_7",
+            name: "Skin 07",
+        },
+    },
+    "bmw_m4_gt3": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+        106: {
+            path: "custom_6",
+            name: "Skin 06",
+        },
+        107: {
+            path: "custom_7",
+            name: "Skin 07",
+        },
+        108: {
+            path: "custom_8",
+            name: "Skin 08",
+        },
+        109: {
+            path: "custom_9",
+            name: "Skin 09",
+        },
+        110: {
+            path: "custom_10",
+            name: "Skin 10",
+        },
+    },
+    "bmw_m4_gt4": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+    },
+    "bmw_m6_gt3": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+        106: {
+            path: "custom_6",
+            name: "Skin 06",
+        },
+        107: {
+            path: "custom_7",
+            name: "Skin 07",
+        },
+        108: {
+            path: "custom_8",
+            name: "Skin 08",
+        },
+        109: {
+            path: "custom_9",
+            name: "Skin 09",
+        },
+        110: {
+            path: "custom_10",
+            name: "Skin 10",
+        },
+    },
+    "chevrolet_camaro_gt4r": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+    },
+    "ferrari_296_gt3": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+        106: {
+            path: "custom_6",
+            name: "Skin 06",
+        },
+        107: {
+            path: "custom_7",
+            name: "Skin 07",
+        },
+        108: {
+            path: "custom_8",
+            name: "Skin 08",
+        },
+        109: {
+            path: "custom_9",
+            name: "Skin 09",
+        },
+        110: {
+            path: "custom_10",
+            name: "Skin 10",
+        },
+    },
+    "ferrari_488_challenge_evo": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+    },
+    "ferrari_488_gt3": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+    },
+    "ferrari_488_gt3_evo": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+        106: {
+            path: "custom_6",
+            name: "Skin 06",
+        },
+        107: {
+            path: "custom_7",
+            name: "Skin 07",
+        },
+        108: {
+            path: "custom_8",
+            name: "Skin 08",
+        },
+        109: {
+            path: "custom_9",
+            name: "Skin 09",
+        },
+        110: {
+            path: "custom_10",
+            name: "Skin 10",
+        },
+    },
+    "ford_mustang_gt3": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+    },
+    "ginetta_g55_gt4": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        110: {
+            path: "custom_fana",
+            name: "Fana",
+        }
+    },
+    "honda_nsx_gt3": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        }
+    },
+    "honda_nsx_gt3_evo": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        }
+    },
+    "jaguar_g3": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        }
+    },
+    "ktm_xbow_gt2": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        }
+    },
+    "ktm_xbow_gt4": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        110: {
+            path: "custom_fana",
+            name: "Fana"
+        }
+    },
+    "lamborghini_gallardo_rex": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        }
+    },
+    "lamborghini_huracan_gt3": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        }
+    },
+    "lamborghini_huracan_gt3_evo": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+        
+    },
+    "lamborghini_huracan_gt3_evo2": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+        106: {
+            path: "custom_6",
+            name: "Skin 06",
+        },
+        107: {
+            path: "custom_7",
+            name: "Skin 07",
+        },
+        108: {
+            path: "custom_8",
+            name: "Skin 08",
+        },
+        109: {
+            path: "custom_9",
+            name: "Skin 09",
+        },
+        110: {
+            path: "custom_10",
+            name: "Skin 10",
+        },
+        111: {
+            path: "custom_11",
+            name: "Skin 11",
+        },
+    },
+    "lamborghini_huracan_st": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+    },
+    "lamborghini_huracan_st_evo2": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+        106: {
+            path: "custom_6",
+            name: "Skin 06",
+        },
+        107: {
+            path: "custom_7",
+            name: "Skin 07",
+        },
+        108: {
+            path: "custom_8",
+            name: "Skin 08",
+        },
+        109: {
+            path: "custom_9",
+            name: "Skin 09",
+        },
+        110: {
+            path: "custom_10",
+            name: "Skin 10",
+        },
+    },
+    "lexus_rc_f_gt3": {
+        101: {
+            path: "custom_0",
+            name: "Skin 00",
+        },
+        102: {
+            path: "custom_00",
+            name: "Skin 00",
+        },
+        103: {
+            path: "custom_000",
+            name: "Skin 000",
+        },
+        104: {
+            path: "custom_0000",
+            name: "Skin 0000",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+        195: {
+            path: "custom_1",
+            name: "Skin 01 (CUT)",
+        },
+        196: {
+            path: "custom_03",
+            name: "Skin 03 (CUT)",
+        },
+    },
+    "maserati_mc20_gt2": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+    },
+    "maserati_mc_gt4": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        110: {
+            path: "custom_fana",
+            name: "Fana"
+        }
+        
+    },
+    "mclaren_570s_gt4": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02 (CUT)",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03 (CUT)",
+        },
+    },
+    "mclaren_650s_gt3": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+    },
+    "mclaren_720s_gt3": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        }  
+    },
+    "mclaren_720s_gt3_evo": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+    },
+    "mercedes_amg_gt2": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        }
+    },
+    "mercedes_amg_gt3": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        }
+    },
+    "mercedes_amg_gt3_evo": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+        106: {
+            path: "custom_6",
+            name: "Skin 06",
+        },
+        107: {
+            path: "custom_7",
+            name: "Skin 07",
+        },
+        108: {
+            path: "custom_8",
+            name: "Skin 08",
+        },
+        109: {
+            path: "custom_9",
+            name: "Skin 09",
+        },
+        110: {
+            path: "custom_10",
+            name: "Skin 10",
+        }
+    },
+    "mercedes_amg_gt4": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        110: {
+            path: "custom_fana",
+            name: "Fana"
+        }
+    },
+    "nissan_gt_r_gt3_2017": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        }
+    },
+    "nissan_gt_r_gt3_2018": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        }
+    },
+    "porsche_718_cayman_gt4_mr": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        110: {
+            path: "custom_fana",
+            name: "Fana"
+        }
+    },
+    "porsche_935": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        }
+    },
+    "porsche_991_gt3_r": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+    },
+    "porsche_991ii_gt2_rs_cs_evo": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        }
+    },
+    "porsche_991ii_gt3_cup": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+        106: {
+            path: "custom_6",
+            name: "Skin 06",
+        },
+        107: {
+            path: "custom_7",
+            name: "Skin 07",
+        },
+        108: {
+            path: "custom_8",
+            name: "Skin 08",
+        },
+        109: {
+            path: "custom_9",
+            name: "Skin 09",
+        },
+        110: {
+            path: "custom_10",
+            name: "Skin 10",
+        }
+    },
+    "porsche_991ii_gt3_r": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+        106: {
+            path: "custom_6",
+            name: "Skin 06",
+        },
+        
+
+    },
+    "porsche_992_gt3_cup": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+        106: {
+            path: "custom_6",
+            name: "Skin 06",
+        },
+        107: {
+            path: "custom_7",
+            name: "Skin 07",
+        },
+        108: {
+            path: "custom_8",
+            name: "Skin 08",
+        },
+        109: {
+            path: "custom_9",
+            name: "Skin 09",
+        },
+        110: {
+            path: "custom_10",
+            name: "Skin 10",
+        }
+    },
+    "porsche_992_gt3_r": {
+        101: {
+            path: "custom_1",
+            name: "Skin 01",
+        },
+        102: {
+            path: "custom_2",
+            name: "Skin 02",
+        },
+        103: {
+            path: "custom_3",
+            name: "Skin 03",
+        },
+        104: {
+            path: "custom_4",
+            name: "Skin 04",
+        },
+        105: {
+            path: "custom_5",
+            name: "Skin 05",
+        },
+        106: {
+            path: "custom_6",
+            name: "Skin 06",
+        },
+        107: {
+            path: "custom_7",
+            name: "Skin 07",
+        },
+        108: {
+            path: "custom_8",
+            name: "Skin 08",
+        },
+        109: {
+            path: "custom_9",
+            name: "Skin 09",
+        },
+        110: {
+            path: "custom_10",
+            name: "Skin 10",
+        }
+    }
 }
 
 

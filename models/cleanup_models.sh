@@ -29,7 +29,6 @@ rm -rfv */textures/dirt_damage
 rm -rfv */skins/20*/
 rm -rfv */skins/0_banner/
 rm -rfv */skins/preseason/
-rm -rfv */skins/custom/custom_fana
 rm -rfv */skins/custom/rim*
 rm -rfv */skins/custom/*/EXT_Skin_Colour.png
 rm -rfv */skins/custom/*/EXT_Skin_Mask.png

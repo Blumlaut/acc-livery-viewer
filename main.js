@@ -306,10 +306,10 @@ function loadModel(modelPath) {
         if (curModelPath != modelPath) {
             const liverySelector = document.getElementById('liverySelector');
             for (let a in liverySelector.options) { liverySelector.options.remove(0); }
-            for (let i = 1; i < baseLiveries[modelPath] + 1; i++) {
+            for (const [i, v] of Object.entries(baseLiveries[modelPath])) {
                 const option = document.createElement('option');
                 option.value = i;
-                option.textContent = "Skin " + i;
+                option.textContent = v.name;
                 liverySelector.appendChild(option);
             }
         }
@@ -322,8 +322,11 @@ function loadModel(modelPath) {
 var decalsFile = null;
 var sponsorsFile = null;
 
-async function setBaseLivery(modelPath, liveryId) {
-    const images = await convertImageToRGBChannels(`models/${modelPath}/skins/custom/custom_${liveryId}/EXT_Skin_Custom.png`)
+async function setBaseLivery(modelPath, livery) {
+    const liveryData = baseLiveries[modelPath][livery];
+    if (!liveryData) return;
+    const liveryPath = liveryData.path;
+    const images = await convertImageToRGBChannels(`models/${modelPath}/skins/custom/${liveryPath}/EXT_Skin_Custom.png`)
     // iterate through images
     for (let i = 0; i < images.length; i++) {
         let image = images[i];
