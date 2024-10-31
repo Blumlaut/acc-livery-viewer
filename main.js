@@ -259,6 +259,7 @@ function loadModel(modelPath) {
                     } else if (node.material.name.startsWith('EXT_Emissive') || node.material.name.startsWith('EXT_Glass') || node.material.name.startsWith('EXT_Window')) {
                         const newMaterial = new THREE.MeshPhysicalMaterial({ 
                             transmission: 1,
+                            color: 0xffffff,
                             roughness: 0.0,
                             thickness: 0,
                             dispersion: 0
@@ -288,6 +289,13 @@ function loadModel(modelPath) {
                         },
                         undefined, // onProgress callback, can be omitted if not needed
                         (error) => {
+                            const newMaterial = new THREE.MeshPhysicalMaterial({ 
+                                name: node.material.name,
+                                color: 0x444444,
+                             });
+                            
+                            // apply the new material to the mesh
+                            node.material = newMaterial;
                             console.error(`Failed to load texture: ${texturePath}`, error);
                         });
                     }
