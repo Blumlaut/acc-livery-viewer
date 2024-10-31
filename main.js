@@ -2,17 +2,10 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-const modelsElement = document.getElementById('models');
-const texturesElement = document.getElementById('textures');
-const polygonsElement = document.getElementById('polygons');
-const drawCallsElement = document.getElementById('drawCalls');
-const memoryElement = document.getElementById('memory');
-
-
-let scene, camera, renderer, model, curModelPath, selectedModel, envMap
+let scene, camera, renderer, model, curModelPath, selectedModel, envMap, currentLivery
 
 let extraMeshes = []
-let bodyColours = [ "#ff0000", "#00ff00", "#0000ff", "#ffffff" ]
+let bodyColours = [ "#ff0000", "#00ff00", "#0000ff", "#fafafa" ]
 let bodyMaterials = ["glossy", "glossy", "glossy", "glossy"]
 let bodyTextures = []
 let LodLevel = 3
@@ -324,6 +317,7 @@ var sponsorsFile = null;
 
 async function setBaseLivery(modelPath, livery) {
     const liveryData = baseLiveries[modelPath][livery];
+    currentLivery = livery
     if (!liveryData) return;
     const liveryPath = liveryData.path;
     console.log(liveryData.sponsor)
@@ -541,6 +535,16 @@ function handleJsonFile(file, dataUrl) {
     }
 }
 
+
+
+const modelsElement = document.getElementById('models');
+const texturesElement = document.getElementById('textures');
+const polygonsElement = document.getElementById('polygons');
+const drawCallsElement = document.getElementById('drawCalls');
+const memoryElement = document.getElementById('memory');
+const loadedCarElement = document.getElementById('loadedCar');
+const skinIdElement = document.getElementById('skinId');
+const skinColoursElement = document.getElementById('skinColours');
 function animate() {
     const info = renderer.info;
 
@@ -550,6 +554,15 @@ function animate() {
     polygonsElement.innerText = `Polygons: ${info.render.triangles}`;
     drawCallsElement.innerText = `Draw Calls: ${info.render.calls}`;
     memoryElement.innerText = `Memory: ${(info.memory.programs || []).length} programs`;
+
+    loadedCarElement.innerText = Object.keys(modelFiles)[0]
+    if (currentLivery) {
+        skinIdElement.innerText = currentLivery
+    }
+    
+    skinColoursElement.innerText = `${findColorId(bodyColours[0])}, ${findColorId(bodyColours[1])}, ${findColorId(bodyColours[2])}, ${findColorId(bodyColours[3])}, `
+
+
 
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
@@ -665,6 +678,32 @@ function applyBodyColours() {
     }
 }
 
+// Function to convert hex to RGB
+function hexToRgb(hex) {
+    // Remove the hash (#) if present
+    hex = hex.replace(/^#/, '');
+
+    // Parse r, g, b values from hex
+    let bigint = parseInt(hex, 16);
+    let r = (bigint >> 16) & 255;
+    let g = (bigint >> 8) & 255;
+    let b = bigint & 255;
+
+    return { r, g, b };
+}
+
+// Function to find the matching color ID
+function findColorId(hexColor) {
+    const rgbColor = hexToRgb(hexColor);
+
+    for (const [id, color] of Object.entries(colours)) {
+        // Check if the RGB values match
+        if (color.r === rgbColor.r && color.g === rgbColor.g && color.b === rgbColor.b) {
+            return Number(id); // Return the ID as a number
+        }
+    }
+    return null; // Return null if no match is found
+}
   
 
 // Initialize
