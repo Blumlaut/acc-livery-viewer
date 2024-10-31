@@ -326,14 +326,20 @@ async function setBaseLivery(modelPath, livery) {
     const liveryData = baseLiveries[modelPath][livery];
     if (!liveryData) return;
     const liveryPath = liveryData.path;
-    const images = await convertImageToRGBChannels(`models/${modelPath}/skins/custom/${liveryPath}/EXT_Skin_Custom.png`)
+    console.log(liveryData.sponsor)
+    let images
+    if (liveryData.sponsor) {
+        images = await convertImageToRGBChannels(`models/${modelPath}/skins/custom/${liveryPath}/EXT_Skin_Sponsors.png`)
+    } else {
+        images = await convertImageToRGBChannels(`models/${modelPath}/skins/custom/${liveryPath}/EXT_Skin_Custom.png`)
+    }
     // iterate through images
     for (let i = 0; i < images.length; i++) {
         let image = images[i];
         await drawImageOverlay(image, "baseLivery"+(i+1), paintMaterials.customDecal || paintMaterials.glossy)
     }
 
-    if (liveryPath.includes("fana")) {
+    if (liveryData.hasDecals) {
         await drawImageOverlay(`models/${modelPath}/skins/custom/${liveryPath}/EXT_Skin_Decals.png`, "fanatec_overlay", paintMaterials.glossy)
     }
     applyBodyColours()

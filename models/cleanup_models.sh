@@ -1,12 +1,15 @@
 #!/bin/bash
 
 # Define the file extensions to search for
-extensions=("*.mat" "*.txt" "*Sponsors*.png")
+extensions=("*.mat" "*.txt")
 
 # Loop through each extension and remove matching files
 for ext in "${extensions[@]}"; do
+  echo "Removing files with extension: $ext"
   find . -type f -name "$ext" -exec rm {} -v \;
 done
+
+find . -type f -name "*Sponsors*.png" ! -path "*lexus*" -exec rm {} -v \;
 
 # find and delete all files ending with .gltf and .bin unless they end with "_exterior.gtlf/bin"
 find . -type f \( -name "*.gltf" -o -name "*.bin" -o -name "*.md5mesh" \) ! -name "*_exterior*.gltf" ! -name "*_exterior*.bin" -exec rm {} -v \;

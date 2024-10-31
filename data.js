@@ -126,7 +126,8 @@ const baseLiveries = {
         },
         "109": {
             "path": "custom_fana",
-            "name": "Fana"
+            "name": "Fana",
+            "hasDecals": true,
         }
     },
     "amr_v12_vantage_gt3": {
@@ -228,7 +229,8 @@ const baseLiveries = {
         },
         "109": {
             "path": "custom_fana",
-            "name": "Fana"
+            "name": "Fana",
+            "hasDecals": true,
         }
     },
     "audi_r8_gt4": {
@@ -250,7 +252,8 @@ const baseLiveries = {
         },
         "109": {
             "path": "custom_fana",
-            "name": "Fana"
+            "name": "Fana",
+            "hasDecals": true,
         }
     },
     "audi_r8_lms": {
@@ -540,7 +543,8 @@ const baseLiveries = {
         },
         "109": {
             "path": "custom_fana",
-            "name": "Fana"
+            "name": "Fana",
+            "hasDecals": true,
         }
     },
     "bmw_m6_gt3": {
@@ -764,7 +768,8 @@ const baseLiveries = {
         },
         "109": {
             "path": "custom_fana",
-            "name": "Fana"
+            "name": "Fana",
+            "hasDecals": true,
         }
     },
     "honda_nsx_gt3": {
@@ -854,7 +859,8 @@ const baseLiveries = {
         },
         "109": {
             "path": "custom_fana",
-            "name": "Fana"
+            "name": "Fana",
+            "hasDecals": true,
         }
     },
     "lamborghini_gallardo_rex": {
@@ -1020,30 +1026,30 @@ const baseLiveries = {
     "lexus_rc_f_gt3": {
         "100": {
             "path": "custom_0",
-            "name": "Skin 00"
+            "name": "Skin 00",
+            "sponsor": true
         },
         "101": {
             "path": "custom_00",
-            "name": "Skin 00"
+            "name": "Skin 00",
+            "sponsor": true
         },
         "102": {
             "path": "custom_000",
-            "name": "Skin 000"
+            "name": "Skin 000",
+            "sponsor": true
         },
         "103": {
             "path": "custom_0000",
-            "name": "Skin 0000"
-        },
-        "104": {
-            "path": "custom_5",
-            "name": "Skin 05"
+            "name": "Skin 0000",
+            "sponsor": true
         },
         "194": {
             "path": "custom_1",
             "name": "Skin 01 (CUT)"
         },
         "195": {
-            "path": "custom_03",
+            "path": "custom_3",
             "name": "Skin 03 (CUT)"
         }
     },
@@ -1084,7 +1090,8 @@ const baseLiveries = {
         },
         "109": {
             "path": "custom_fana",
-            "name": "Fana"
+            "name": "Fana",
+            "hasDecals": true,
         }
     },
     "mclaren_570s_gt4": {
@@ -1244,7 +1251,8 @@ const baseLiveries = {
         },
         "109": {
             "path": "custom_fana",
-            "name": "Fana"
+            "name": "Fana",
+            "hasDecals": true,
         }
     },
     "nissan_gt_r_gt3_2017": {
@@ -1302,7 +1310,8 @@ const baseLiveries = {
         },
         "109": {
             "path": "custom_fana",
-            "name": "Fana"
+            "name": "Fana",
+            "hasDecals": true,
         }
     },
     "porsche_935": {
