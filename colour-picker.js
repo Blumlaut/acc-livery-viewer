@@ -33,9 +33,8 @@ class ColorPicker extends HTMLElement {
                 border-radius: 4px;
             }
             .color-picker-popup {
-                position: absolute;
-                top: 40px;
-                left: 0;
+                position: fixed;
+                left: 200px;
                 display: grid;
                 grid-template-columns: repeat(25, 40px);
                 gap: 8px;
