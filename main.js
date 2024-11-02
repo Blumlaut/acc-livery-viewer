@@ -20,7 +20,13 @@ function loadSettingsCookies() {
 
     getCookie('lodLevel') ? LodLevel = parseInt(getCookie('lodLevel')) : null
 
-    getCookie("skybox") ? currentSkybox = getCookie("skybox") : null
+    if (getCookie("skybox")) {
+        currentSkybox = getCookie("skybox")
+        const cubemapSelector = document.getElementById('cubemapSelector')
+        cubemapSelector.value = currentSkybox
+
+
+    }
     getCookie("skyboxActive") ? skyboxState = Boolean(getCookie("skyboxActive")) : null
     if (getCookie("model")) {
         firstRun = false
