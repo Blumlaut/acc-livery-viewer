@@ -331,11 +331,16 @@ function loadModel(modelPath) {
             }
         });
     }
-    for (let i = 0; i < wheelMeshes.length; i++) {
-        const wheelMesh = wheelMeshes[i];
-        cleanupMesh(wheelMesh);
-    }
 
+    for (let i = 0; i < wheelMeshes.length; i++) {
+        scene.remove(wheelMeshes[i]);
+        wheelMeshes[i].traverse((node) => {
+            if (node.isMesh) {
+                cleanupMesh(node);
+            }
+        })
+
+    }
     // Load new GLTF model
     const loader = new GLTFLoader();
 
@@ -411,7 +416,6 @@ function loadModel(modelPath) {
                             
                             // apply the new material to the mesh
                             node.material = newMaterial;
-                            console.error(`Failed to load texture: ${texturePath}`, error);
                         });
                     }
                 }
@@ -479,6 +483,7 @@ function cleanupPreviousMeshes() {
 }
 
 function cleanupMesh(mesh) {
+    scene.remove(mesh)
     if (mesh.material.map) {
         mesh.material.map.dispose();
     }
@@ -575,32 +580,40 @@ async function mergeAndSetDecals() {
 }
 
 function loadWheelModel(node, model, modelPath) {
-    console.log(node,model,modelPath)
-    const loader = new GLTFLoader();
-    const actualModelName = modelFiles[modelPath].replace("_sprint", "").replace("_exterior", "");
-    loader.load(`models/${modelPath}/${actualModelName}_${model}_Lod1.gltf`, (gltf) => {
-        const wheelModel = gltf.scene;
-        const wheelObject = wheelModel.children[0];
-        const newMaterial = new THREE.MeshPhysicalMaterial({ 
-            name: wheelObject.material.name,
-            color: bodyColours[3],
-            side: THREE.DoubleSide
-            });
-        
-        wheelObject.material = newMaterial;
-
-        scene.add(wheelObject);
-
-        console.log("wheel:", wheelObject)
-        applyMaterialPreset(wheelObject.material, paintMaterials[bodyMaterials[3]])
-        // move and rotate wheel model according to node position/rotation
-        wheelObject.rotation.copy(node.rotation);
-        wheelObject.position.copy(node.position);
-        wheelMeshes.push(wheelObject);
-    }, undefined, function() {
-        console.log(`Wheel Model missing for ${modelPath}, loading placeholder..`);
-        loadWheelModel(node, model,"bmw_m4_gt3")
-    })
+    try {
+        const loader = new GLTFLoader();
+        const actualModelName = modelFiles[modelPath].replace("_sprint", "").replace("_exterior", "");
+        loader.load(`models/${modelPath}/${actualModelName}_${model}_Lod1.gltf`, (gltf) => {
+            const wheelModel = gltf.scene;
+            const wheelObject = wheelModel.children[0];
+            wheelModel.traverse((child) => {
+                if (child.isMesh && child.material) {
+                    const newMaterial = new THREE.MeshPhysicalMaterial({ 
+                        name: child.material.name,
+                        color: bodyColours[3],
+                        side: THREE.DoubleSide
+                    });
+                    
+                    child.material = newMaterial;
+                    applyMaterialPreset(child.material, paintMaterials[bodyMaterials[3]])
+                }
+            })
+            
+            
+            scene.add(wheelObject);
+            wheelMeshes.push(wheelObject);
+            // move and rotate wheel model according to node position/rotation
+            wheelObject.rotation.copy(node.rotation);
+            wheelObject.position.copy(node.position);
+        }, undefined, function(err) {
+            console.log(err)
+            console.log(`Wheel Model missing (or errored) for ${modelPath}, loading placeholder..`);
+            loadWheelModel(node, model,"bmw_m4_gt3")
+        })
+    } catch (e)
+    {
+        console.log(e)
+    }
 }
 
 

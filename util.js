@@ -53,7 +53,6 @@ function findColorId(hexColor) {
 
 
 function coloridToHex(colorId) {
-    console.log(colorId,colours[colorId])
     return rgbToHex(colours[colorId]);
 }
 
@@ -69,12 +68,9 @@ function getCookie(key) {
         // Check if this cookie starts with the specified key
         if (cookie.startsWith(key + '=')) {
             // Return the value of the cookie after the equal sign
-            console.log(`Found cookie for key ${key}: ${cookie.substring(key.length + 1)}`);
             return decodeURIComponent(cookie.substring(key.length + 1));
         }
     }
-
-    console.log(`No cookie found for key: ${key}`);
     
     // If no cookie is found, return null or an empty string
     return null;
@@ -103,5 +99,4 @@ function setCookie(key, value, options = {}) {
     
     // Set the cookie in the document.cookie property
     document.cookie = cookieString;
-    console.log(`set cookie ${key}=${value}`);
 }
