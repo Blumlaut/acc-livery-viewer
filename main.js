@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 let firstRun = true
 
-let scene, camera, renderer, model, curModelPath, envMap, currentLivery
+let scene, camera, renderer, model, prevModelPath, curModelPath, envMap, currentLivery
 
 let extraMeshes = []
 let bodyColours = [ "#ff0000", "#00ff00", "#0000ff", "#fafafa" ]
@@ -24,8 +24,6 @@ function loadSettingsCookies() {
         currentSkybox = getCookie("skybox")
         const cubemapSelector = document.getElementById('cubemapSelector')
         cubemapSelector.value = currentSkybox
-
-
     }
 
     if (getCookie("skyboxActive")) {
@@ -37,6 +35,7 @@ function loadSettingsCookies() {
     if (getCookie("model")) {
         firstRun = false
         curModelPath = getCookie("model")
+        prevModelPath = curModelPath
         const modelSelector = document.getElementById('modelSelector');
         modelSelector.value = curModelPath
         populateLiverySelector(curModelPath)
@@ -407,9 +406,10 @@ function loadModel(modelPath) {
         });
 
 
-        if (curModelPath != modelPath || firstRun) {
+        if (curModelPath != prevModelPath || firstRun) {
             firstRun = false
             populateLiverySelector(modelPath)
+            prevModelPath = curModelPath
         }
         curModelPath = modelPath
         mergeAndSetDecals()
