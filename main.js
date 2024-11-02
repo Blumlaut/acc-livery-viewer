@@ -41,14 +41,58 @@ function loadSettingsCookies() {
         lodSelector.value = LodLevel
     }
 
-    getCookie("bodyColour1") ? bodyColours[0] = getCookie("bodyColour1") : null
-    getCookie("bodyColour2") ? bodyColours[1] = getCookie("bodyColour2") : null
-    getCookie("bodyColour3") ? bodyColours[2] = getCookie("bodyColour3") : null
-    getCookie("rimColour") ? bodyColours[3] = getCookie("rimColour") : null
-    getCookie("bodyMaterial1") ? bodyMaterials[0] = getCookie("bodyMaterial1") : null
-    getCookie("bodyMaterial2") ? bodyMaterials[1] = getCookie("bodyMaterial2") : null
-    getCookie("bodyMaterial3") ? bodyMaterials[2] = getCookie("bodyMaterial3") : null
-    getCookie("rimMaterial") ? bodyMaterials[3] = getCookie("rimMaterial") : null
+    if (getCookie("materialPreset_baseLivery1")) {
+        bodyMaterials[0] = getCookie("materialPreset_baseLivery1")
+        const layer1Material = document.getElementById('layer1Material')
+        layer1Material.value = bodyMaterials[0]
+        applyMaterialPreset("baseLivery1", paintMaterials[bodyMaterials[0]])
+    }
+    if (getCookie("materialPreset_baseLivery2")) {
+        bodyMaterials[1] = getCookie("materialPreset_baseLivery2")
+        const layer2Material = document.getElementById('layer2Material')
+        layer2Material.value = bodyMaterials[1]
+        applyMaterialPreset("baseLivery1", paintMaterials[bodyMaterials[1]])
+    }
+    if (getCookie("materialPreset_baseLivery3")) {
+        bodyMaterials[2] = getCookie("materialPreset_baseLivery3")
+        const layer3Material = document.getElementById('layer3Material')
+        layer3Material.value = bodyMaterials[2]
+        applyMaterialPreset("baseLivery1", paintMaterials[bodyMaterials[2]])
+    }
+    if (getCookie("rimMaterial")) {
+        bodyMaterials[3] = getCookie("rimMaterial")
+        const rimMaterial = document.getElementById('rimMaterial')
+        rimMaterial.value = bodyMaterials[3]
+        applyMaterialPreset(`EXT_RIM`, paintMaterials[bodyMaterials[3]])
+    }
+
+    if (getCookie("materialColor_baseLivery1")) {
+        bodyColours[0] = coloridToHex(getCookie("materialColor_baseLivery1"))
+        const layer1Color = document.getElementById('layer1Color')
+        layer1Color.setValue(bodyColours[0])
+    }
+
+    if (getCookie("materialColor_baseLivery2")) {
+        bodyColours[1] = coloridToHex(getCookie("materialColor_baseLivery2"))
+        const layer2Color = document.getElementById('layer2Color')
+        layer2Color.setValue(bodyColours[1])
+    }
+
+    if (getCookie("materialColor_baseLivery3")) {
+        bodyColours[2] = coloridToHex(getCookie("materialColor_baseLivery3"))
+        const layer3Color = document.getElementById('layer3Color')
+        layer3Color.setValue(bodyColours[2])
+    }
+
+    if (getCookie("rimColour")) {
+        bodyColours[3] = coloridToHex(getCookie("rimColour"))
+        const rimColour = document.getElementById('rimColor')
+        rimColour.setValue(bodyColours[3])
+        changeMaterialColor(`EXT_RIM`, bodyColours[3]);
+        applyMaterialPreset(`EXT_RIM`, paintMaterials[bodyMaterials[3]])
+    }
+
+
 }
 
 function init() {
@@ -174,7 +218,7 @@ function init() {
     const rimColor = document.getElementById('rimColor');
     rimColor.addEventListener('change', (event) => {
         bodyColours[3] = event.target.value;
-        setCookie("rimColour", bodyColours[3])
+        setCookie("rimColour", findColorId(bodyColours[3]))
         changeMaterialColor(`EXT_RIM`, bodyColours[3]);
         applyMaterialPreset(`EXT_RIM`, paintMaterials[bodyMaterials[3]])
     });
@@ -183,18 +227,21 @@ function init() {
     layer1Material.addEventListener('change', (event) => {
         bodyMaterials[0] = event.target.value;
         applyMaterialPreset("baseLivery1", paintMaterials[event.target.value])
+        setCookie(`materialPreset_baseLivery1`, bodyMaterials[0]);
     });
 
     const layer2Material = document.getElementById('layer2Material');
     layer2Material.addEventListener('change', (event) => {
         bodyMaterials[1] = event.target.value;
         applyMaterialPreset("baseLivery2", paintMaterials[event.target.value])
+        setCookie(`materialPreset_baseLivery2`, bodyMaterials[1]);
     });
 
     const layer3Material = document.getElementById('layer3Material');
     layer3Material.addEventListener('change', (event) => {
         bodyMaterials[2] = event.target.value;
         applyMaterialPreset("baseLivery3", paintMaterials[event.target.value])
+        setCookie(`materialPreset_baseLivery3`, bodyMaterials[2]);
     });
 
 
@@ -294,7 +341,7 @@ function loadModel(modelPath) {
                         } else {
                             const newMaterial = new THREE.MeshPhysicalMaterial({ 
                                 name: materialName,
-                                color: 0xffffff,
+                                color: bodyColours[3],
                              });
                              node.material = newMaterial;
                              applyMaterialPreset(node.material, paintMaterials["glossy"])
@@ -354,6 +401,10 @@ function loadModel(modelPath) {
         }
         curModelPath = modelPath
         mergeAndSetDecals()
+        applyMaterialPreset("baseLivery1", paintMaterials[bodyMaterials[0]])
+        applyMaterialPreset("baseLivery2", paintMaterials[bodyMaterials[1]])
+        applyMaterialPreset("baseLivery3", paintMaterials[bodyMaterials[2]])
+        applyMaterialPreset(`EXT_RIM`, paintMaterials[bodyMaterials[3]])
     });
 }
 
@@ -402,13 +453,6 @@ function cleanupPreviousMeshes() {
             scene.remove(child);
         }
     });
-}
-
-function setupCanvas(image) {
-    const canvas = document.createElement('canvas');
-    canvas.width = image.width;
-    canvas.height = image.height;
-    return canvas;
 }
 
 function loadImage(src) {
@@ -555,9 +599,6 @@ function processFile(file) {
     reader.readAsDataURL(file);
 }
 
-function isImageFile(dataUrl) {
-    return dataUrl.match(/image/i);
-}
 
 function handleImageFile(file, dataUrl) {
     const img = new Image();
@@ -697,7 +738,6 @@ async function convertImageToRGBChannels(imagePath) {
 
 function changeMaterialColor(materialName, hexColor) {
     // Convert hex color string to THREE.Color
-    setCookie(`materialColor_${materialName}`, hexColor);
 
     const color = new THREE.Color(hexColor);
 
@@ -722,9 +762,8 @@ function applyBodyColours() {
         changeMaterialColor(`baseLivery${i + 1}`, bodyColours[i]);
         applyMaterialPreset(`baseLivery${i + 1}`, paintMaterials[bodyMaterials[i]])
 
-        setCookie(`materialColor_baseLivery${i + 1}`, bodyColours[i]);
+        setCookie(`materialColor_baseLivery${i + 1}`, findColorId(bodyColours[i]));
         setCookie(`materialPreset_baseLivery${i + 1}`, bodyMaterials[i]);
-
     }
 }
 
@@ -739,80 +778,6 @@ function populateLiverySelector(modelPath) {
     }
 }
 
-// Function to convert hex to RGB
-function hexToRgb(hex) {
-    // Remove the hash (#) if present
-    hex = hex.replace(/^#/, '');
-
-    // Parse r, g, b values from hex
-    let bigint = parseInt(hex, 16);
-    let r = (bigint >> 16) & 255;
-    let g = (bigint >> 8) & 255;
-    let b = bigint & 255;
-
-    return { r, g, b };
-}
-
-// Function to find the matching color ID
-function findColorId(hexColor) {
-    const rgbColor = hexToRgb(hexColor);
-
-    for (const [id, color] of Object.entries(colours)) {
-        // Check if the RGB values match
-        if (color.r === rgbColor.r && color.g === rgbColor.g && color.b === rgbColor.b) {
-            return Number(id); // Return the ID as a number
-        }
-    }
-    return null; // Return null if no match is found
-}
-  
-function getCookie(key) {
-    // Split cookie string into individual cookies
-    const cookies = document.cookie.split(';');
-    
-    // Iterate through each cookie to find the one with the specified key
-    for (let i = 0; i < cookies.length; i++) {
-        let cookie = cookies[i].trim();
-        
-        // Check if this cookie starts with the specified key
-        if (cookie.startsWith(key + '=')) {
-            // Return the value of the cookie after the equal sign
-            console.log(`Found cookie for key ${key}: ${cookie.substring(key.length + 1)}`);
-            return decodeURIComponent(cookie.substring(key.length + 1));
-        }
-    }
-
-    console.log(`No cookie found for key: ${key}`);
-    
-    // If no cookie is found, return null or an empty string
-    return null;
-}
-
-function setCookie(key, value, options = {}) {
-    // Create the basic cookie string with the key and encoded value
-    let cookieString = encodeURIComponent(key) + '=' + encodeURIComponent(value);
-    
-    // Add optional parameters like path, domain, expires, etc.
-    if (options.expires instanceof Date) {
-        cookieString += '; expires=' + options.expires.toUTCString();
-    }
-    if (options.path) {
-        cookieString += '; path=' + options.path;
-    }
-    if (options.domain) {
-        cookieString += '; domain=' + options.domain;
-    }
-    if (options.secure) {
-        cookieString += '; secure';
-    }
-    if (options.sameSite) {
-        cookieString += '; sameSite=' + options.sameSite;
-    }
-    
-    // Set the cookie in the document.cookie property
-    document.cookie = cookieString;
-    console.log(`set cookie ${key}=${value}`);
-}
 
 // Initialize
 init();
