@@ -1,0 +1,124 @@
+{
+  "asset" : {
+    "generator" : "UE Viewer (umodel) build 1589",
+    "version" : "2.0"
+  },
+  "scene" : 0,
+  "scenes" : [
+    {
+      "nodes" : [ 0 ]
+    }
+  ],
+  "nodes" : [
+    {
+      "name" : "maserati_mc_gt4_rim_lr_Lod1",
+      "mesh" : 0
+    }
+  ],
+  "materials" : [
+    {
+      "name" : "EXT_RIM",
+      "pbrMetallicRoughness" : {
+        "baseColorFactor" : [ 0.3, 0.3, 0.3, 1.0 ],
+        "metallicFactor" : 0.1,
+        "roughnessFactor" : 0.5
+      }
+    }
+  ],
+  "meshes" : [
+    {
+      "primitives" : [
+        {
+          "attributes" : {
+            "POSITION" : 1,
+            "NORMAL" : 2,
+            "TANGENT" : 3,
+            "TEXCOORD_0" : 4,
+            "TEXCOORD_1" : 5
+          },
+          "indices" : 0,
+          "material" : 0
+        }
+      ],
+      "name" : "maserati_mc_gt4_rim_lr_Lod1"
+    }
+  ],
+  "buffers" : [
+    {
+      "uri" : "maserati_mc_gt4_rim_lr_Lod1.bin",
+      "byteLength" : 227420
+    }
+  ],
+  "bufferViews" : [
+    {
+      "buffer" : 0,
+      "byteOffset" : 0,
+      "byteLength" : 27668
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 27668,
+      "byteLength" : 42804
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 70472,
+      "byteLength" : 42804
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 113276,
+      "byteLength" : 57072
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 170348,
+      "byteLength" : 28536
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 198884,
+      "byteLength" : 28536
+    }
+  ],
+  "accessors" : [
+    {
+      "bufferView" : 0,
+      "componentType" : 5123,
+      "count" : 13833,
+      "type" : "SCALAR"
+    },
+    {
+      "bufferView" : 1,
+      "min" : [ -0.177286, -0.24972, -0.249127 ],
+      "max" : [ 0.17588, 0.249487, 0.249392 ],
+      "componentType" : 5126,
+      "count" : 3567,
+      "type" : "VEC3"
+    },
+    {
+      "bufferView" : 2,
+      "componentType" : 5126,
+      "count" : 3567,
+      "type" : "VEC3"
+    },
+    {
+      "bufferView" : 3,
+      "componentType" : 5126,
+      "count" : 3567,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 4,
+      "componentType" : 5126,
+      "count" : 3567,
+      "type" : "VEC2"
+    },
+    {
+      "bufferView" : 5,
+      "componentType" : 5126,
+      "count" : 3567,
+      "type" : "VEC2"
+    }
+  ]
+}

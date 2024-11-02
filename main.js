@@ -341,6 +341,13 @@ function loadModel(modelPath) {
         scene.add(model);
         // iterate through all materials and apply their texture from textures/*.png
         model.traverse((node) => {
+            if (LodLevel < 3) {
+                for (const [model, wheel] of Object.entries(wheelNodes)) {
+                    if (node.name === wheel) {
+                        loadWheelModel(node, model, modelPath)
+                    }
+                }
+            }
             if (node.isMesh && node.material) {
                 if (node.material.name && node.material.name.startsWith('EXT_')) {
                     
@@ -369,6 +376,7 @@ function loadModel(modelPath) {
                          node.material = newMaterial;
 
                     } else {
+                        
                         let materialName = node.material.name
                         if (materialName == "EXT_RIM") {
                             materialName = "EXT_Rim"
@@ -451,7 +459,9 @@ async function setBaseLivery(modelPath, livery) {
 
 function cleanupPreviousMeshes() {
     extraMeshes.forEach(mesh => {
-        mesh.material.map.dispose();
+        if (mesh.material.map) {
+            mesh.material.map.dispose();
+        }
         mesh.material.dispose();
         scene.remove(mesh)
     });
@@ -552,6 +562,35 @@ async function mergeAndSetDecals() {
     } catch (error) {
         console.error(error);
     }
+}
+
+function loadWheelModel(node, model, modelPath) {
+    console.log(node,model,modelPath)
+    const loader = new GLTFLoader();
+    const actualModelName = modelFiles[modelPath].replace("_sprint", "").replace("_exterior", "");
+    loader.load(`models/${modelPath}/${actualModelName}_${model}_Lod1.gltf`, (gltf) => {
+        const wheelModel = gltf.scene;
+        const wheelObject = wheelModel.children[0];
+        const newMaterial = new THREE.MeshPhysicalMaterial({ 
+            name: wheelObject.material.name,
+            color: bodyColours[3],
+            side: THREE.DoubleSide
+            });
+        
+        wheelObject.material = newMaterial;
+
+        scene.add(wheelObject);
+
+        console.log("wheel:", wheelObject)
+        applyMaterialPreset(wheelObject.material, paintMaterials[bodyMaterials[3]])
+        // move and rotate wheel model according to node position/rotation
+        wheelObject.rotation.copy(node.rotation);
+        wheelObject.position.copy(node.position);
+        extraMeshes.push(wheelObject);
+    }, undefined, function() {
+        console.log(`Wheel Model missing for ${modelPath}, loading placeholder..`);
+        loadWheelModel(node, model,"bmw_m4_gt3")
+    })
 }
 
 
@@ -670,24 +709,30 @@ function applyMaterialPreset(material, preset) {
         material = getMaterialFromName(material);
     }
     if (material) {
-        material.clearcoat = preset.clearCoat
-        material.clearcoatRoughness = preset.clearCoatRoughness
-        material.metalness = preset.metallic
-        material.roughness = preset.baseRoughness
-        material.needsUpdate = true;
-        return material
+        if (material.id) {
+            material.clearcoat = preset.clearCoat
+            material.clearcoatRoughness = preset.clearCoatRoughness
+            material.metalness = preset.metallic
+            material.roughness = preset.baseRoughness
+            material.needsUpdate = true;
+            return material
+        } else {
+            for (let i = 0; i < material.length; i++) {
+                applyMaterialPreset(material[i], preset);
+            }
+        }
     }
     return false
 }
 
 function getMaterialFromName(materialName) {
-    let returnMat
+    let returnMat = []
     scene.traverse((object) => {
         // Check if the object has a material and if it's an instance of Mesh
         if (object.material) {
             // Check if the material has a name that matches the specified name
             if (object.material.name == materialName) {
-                returnMat = object.material
+                returnMat.push(object.material)
             }
         }
     });

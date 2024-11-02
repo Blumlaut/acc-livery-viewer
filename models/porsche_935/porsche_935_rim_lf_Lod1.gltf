@@ -1,0 +1,124 @@
+{
+  "asset" : {
+    "generator" : "UE Viewer (umodel) build 1589",
+    "version" : "2.0"
+  },
+  "scene" : 0,
+  "scenes" : [
+    {
+      "nodes" : [ 0 ]
+    }
+  ],
+  "nodes" : [
+    {
+      "name" : "porsche_935_rim_lf_Lod1",
+      "mesh" : 0
+    }
+  ],
+  "materials" : [
+    {
+      "name" : "EXT_RIM",
+      "pbrMetallicRoughness" : {
+        "baseColorFactor" : [ 0.3, 0.3, 0.3, 1.0 ],
+        "metallicFactor" : 0.1,
+        "roughnessFactor" : 0.5
+      }
+    }
+  ],
+  "meshes" : [
+    {
+      "primitives" : [
+        {
+          "attributes" : {
+            "POSITION" : 1,
+            "NORMAL" : 2,
+            "TANGENT" : 3,
+            "TEXCOORD_0" : 4,
+            "TEXCOORD_1" : 5
+          },
+          "indices" : 0,
+          "material" : 0
+        }
+      ],
+      "name" : "porsche_935_rim_lf_Lod1"
+    }
+  ],
+  "buffers" : [
+    {
+      "uri" : "porsche_935_rim_lf_Lod1.bin",
+      "byteLength" : 466232
+    }
+  ],
+  "bufferViews" : [
+    {
+      "buffer" : 0,
+      "byteOffset" : 0,
+      "byteLength" : 48416
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 48416,
+      "byteLength" : 89532
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 137948,
+      "byteLength" : 89532
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 227480,
+      "byteLength" : 119376
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 346856,
+      "byteLength" : 59688
+    },
+    {
+      "buffer" : 0,
+      "byteOffset" : 406544,
+      "byteLength" : 59688
+    }
+  ],
+  "accessors" : [
+    {
+      "bufferView" : 0,
+      "componentType" : 5123,
+      "count" : 24207,
+      "type" : "SCALAR"
+    },
+    {
+      "bufferView" : 1,
+      "min" : [ -0.159388, -0.250541, -0.251443 ],
+      "max" : [ 0.164492, 0.249523, 0.251443 ],
+      "componentType" : 5126,
+      "count" : 7461,
+      "type" : "VEC3"
+    },
+    {
+      "bufferView" : 2,
+      "componentType" : 5126,
+      "count" : 7461,
+      "type" : "VEC3"
+    },
+    {
+      "bufferView" : 3,
+      "componentType" : 5126,
+      "count" : 7461,
+      "type" : "VEC4"
+    },
+    {
+      "bufferView" : 4,
+      "componentType" : 5126,
+      "count" : 7461,
+      "type" : "VEC2"
+    },
+    {
+      "bufferView" : 5,
+      "componentType" : 5126,
+      "count" : 7461,
+      "type" : "VEC2"
+    }
+  ]
+}

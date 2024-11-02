@@ -12,7 +12,7 @@ done
 find . -type f -name "*Sponsors*.png" ! -path "*lexus*" -exec rm {} -v \;
 
 # find and delete all files ending with .gltf and .bin unless they end with "_exterior.gtlf/bin"
-find . -type f \( -name "*.gltf" -o -name "*.bin" -o -name "*.md5mesh" \) ! -name "*_exterior*.gltf" ! -name "*_exterior*.bin" -exec rm {} -v \;
+find . -type f \( -name "*.gltf" -o -name "*.bin" -o -name "*.md5mesh" \) ! -name "*_exterior*.gltf" ! -name "*_exterior*.bin" ! -name "*_rim*Lod1*" -exec rm {} -v \;
 
 find . -type f \( -name "*Lod*.md5mesh" \) -exec rm {} -v \;
 
@@ -20,6 +20,7 @@ find . -type f \( -name "*Lod*.md5mesh" \) -exec rm {} -v \;
 find . -type f \( -name "*.gltf" -o -name "*.bin" \) ! -name "*Lod*.gltf" ! -name "*Lod*.bin" -exec rm {} -v \;
 
 rm -rfv */*Skeleton*/
+rm -rfv */*rim_blur*
 rm -rfv */display/
 rm -rfv */textures/*Map*
 rm -rfv */textures/*NM*

@@ -103,6 +103,13 @@ const modelFiles = {
     "porsche_992_gt3_r": "porsche_992_gt3_r_exterior",
 };
 
+const wheelNodes = {
+    "rim_rf": "WHEEL_RF",
+    "rim_lf": "WHEEL_LF",
+    "rim_rr": "WHEEL_RR",
+    "rim_lr": "WHEEL_LR"
+};
+
 const cubemaps = [
     "overcast",
     "sunny",
