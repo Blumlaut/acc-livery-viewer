@@ -153,6 +153,21 @@ class ColorPicker extends HTMLElement {
         this.overlay.style.display = 'none';
     }
 
+    setValue(hexValue) {
+        const colorId = Object.keys(colours).find(key => this.rgbToHex(colours[key]) === hexValue);
+        if (colorId) {
+            // Update the selected color and reflect it immediately
+            this.value = hexValue;
+            this.selectedColor = hexValue;
+            this.colorLabel.textContent = `Selected Color: ${colorId}`;
+            this.colorPreview.style.backgroundColor = hexValue;
+
+            // Trigger the "change" event with the new color value
+            this.dispatchEvent(new CustomEvent("change", { detail: { value: this.value } }));
+        }
+    }
+
+
     selectColor(event) {
         const { colorId, hexColor } = event.target.dataset;
         if (colorId) {

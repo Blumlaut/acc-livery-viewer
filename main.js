@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+let firstRun = true
+
 let scene, camera, renderer, model, curModelPath, selectedModel, envMap, currentLivery
 
 let extraMeshes = []
@@ -13,16 +15,95 @@ let LodLevel = 3
 let currentSkybox = cubemaps[0]
 let skyboxState = false
 
-function init() {
-    // Create the scene
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
-    renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.getElementById('modelContainer').appendChild(renderer.domElement);
-    setSkybox(scene, currentSkybox);
 
-    // Populate the dropdown with available models
+function loadSettingsCookies() {
+
+    getCookie('lodLevel') ? LodLevel = parseInt(getCookie('lodLevel')) : null
+
+    if (getCookie("skybox")) {
+        currentSkybox = getCookie("skybox")
+        const cubemapSelector = document.getElementById('cubemapSelector')
+        cubemapSelector.value = currentSkybox
+
+
+    }
+    getCookie("skyboxActive") ? skyboxState = Boolean(getCookie("skyboxActive")) : null
+    if (getCookie("model")) {
+        firstRun = false
+        curModelPath = getCookie("model")
+        const modelSelector = document.getElementById('modelSelector');
+        modelSelector.value = curModelPath
+        populateLiverySelector(curModelPath)
+    }
+    if (getCookie("currentLivery")) {
+        currentLivery = getCookie("currentLivery")
+        const liverySelector = document.getElementById('liverySelector');
+        console.log("set livery selector to ",currentLivery)
+        liverySelector.value = currentLivery
+    }
+
+    if (getCookie('lodLevel')) {
+        LodLevel = getCookie('lodLevel')
+        lodSelector.value = LodLevel
+    }
+
+    if (getCookie("materialPreset_baseLivery1")) {
+        bodyMaterials[0] = getCookie("materialPreset_baseLivery1")
+        const layer1Material = document.getElementById('layer1Material')
+        layer1Material.value = bodyMaterials[0]
+        applyMaterialPreset("baseLivery1", paintMaterials[bodyMaterials[0]])
+    }
+    if (getCookie("materialPreset_baseLivery2")) {
+        bodyMaterials[1] = getCookie("materialPreset_baseLivery2")
+        const layer2Material = document.getElementById('layer2Material')
+        layer2Material.value = bodyMaterials[1]
+        applyMaterialPreset("baseLivery1", paintMaterials[bodyMaterials[1]])
+    }
+    if (getCookie("materialPreset_baseLivery3")) {
+        bodyMaterials[2] = getCookie("materialPreset_baseLivery3")
+        const layer3Material = document.getElementById('layer3Material')
+        layer3Material.value = bodyMaterials[2]
+        applyMaterialPreset("baseLivery1", paintMaterials[bodyMaterials[2]])
+    }
+    if (getCookie("rimMaterial")) {
+        bodyMaterials[3] = getCookie("rimMaterial")
+        const rimMaterial = document.getElementById('rimMaterial')
+        rimMaterial.value = bodyMaterials[3]
+        applyMaterialPreset(`EXT_RIM`, paintMaterials[bodyMaterials[3]])
+    }
+
+    if (getCookie("materialColor_baseLivery1")) {
+        bodyColours[0] = coloridToHex(getCookie("materialColor_baseLivery1"))
+        const layer1Color = document.getElementById('layer1Color')
+        layer1Color.setValue(bodyColours[0])
+    }
+
+    if (getCookie("materialColor_baseLivery2")) {
+        bodyColours[1] = coloridToHex(getCookie("materialColor_baseLivery2"))
+        const layer2Color = document.getElementById('layer2Color')
+        layer2Color.setValue(bodyColours[1])
+    }
+
+    if (getCookie("materialColor_baseLivery3")) {
+        bodyColours[2] = coloridToHex(getCookie("materialColor_baseLivery3"))
+        const layer3Color = document.getElementById('layer3Color')
+        layer3Color.setValue(bodyColours[2])
+    }
+
+    if (getCookie("rimColour")) {
+        bodyColours[3] = coloridToHex(getCookie("rimColour"))
+        const rimColour = document.getElementById('rimColor')
+        rimColour.setValue(bodyColours[3])
+        changeMaterialColor(`EXT_RIM`, bodyColours[3]);
+        applyMaterialPreset(`EXT_RIM`, paintMaterials[bodyMaterials[3]])
+    }
+
+
+}
+
+function init() {
+
+    // Populate Selectors
     const modelSelector = document.getElementById('modelSelector');
     for (const [folder, file] of Object.entries(modelFiles)) {
         const option = document.createElement('option');
@@ -39,10 +120,24 @@ function init() {
         cubemapSelector.appendChild(option);
     });
 
+    // Create the scene
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+    renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById('modelContainer').appendChild(renderer.domElement);
+    console.log("loading cookies")
+    loadSettingsCookies()
+    console.log("done loading cookies")
+
+    setSkybox(scene, currentSkybox);
+
+
     const skyboxToggle = document.getElementById('skybox-toggle');
     //skyboxToggle.setAttribute("checked", skyboxState);
     skyboxToggle.addEventListener('change', () => {
         skyboxState = skyboxToggle.checked;
+        setCookie("skyboxActive", skyboxToggle.checked)
         if (skyboxToggle.checked) {
             setSkybox(scene, currentSkybox);
         } else {
@@ -51,7 +146,8 @@ function init() {
     });
 
     // Load the initial model
-    loadModel(Object.keys(modelFiles)[0]); // Load the first model initially
+    console.log(`loading model ${curModelPath || Object.keys(modelFiles)[0]}`)
+    loadModel(curModelPath || Object.keys(modelFiles)[0]); // Load the first model initially
 
     // Set up lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -92,6 +188,7 @@ function init() {
     const lodSelector = document.getElementById('lodSelector');
     lodSelector.addEventListener('change', (event) => {
         LodLevel = event.target.value;
+        setCookie('lodLevel', LodLevel);
         loadModel(selectedModel || Object.keys(modelFiles)[0])
     });
 
@@ -127,6 +224,7 @@ function init() {
     const rimColor = document.getElementById('rimColor');
     rimColor.addEventListener('change', (event) => {
         bodyColours[3] = event.target.value;
+        setCookie("rimColour", findColorId(bodyColours[3]))
         changeMaterialColor(`EXT_RIM`, bodyColours[3]);
         applyMaterialPreset(`EXT_RIM`, paintMaterials[bodyMaterials[3]])
     });
@@ -135,24 +233,28 @@ function init() {
     layer1Material.addEventListener('change', (event) => {
         bodyMaterials[0] = event.target.value;
         applyMaterialPreset("baseLivery1", paintMaterials[event.target.value])
+        setCookie(`materialPreset_baseLivery1`, bodyMaterials[0]);
     });
 
     const layer2Material = document.getElementById('layer2Material');
     layer2Material.addEventListener('change', (event) => {
         bodyMaterials[1] = event.target.value;
         applyMaterialPreset("baseLivery2", paintMaterials[event.target.value])
+        setCookie(`materialPreset_baseLivery2`, bodyMaterials[1]);
     });
 
     const layer3Material = document.getElementById('layer3Material');
     layer3Material.addEventListener('change', (event) => {
         bodyMaterials[2] = event.target.value;
         applyMaterialPreset("baseLivery3", paintMaterials[event.target.value])
+        setCookie(`materialPreset_baseLivery3`, bodyMaterials[2]);
     });
 
 
     const rimMaterial = document.getElementById('rimMaterial');
     rimMaterial.addEventListener('change', (event) => {
         bodyMaterials[3] = event.target.value;
+        setCookie("rimMaterial", bodyMaterials[3])
         applyMaterialPreset(`EXT_RIM`, paintMaterials[bodyMaterials[3]])
     });
 
@@ -185,6 +287,7 @@ function setSkybox(scene, folderName) {
     if (skyboxState) {
         scene.background = envMap;
     }
+    setCookie('skybox', folderName)
     scene.environment = envMap;
     currentSkybox = folderName;
 
@@ -204,6 +307,8 @@ function setSkybox(scene, folderName) {
 
 function loadModel(modelPath) {
     // Remove the existing model if it exists
+    setCookie('model', modelPath)
+
     if (model) {
         scene.remove(model);
         cleanupPreviousMeshes()
@@ -242,7 +347,7 @@ function loadModel(modelPath) {
                         } else {
                             const newMaterial = new THREE.MeshPhysicalMaterial({ 
                                 name: materialName,
-                                color: 0xffffff,
+                                color: bodyColours[3],
                              });
                              node.material = newMaterial;
                              applyMaterialPreset(node.material, paintMaterials["glossy"])
@@ -296,18 +401,16 @@ function loadModel(modelPath) {
         });
 
 
-        if (curModelPath != modelPath) {
-            const liverySelector = document.getElementById('liverySelector');
-            for (let a in liverySelector.options) { liverySelector.options.remove(0); }
-            for (const [i, v] of Object.entries(baseLiveries[modelPath])) {
-                const option = document.createElement('option');
-                option.value = i;
-                option.textContent = v.name;
-                liverySelector.appendChild(option);
-            }
+        if (curModelPath != modelPath || firstRun) {
+            firstRun = false
+            populateLiverySelector(modelPath)
         }
         curModelPath = modelPath
         mergeAndSetDecals()
+        applyMaterialPreset("baseLivery1", paintMaterials[bodyMaterials[0]])
+        applyMaterialPreset("baseLivery2", paintMaterials[bodyMaterials[1]])
+        applyMaterialPreset("baseLivery3", paintMaterials[bodyMaterials[2]])
+        applyMaterialPreset(`EXT_RIM`, paintMaterials[bodyMaterials[3]])
     });
 }
 
@@ -318,9 +421,10 @@ var sponsorsFile = null;
 async function setBaseLivery(modelPath, livery) {
     const liveryData = baseLiveries[modelPath][livery];
     currentLivery = livery
+    console.log(`CurrentLivery is ${currentLivery}`)
     if (!liveryData) return;
     const liveryPath = liveryData.path;
-    console.log(liveryData.sponsor)
+    setCookie('currentLivery', livery || 100);
     let images
     if (liveryData.sponsor) {
         images = await convertImageToRGBChannels(`models/${modelPath}/skins/custom/${liveryPath}/EXT_Skin_Sponsors.png`)
@@ -355,13 +459,6 @@ function cleanupPreviousMeshes() {
             scene.remove(child);
         }
     });
-}
-
-function setupCanvas(image) {
-    const canvas = document.createElement('canvas');
-    canvas.width = image.width;
-    canvas.height = image.height;
-    return canvas;
 }
 
 function loadImage(src) {
@@ -508,9 +605,6 @@ function processFile(file) {
     reader.readAsDataURL(file);
 }
 
-function isImageFile(dataUrl) {
-    return dataUrl.match(/image/i);
-}
 
 function handleImageFile(file, dataUrl) {
     const img = new Image();
@@ -650,6 +744,7 @@ async function convertImageToRGBChannels(imagePath) {
 
 function changeMaterialColor(materialName, hexColor) {
     // Convert hex color string to THREE.Color
+
     const color = new THREE.Color(hexColor);
 
     // Traverse all objects in the scene
@@ -672,36 +767,23 @@ function applyBodyColours() {
     for (let i = 0; i < bodyColours.length; i++) {
         changeMaterialColor(`baseLivery${i + 1}`, bodyColours[i]);
         applyMaterialPreset(`baseLivery${i + 1}`, paintMaterials[bodyMaterials[i]])
+
+        setCookie(`materialColor_baseLivery${i + 1}`, findColorId(bodyColours[i]));
+        setCookie(`materialPreset_baseLivery${i + 1}`, bodyMaterials[i]);
     }
 }
 
-// Function to convert hex to RGB
-function hexToRgb(hex) {
-    // Remove the hash (#) if present
-    hex = hex.replace(/^#/, '');
-
-    // Parse r, g, b values from hex
-    let bigint = parseInt(hex, 16);
-    let r = (bigint >> 16) & 255;
-    let g = (bigint >> 8) & 255;
-    let b = bigint & 255;
-
-    return { r, g, b };
-}
-
-// Function to find the matching color ID
-function findColorId(hexColor) {
-    const rgbColor = hexToRgb(hexColor);
-
-    for (const [id, color] of Object.entries(colours)) {
-        // Check if the RGB values match
-        if (color.r === rgbColor.r && color.g === rgbColor.g && color.b === rgbColor.b) {
-            return Number(id); // Return the ID as a number
-        }
+function populateLiverySelector(modelPath) {
+    const liverySelector = document.getElementById('liverySelector');
+    for (let a in liverySelector.options) { liverySelector.options.remove(0); }
+    for (const [i, v] of Object.entries(baseLiveries[modelPath])) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = v.name;
+        liverySelector.appendChild(option);
     }
-    return null; // Return null if no match is found
 }
-  
+
 
 // Initialize
 init();
