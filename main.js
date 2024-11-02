@@ -331,11 +331,9 @@ function loadModel(modelPath) {
             }
         });
     }
-    if (LodLevel > 2) {
-        for (let i = 0; i < wheelMeshes.length; i++) {
-            const wheelMesh = wheelMeshes[i];
-            cleanupMesh(wheelMesh);
-        }
+    for (let i = 0; i < wheelMeshes.length; i++) {
+        const wheelMesh = wheelMeshes[i];
+        cleanupMesh(wheelMesh);
     }
 
     // Load new GLTF model
