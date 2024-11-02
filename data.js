@@ -20,21 +20,21 @@ var paintMaterials = {
         "clearCoatRoughness": 0.5,
         "metallic": 0.25
     },
-    "satinMetallic": {
-        "baseRoughness": 0.3,
-        "clearCoat": 0.5,
-        "clearCoatRoughness": 0.3,
-        "metallic": 0.7
-    },
     "satin": {
         "baseRoughness": 0.25,
         "clearCoat": 0.1,
         "clearCoatRoughness": 0.3,
         "metallic": 0.3
     },
+    "satinMetallic": {
+        "baseRoughness": 0.35,
+        "clearCoat": 0,
+        "clearCoatRoughness": 0,
+        "metallic": 0.65
+    },
     "matte": {
-        "baseRoughness": 0.15,
-        "clearCoat": 0.6,
+        "baseRoughness": 0.35,
+        "clearCoat": 0.3,
         "clearCoatRoughness": 0.6,
         "metallic": 0
     },
