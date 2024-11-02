@@ -7,6 +7,7 @@ let firstRun = true
 let scene, camera, renderer, model, prevModelPath, curModelPath, envMap, currentLivery
 
 let extraMeshes = []
+let wheelMeshes = []
 let bodyColours = [ "#ff0000", "#00ff00", "#0000ff", "#fafafa" ]
 let bodyMaterials = ["glossy", "glossy", "glossy", "glossy"]
 let bodyTextures = []
@@ -330,6 +331,12 @@ function loadModel(modelPath) {
             }
         });
     }
+    if (LodLevel > 2) {
+        for (let i = 0; i < wheelMeshes.length; i++) {
+            const wheelMesh = wheelMeshes[i];
+            cleanupMesh(wheelMesh);
+        }
+    }
 
     // Load new GLTF model
     const loader = new GLTFLoader();
@@ -459,11 +466,7 @@ async function setBaseLivery(modelPath, livery) {
 
 function cleanupPreviousMeshes() {
     extraMeshes.forEach(mesh => {
-        if (mesh.material.map) {
-            mesh.material.map.dispose();
-        }
-        mesh.material.dispose();
-        scene.remove(mesh)
+        cleanupMesh(mesh)
     });
     bodyTextures.forEach(texture => {
         texture.dispose();
@@ -475,6 +478,15 @@ function cleanupPreviousMeshes() {
             scene.remove(child);
         }
     });
+}
+
+function cleanupMesh(mesh) {
+    if (mesh.material.map) {
+        mesh.material.map.dispose();
+    }
+    mesh.material.dispose();
+    scene.remove(mesh);
+    mesh.geometry.dispose();
 }
 
 function loadImage(src) {
@@ -586,7 +598,7 @@ function loadWheelModel(node, model, modelPath) {
         // move and rotate wheel model according to node position/rotation
         wheelObject.rotation.copy(node.rotation);
         wheelObject.position.copy(node.position);
-        extraMeshes.push(wheelObject);
+        wheelMeshes.push(wheelObject);
     }, undefined, function() {
         console.log(`Wheel Model missing for ${modelPath}, loading placeholder..`);
         loadWheelModel(node, model,"bmw_m4_gt3")
