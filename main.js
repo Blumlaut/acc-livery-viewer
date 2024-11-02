@@ -4,7 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 let firstRun = true
 
-let scene, camera, renderer, model, curModelPath, selectedModel, envMap, currentLivery
+let scene, camera, renderer, model, curModelPath, envMap, currentLivery
 
 let extraMeshes = []
 let bodyColours = [ "#ff0000", "#00ff00", "#0000ff", "#fafafa" ]
@@ -27,7 +27,13 @@ function loadSettingsCookies() {
 
 
     }
-    getCookie("skyboxActive") ? skyboxState = Boolean(getCookie("skyboxActive")) : null
+
+    if (getCookie("skyboxActive")) {
+        skyboxState = (getCookie("skyboxActive") == "true" || false)
+        const skyboxToggle = document.getElementById('skybox-toggle')
+        skyboxToggle.checked = skyboxState
+    }
+
     if (getCookie("model")) {
         firstRun = false
         curModelPath = getCookie("model")
@@ -169,8 +175,8 @@ function init() {
 
     // Handle model change
     modelSelector.addEventListener('change', (event) => {
-        selectedModel = event.target.value;
-        loadModel(selectedModel);
+        curModelPath = event.target.value;
+        loadModel(curModelPath);
     });
 
 
@@ -189,7 +195,7 @@ function init() {
     lodSelector.addEventListener('change', (event) => {
         LodLevel = event.target.value;
         setCookie('lodLevel', LodLevel);
-        loadModel(selectedModel || Object.keys(modelFiles)[0])
+        loadModel(curModelPath || Object.keys(modelFiles)[0])
     });
 
 
@@ -646,7 +652,7 @@ function animate() {
     texturesElement.innerText = `Textures: ${info.memory.textures}`;
     polygonsElement.innerText = `Polygons: ${info.render.triangles}`;
     drawCallsElement.innerText = `Draw Calls: ${info.render.calls}`;
-    loadedCarElement.innerText = `Car: ${Object.keys(modelFiles)[0]}`
+    loadedCarElement.innerText = `Car: ${curModelPath}`
     if (currentLivery) {
         skinIdElement.innerText = `Skin ID: ${currentLivery}`
     }
