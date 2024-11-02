@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+let firstRun = true
+
 let scene, camera, renderer, model, curModelPath, selectedModel, envMap, currentLivery
 
 let extraMeshes = []
@@ -15,10 +17,29 @@ let skyboxState = false
 
 
 function loadSettingsCookies() {
+
+    getCookie('lodLevel') ? LodLevel = parseInt(getCookie('lodLevel')) : null
+
     getCookie("skybox") ? currentSkybox = getCookie("skybox") : null
-    getCookie("skyboxActive") ? skyboxState = true : null
-    getCookie("model") ? curModelPath = getCookie("model") : null
-    getCookie("currentLivery") ? currentLivery = getCookie("currentLivery") : null
+    getCookie("skyboxActive") ? skyboxState = Boolean(getCookie("skyboxActive")) : null
+    if (getCookie("model")) {
+        firstRun = false
+        curModelPath = getCookie("model")
+        const modelSelector = document.getElementById('modelSelector');
+        modelSelector.value = curModelPath
+        populateLiverySelector(curModelPath)
+    }
+    if (getCookie("currentLivery")) {
+        currentLivery = getCookie("currentLivery")
+        const liverySelector = document.getElementById('liverySelector');
+        console.log("set livery selector to ",currentLivery)
+        liverySelector.value = currentLivery
+    }
+
+    if (getCookie('lodLevel')) {
+        LodLevel = getCookie('lodLevel')
+        lodSelector.value = LodLevel
+    }
 
     getCookie("bodyColour1") ? bodyColours[0] = getCookie("bodyColour1") : null
     getCookie("bodyColour2") ? bodyColours[1] = getCookie("bodyColour2") : null
@@ -31,17 +52,8 @@ function loadSettingsCookies() {
 }
 
 function init() {
-    // Create the scene
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
-    renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.getElementById('modelContainer').appendChild(renderer.domElement);
-    loadSettingsCookies()
 
-    setSkybox(scene, currentSkybox);
-
-    // Populate the dropdown with available models
+    // Populate Selectors
     const modelSelector = document.getElementById('modelSelector');
     for (const [folder, file] of Object.entries(modelFiles)) {
         const option = document.createElement('option');
@@ -58,10 +70,24 @@ function init() {
         cubemapSelector.appendChild(option);
     });
 
+    // Create the scene
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+    renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.getElementById('modelContainer').appendChild(renderer.domElement);
+    console.log("loading cookies")
+    loadSettingsCookies()
+    console.log("done loading cookies")
+
+    setSkybox(scene, currentSkybox);
+
+
     const skyboxToggle = document.getElementById('skybox-toggle');
     //skyboxToggle.setAttribute("checked", skyboxState);
     skyboxToggle.addEventListener('change', () => {
         skyboxState = skyboxToggle.checked;
+        setCookie("skyboxActive", skyboxToggle.checked)
         if (skyboxToggle.checked) {
             setSkybox(scene, currentSkybox);
         } else {
@@ -70,6 +96,7 @@ function init() {
     });
 
     // Load the initial model
+    console.log(`loading model ${curModelPath || Object.keys(modelFiles)[0]}`)
     loadModel(curModelPath || Object.keys(modelFiles)[0]); // Load the first model initially
 
     // Set up lighting
@@ -111,6 +138,7 @@ function init() {
     const lodSelector = document.getElementById('lodSelector');
     lodSelector.addEventListener('change', (event) => {
         LodLevel = event.target.value;
+        setCookie('lodLevel', LodLevel);
         loadModel(selectedModel || Object.keys(modelFiles)[0])
     });
 
@@ -207,7 +235,6 @@ function setSkybox(scene, folderName) {
         scene.background = envMap;
     }
     setCookie('skybox', folderName)
-    setCookie('skyboxActive', skyboxState)
     scene.environment = envMap;
     currentSkybox = folderName;
 
@@ -321,15 +348,9 @@ function loadModel(modelPath) {
         });
 
 
-        if (curModelPath != modelPath) {
-            const liverySelector = document.getElementById('liverySelector');
-            for (let a in liverySelector.options) { liverySelector.options.remove(0); }
-            for (const [i, v] of Object.entries(baseLiveries[modelPath])) {
-                const option = document.createElement('option');
-                option.value = i;
-                option.textContent = v.name;
-                liverySelector.appendChild(option);
-            }
+        if (curModelPath != modelPath || firstRun) {
+            firstRun = false
+            populateLiverySelector(modelPath)
         }
         curModelPath = modelPath
         mergeAndSetDecals()
@@ -343,10 +364,10 @@ var sponsorsFile = null;
 async function setBaseLivery(modelPath, livery) {
     const liveryData = baseLiveries[modelPath][livery];
     currentLivery = livery
-    setCookie('currentLivery', livery || 100);
+    console.log(`CurrentLivery is ${currentLivery}`)
     if (!liveryData) return;
     const liveryPath = liveryData.path;
-    console.log(liveryData.sponsor)
+    setCookie('currentLivery', livery || 100);
     let images
     if (liveryData.sponsor) {
         images = await convertImageToRGBChannels(`models/${modelPath}/skins/custom/${liveryPath}/EXT_Skin_Sponsors.png`)
@@ -707,6 +728,17 @@ function applyBodyColours() {
     }
 }
 
+function populateLiverySelector(modelPath) {
+    const liverySelector = document.getElementById('liverySelector');
+    for (let a in liverySelector.options) { liverySelector.options.remove(0); }
+    for (const [i, v] of Object.entries(baseLiveries[modelPath])) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = v.name;
+        liverySelector.appendChild(option);
+    }
+}
+
 // Function to convert hex to RGB
 function hexToRgb(hex) {
     // Remove the hash (#) if present
@@ -745,9 +777,12 @@ function getCookie(key) {
         // Check if this cookie starts with the specified key
         if (cookie.startsWith(key + '=')) {
             // Return the value of the cookie after the equal sign
+            console.log(`Found cookie for key ${key}: ${cookie.substring(key.length + 1)}`);
             return decodeURIComponent(cookie.substring(key.length + 1));
         }
     }
+
+    console.log(`No cookie found for key: ${key}`);
     
     // If no cookie is found, return null or an empty string
     return null;
