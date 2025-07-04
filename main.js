@@ -3,6 +3,8 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 let firstRun = true
+// Flag that indicates when the viewer has finished loading a model
+window.viewerReady = false
 
 let scene, camera, renderer, model, prevModelPath, curModelPath, envMap, currentLivery
 
@@ -324,6 +326,8 @@ function setSkybox(scene, folderName) {
 
 
 function loadModel(modelPath) {
+    // Reset ready flag while we load a new model
+    window.viewerReady = false
     // Remove the existing model if it exists
     setCookie('model', modelPath)
 
@@ -358,7 +362,7 @@ function loadModel(modelPath) {
 
     let fullFilePath = `models/${modelPath}/${modelFiles[modelPath]}_Lod${LodLevel}.gltf`
 
-    loader.load(fullFilePath, (gltf) => {
+    loader.load(fullFilePath, async (gltf) => {
         model = gltf.scene;
         scene.add(model);
         // iterate through all materials and apply their texture from textures/*.png
@@ -441,7 +445,7 @@ function loadModel(modelPath) {
             prevModelPath = curModelPath
         }
         curModelPath = modelPath
-        mergeAndSetDecals()
+        await mergeAndSetDecals()
         applyMaterialPreset("baseLivery1", paintMaterials[bodyMaterials[0]])
         applyMaterialPreset("baseLivery2", paintMaterials[bodyMaterials[1]])
         applyMaterialPreset("baseLivery3", paintMaterials[bodyMaterials[2]])
@@ -589,6 +593,8 @@ async function mergeAndSetDecals() {
     } catch (error) {
         console.error(error);
     }
+    window.viewerReady = true
+    window.dispatchEvent(new Event('viewer-ready'))
 }
 
 function loadWheelModel(node, model, modelPath) {
