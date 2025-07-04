@@ -139,6 +139,8 @@ function init() {
     console.log("done loading cookies")
 
     const urlParams = new URLSearchParams(window.location.search);
+    const sideCamera = urlParams.has('sideCamera');
+
     if (urlParams.has('model')) {
         curModelPath = urlParams.get('model');
         modelSelector.value = curModelPath;
@@ -181,12 +183,18 @@ function init() {
     camera.position.z = 4;
     camera.position.x= 0;
     camera.position.y = 1;
+    if (!sideCamera) {
+        // Add OrbitControls for camera control
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.update();
+        scene.rotation.y = Math.PI / 4;
+    } else {
+        // Place camera to the side and look at the car
+        camera.position.set(4, 1, 0);
+        camera.lookAt(0, 1, 0);
+    }
 
-    // Add OrbitControls for camera control
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.update();
-    scene.rotation.y = Math.PI / 4;
-
+    
     // Handle model change
     modelSelector.addEventListener('change', (event) => {
         curModelPath = event.target.value;
