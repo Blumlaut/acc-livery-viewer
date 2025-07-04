@@ -221,7 +221,7 @@ function init() {
         scene.rotation.y = Math.PI / 4;
     } else {
         // Place camera to the side and look at the car
-        camera.position.set(4, 1, 0);
+        camera.position.set(6, 1, 0);
         camera.lookAt(0, 1, 0);
     }
 
