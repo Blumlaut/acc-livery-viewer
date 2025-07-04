@@ -131,7 +131,11 @@ function init() {
     // Create the scene
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
-    renderer = new THREE.WebGLRenderer({ antialias: true, logarithmicDepthBuffer: true });
+    renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        logarithmicDepthBuffer: true,
+        preserveDrawingBuffer: true // allow canvas export via toDataURL
+    });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('modelContainer').appendChild(renderer.domElement);
     console.log("loading cookies")
