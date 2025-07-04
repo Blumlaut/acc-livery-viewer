@@ -79,7 +79,7 @@ uniform vec3 overlayColor3;
     finalCol.rgb = mix(finalCol.rgb, overlayColor3, mask3);
     finalCol *= texture2D(decalMap, vMapUv);
     finalCol *= texture2D(sponsorMap, vMapUv);
-    diffuseColor *= finalCol;
+    diffuseColor = finalCol;
 `;
 
         shader.fragmentShader = shader.fragmentShader.replace(
