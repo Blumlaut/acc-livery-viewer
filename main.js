@@ -136,6 +136,18 @@ function init() {
     loadSettingsCookies()
     console.log("done loading cookies")
 
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('model')) {
+        curModelPath = urlParams.get('model');
+        modelSelector.value = curModelPath;
+        populateLiverySelector(curModelPath);
+    }
+    if (urlParams.has('livery')) {
+        currentLivery = urlParams.get('livery');
+        const liverySelector = document.getElementById('liverySelector');
+        liverySelector.value = currentLivery;
+    }
+
     setSkybox(scene, currentSkybox);
 
 
