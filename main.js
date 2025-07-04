@@ -27,7 +27,8 @@ const defaultOverlay = new THREE.CanvasTexture(whiteCanvas);
 
 function setupCarpaintMaterial(material) {
     material.defines = material.defines || {};
-    material.defines.USE_UV2 = '';
+    // Ensure we use the same UVs for overlays as the base texture
+    delete material.defines.USE_UV2;
 
     material.userData.overlayUniforms = {
         overlayMap1: { value: defaultOverlay },
@@ -50,9 +51,7 @@ function setupCarpaintMaterial(material) {
         shader.uniforms.overlayColor1 = material.userData.overlayUniforms.overlayColor1;
         shader.uniforms.overlayColor2 = material.userData.overlayUniforms.overlayColor2;
         shader.uniforms.overlayColor3 = material.userData.overlayUniforms.overlayColor3;
-        shader.vertexShader = 'varying vec2 vUv2;\n' + shader.vertexShader;
-        shader.vertexShader = shader.vertexShader.replace('#include <uv_vertex>', '#include <uv_vertex>\n vUv2 = uv2;');
-        let inject = `\nvarying vec2 vUv2;\n` +
+        let inject = `\n` +
             `uniform sampler2D overlayMap1;\n` +
             `uniform sampler2D overlayMap2;\n` +
             `uniform sampler2D overlayMap3;\n` +
@@ -62,24 +61,21 @@ function setupCarpaintMaterial(material) {
             `uniform vec3 overlayColor2;\n` +
             `uniform vec3 overlayColor3;\n`;
         shader.fragmentShader = inject + shader.fragmentShader;
-        shader.fragmentShader = shader.fragmentShader.replace(
-            '#include <map_fragment>',
-            `#ifdef USE_MAP
+#ifdef USE_MAP
     vec4 baseCol = texture2D(map, vMapUv);
 #else
     vec4 baseCol = vec4(1.0);
 #endif
-    float mask1 = texture2D(overlayMap1, vUv2).r;
-    float mask2 = texture2D(overlayMap2, vUv2).r;
-    float mask3 = texture2D(overlayMap3, vUv2).r;
+    float mask1 = texture2D(overlayMap1, vMapUv).r;
+    float mask2 = texture2D(overlayMap2, vMapUv).r;
+    float mask3 = texture2D(overlayMap3, vMapUv).r;
     vec4 finalCol = vec4(baseCol.rgb, 1.0);
     finalCol.rgb = mix(finalCol.rgb, overlayColor1, mask1);
     finalCol.rgb = mix(finalCol.rgb, overlayColor2, mask2);
     finalCol.rgb = mix(finalCol.rgb, overlayColor3, mask3);
-    finalCol *= texture2D(decalMap, vUv2);
-    finalCol *= texture2D(sponsorMap, vUv2);
-    diffuseColor *= finalCol;
-`
+    finalCol *= texture2D(decalMap, vMapUv);
+    finalCol *= texture2D(sponsorMap, vMapUv);
+    diffuseColor *= finalCol;`
         );
     };
     material.needsUpdate = true;
