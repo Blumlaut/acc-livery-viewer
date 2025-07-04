@@ -18,12 +18,12 @@ let LodLevel = 3
 let currentSkybox = cubemaps[0]
 let skyboxState = false
 
-const whiteCanvas = document.createElement('canvas');
-whiteCanvas.width = whiteCanvas.height = 1;
-const whiteCtx = whiteCanvas.getContext('2d');
-whiteCtx.fillStyle = '#ffffff';
-whiteCtx.fillRect(0, 0, 1, 1);
-const defaultOverlay = new THREE.CanvasTexture(whiteCanvas);
+const blankCanvas = document.createElement('canvas');
+blankCanvas.width = blankCanvas.height = 1;
+const blankCtx = blankCanvas.getContext('2d');
+blankCtx.fillStyle = '#000000';
+blankCtx.fillRect(0, 0, 1, 1);
+const defaultOverlay = new THREE.CanvasTexture(blankCanvas);
 
 function setupCarpaintMaterial(material) {
     material.defines = material.defines || {};
@@ -39,7 +39,7 @@ function setupCarpaintMaterial(material) {
         overlayColor1: { value: new THREE.Color(bodyColours[0]) },
         overlayColor2: { value: new THREE.Color(bodyColours[1]) },
         overlayColor3: { value: new THREE.Color(bodyColours[2]) },
-        whiteTexture: defaultOverlay
+        blankTexture: defaultOverlay
     };
 
     material.onBeforeCompile = (shader) => {
@@ -77,8 +77,10 @@ uniform vec3 overlayColor3;
     finalCol.rgb = mix(finalCol.rgb, overlayColor1, mask1);
     finalCol.rgb = mix(finalCol.rgb, overlayColor2, mask2);
     finalCol.rgb = mix(finalCol.rgb, overlayColor3, mask3);
-    finalCol *= texture2D(decalMap, vMapUv);
-    finalCol *= texture2D(sponsorMap, vMapUv);
+    vec4 decalCol = texture2D(decalMap, vMapUv);
+    finalCol.rgb = mix(finalCol.rgb, decalCol.rgb, decalCol.a);
+    vec4 sponsorCol = texture2D(sponsorMap, vMapUv);
+    finalCol.rgb = mix(finalCol.rgb, sponsorCol.rgb, sponsorCol.a);
     diffuseColor = finalCol;
 `;
 
@@ -436,7 +438,7 @@ function setSkybox(scene, folderName) {
 
 
 
-function loadModel(modelPath) {
+async function loadModel(modelPath) {
     // Reset ready flag while we load a new model
     window.viewerReady = false
     // Remove the existing model if it exists
@@ -471,13 +473,16 @@ function loadModel(modelPath) {
     // Load new GLTF model
     const loader = new GLTFLoader();
 
-    let fullFilePath = `models/${modelPath}/${modelFiles[modelPath]}_Lod${LodLevel}.gltf`
+    const fullFilePath = `models/${modelPath}/${modelFiles[modelPath]}_Lod${LodLevel}.gltf`;
+    const gltf = await loader.loadAsync(fullFilePath);
 
-    loader.load(fullFilePath, async (gltf) => {
-        model = gltf.scene;
-        scene.add(model);
-        // iterate through all materials and apply their texture from textures/*.png
-        model.traverse((node) => {
+    model = gltf.scene;
+    scene.add(model);
+
+    const textureLoader = new THREE.TextureLoader();
+    const texturePromises = [];
+
+    model.traverse((node) => {
             if (LodLevel < 3) {
                 for (const [model, wheel] of Object.entries(wheelNodes)) {
                     if (node.name === wheel) {
@@ -522,11 +527,10 @@ function loadModel(modelPath) {
                         if (materialName === "EXT_Carpaint_Inst") {
                             texturePath = `models/${modelPath}/textures/EXT_Skin_Colour.png`;
                         }
-                        const textureLoader = new THREE.TextureLoader();
-                        textureLoader.load(texturePath, (texture) => {
+                        const promise = textureLoader.loadAsync(texturePath).then((texture) => {
                             texture.flipY = false;
                             texture.colorSpace = THREE.SRGBColorSpace;
-                            bodyTextures.push(texture)
+                            bodyTextures.push(texture);
                             let newMaterial;
                             if (materialName === "EXT_Carpaint_Inst") {
                                 newMaterial = new THREE.MeshPhysicalMaterial({
@@ -543,33 +547,32 @@ function loadModel(modelPath) {
                                 });
                             }
                             node.material = newMaterial;
-                        },
-                        undefined,
-                        (error) => {
+                        }).catch(() => {
                             const newMaterial = new THREE.MeshPhysicalMaterial({
                                 name: node.material.name,
                                 color: 0x444444,
-                             });
+                            });
                             node.material = newMaterial;
                         });
+                        texturePromises.push(promise);
                     }
                 }
             }
-        });
-
-
-        if (curModelPath != prevModelPath || firstRun) {
-            firstRun = false
-            populateLiverySelector(modelPath)
-            prevModelPath = curModelPath
-        }
-        curModelPath = modelPath
-        await mergeAndSetDecals()
-        applyMaterialPreset("EXT_Carpaint_Inst", paintMaterials[bodyMaterials[0]])
-        applyMaterialPreset("EXT_Carpaint_Inst", paintMaterials[bodyMaterials[1]])
-        applyMaterialPreset("EXT_Carpaint_Inst", paintMaterials[bodyMaterials[2]])
-        applyMaterialPreset(`EXT_RIM`, paintMaterials[bodyMaterials[3]])
     });
+
+    await Promise.all(texturePromises);
+
+    if (curModelPath != prevModelPath || firstRun) {
+        firstRun = false;
+        populateLiverySelector(modelPath);
+        prevModelPath = curModelPath;
+    }
+    curModelPath = modelPath;
+    await mergeAndSetDecals();
+    applyMaterialPreset('EXT_Carpaint_Inst', paintMaterials[bodyMaterials[0]]);
+    applyMaterialPreset('EXT_Carpaint_Inst', paintMaterials[bodyMaterials[1]]);
+    applyMaterialPreset('EXT_Carpaint_Inst', paintMaterials[bodyMaterials[2]]);
+    applyMaterialPreset('EXT_RIM', paintMaterials[bodyMaterials[3]]);
 }
 
 
@@ -607,7 +610,7 @@ function cleanupPreviousMeshes() {
     });
     const mat = getMaterialFromName('EXT_Carpaint_Inst')[0];
     if (mat && mat.userData.overlayUniforms) {
-        const w = mat.userData.overlayUniforms.whiteTexture;
+        const w = mat.userData.overlayUniforms.blankTexture;
         mat.userData.overlayUniforms.overlayMap1.value = w;
         mat.userData.overlayUniforms.overlayMap2.value = w;
         mat.userData.overlayUniforms.overlayMap3.value = w;
