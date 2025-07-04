@@ -858,6 +858,12 @@ function populateLiverySelector(modelPath) {
     }
 }
 
+// Allow external scripts (e.g., Puppeteer) to capture the current canvas
+// as a PNG data URL.
+window.captureImage = function () {
+    return renderer.domElement.toDataURL('image/png');
+};
+
 
 // Initialize
 init();
