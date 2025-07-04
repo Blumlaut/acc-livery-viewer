@@ -155,7 +155,14 @@ function init() {
         });
     }
 
-    if (urlParams.has('model')) {
+    if (urlParams.has('carId')) {
+        const carInfo = cars[urlParams.get('carId')];
+        if (carInfo && carInfo.modelKey) {
+            curModelPath = carInfo.modelKey;
+            modelSelector.value = curModelPath;
+            populateLiverySelector(curModelPath);
+        }
+    } else if (urlParams.has('model')) {
         curModelPath = urlParams.get('model');
         modelSelector.value = curModelPath;
         populateLiverySelector(curModelPath);
@@ -754,7 +761,8 @@ function animate() {
     texturesElement.innerText = `Textures: ${info.memory.textures}`;
     polygonsElement.innerText = `Polygons: ${info.render.triangles}`;
     drawCallsElement.innerText = `Draw Calls: ${info.render.calls}`;
-    loadedCarElement.innerText = `Car: ${curModelPath}`
+    const carInfo = Object.values(cars).find(c => c.modelKey === curModelPath);
+    loadedCarElement.innerText = `Car: ${carInfo ? carInfo.model : curModelPath}`
     if (currentLivery) {
         skinIdElement.innerText = `Skin ID: ${currentLivery}`
     }
