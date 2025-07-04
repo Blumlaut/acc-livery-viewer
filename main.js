@@ -51,16 +51,20 @@ function setupCarpaintMaterial(material) {
         shader.uniforms.overlayColor1 = material.userData.overlayUniforms.overlayColor1;
         shader.uniforms.overlayColor2 = material.userData.overlayUniforms.overlayColor2;
         shader.uniforms.overlayColor3 = material.userData.overlayUniforms.overlayColor3;
-        let inject = `\n` +
-            `uniform sampler2D overlayMap1;\n` +
-            `uniform sampler2D overlayMap2;\n` +
-            `uniform sampler2D overlayMap3;\n` +
-            `uniform sampler2D decalMap;\n` +
-            `uniform sampler2D sponsorMap;\n` +
-            `uniform vec3 overlayColor1;\n` +
-            `uniform vec3 overlayColor2;\n` +
-            `uniform vec3 overlayColor3;\n`;
-        shader.fragmentShader = inject + shader.fragmentShader;
+
+        const uniformDecl = `
+uniform sampler2D overlayMap1;
+uniform sampler2D overlayMap2;
+uniform sampler2D overlayMap3;
+uniform sampler2D decalMap;
+uniform sampler2D sponsorMap;
+uniform vec3 overlayColor1;
+uniform vec3 overlayColor2;
+uniform vec3 overlayColor3;
+`;
+        shader.fragmentShader = uniformDecl + shader.fragmentShader;
+
+        const mixFrag = `
 #ifdef USE_MAP
     vec4 baseCol = texture2D(map, vMapUv);
 #else
@@ -75,7 +79,12 @@ function setupCarpaintMaterial(material) {
     finalCol.rgb = mix(finalCol.rgb, overlayColor3, mask3);
     finalCol *= texture2D(decalMap, vMapUv);
     finalCol *= texture2D(sponsorMap, vMapUv);
-    diffuseColor *= finalCol;`
+    diffuseColor *= finalCol;
+`;
+
+        shader.fragmentShader = shader.fragmentShader.replace(
+            '#include <output_fragment>',
+            `${mixFrag}\n#include <output_fragment>`
         );
     };
     material.needsUpdate = true;
