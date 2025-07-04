@@ -173,6 +173,16 @@ function init() {
         liverySelector.value = currentLivery;
     }
 
+    if (urlParams.has('carJson')) {
+        const carUrl = urlParams.get('carJson');
+        fetch(carUrl)
+            .then(resp => resp.json())
+            .then(data => {
+                applyCarJsonData(data);
+            })
+            .catch(err => console.error('Failed to load carJson', err));
+    }
+
     setSkybox(scene, currentSkybox);
 
 
@@ -699,7 +709,8 @@ const fileActions = {
     'decals.png': file => { decalsFile = URL.createObjectURL(file); },
     'sponsors.png': file => { sponsorsFile = URL.createObjectURL(file); },
     'decals.json': content => { paintMaterials.customDecal = content; },
-    'sponsors.json': content => { paintMaterials.customSponsor = content; }
+    'sponsors.json': content => { paintMaterials.customSponsor = content; },
+    'car.json': content => { applyCarJsonData(content); }
 };
 
 function handleFileUpload(event) {
@@ -738,7 +749,7 @@ function handleJsonFile(file, dataUrl) {
     if (fileActions[file.name]) {
         fileActions[file.name](jsonContent);
     } else if (jsonContent.hasOwnProperty('raceNumber')) {
-        // TODO: dragons
+        applyCarJsonData(jsonContent);
     } else {
         console.log("Unrecognized JSON file content.", jsonContent);
     }
@@ -883,6 +894,44 @@ function changeMaterialColor(materialName, hexColor) {
             }
         }
     });
+}
+
+function applyCarJsonData(data) {
+    if (data.skinColor1Id !== undefined) {
+        bodyColours[0] = coloridToHex(data.skinColor1Id);
+        document.getElementById('layer1Color').setValue(bodyColours[0]);
+    }
+    if (data.skinColor2Id !== undefined) {
+        bodyColours[1] = coloridToHex(data.skinColor2Id);
+        document.getElementById('layer2Color').setValue(bodyColours[1]);
+    }
+    if (data.skinColor3Id !== undefined) {
+        bodyColours[2] = coloridToHex(data.skinColor3Id);
+        document.getElementById('layer3Color').setValue(bodyColours[2]);
+    }
+    if (data.rimColor1Id !== undefined) {
+        bodyColours[3] = coloridToHex(data.rimColor1Id);
+        document.getElementById('rimColor').setValue(bodyColours[3]);
+    }
+
+    if (data.skinMaterialType1 !== undefined && materialIdToName[data.skinMaterialType1]) {
+        bodyMaterials[0] = materialIdToName[data.skinMaterialType1];
+        document.getElementById('layer1Material').value = bodyMaterials[0];
+    }
+    if (data.skinMaterialType2 !== undefined && materialIdToName[data.skinMaterialType2]) {
+        bodyMaterials[1] = materialIdToName[data.skinMaterialType2];
+        document.getElementById('layer2Material').value = bodyMaterials[1];
+    }
+    if (data.skinMaterialType3 !== undefined && materialIdToName[data.skinMaterialType3]) {
+        bodyMaterials[2] = materialIdToName[data.skinMaterialType3];
+        document.getElementById('layer3Material').value = bodyMaterials[2];
+    }
+    if (data.rimMaterialType1 !== undefined && materialIdToName[data.rimMaterialType1]) {
+        bodyMaterials[3] = materialIdToName[data.rimMaterialType1];
+        document.getElementById('rimMaterial').value = bodyMaterials[3];
+    }
+
+    applyBodyColours();
 }
 
 function applyBodyColours() {
