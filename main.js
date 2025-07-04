@@ -140,6 +140,16 @@ function init() {
 
     const urlParams = new URLSearchParams(window.location.search);
     const sideCamera = urlParams.has('sideCamera');
+    const hasQueryParams = Array.from(urlParams.keys()).length > 0;
+
+    if (hasQueryParams) {
+        ['settingsLayer', 'liveryLayer', 'overlay'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = 'none';
+            }
+        });
+    }
 
     if (urlParams.has('model')) {
         curModelPath = urlParams.get('model');
