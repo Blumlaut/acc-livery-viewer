@@ -7,6 +7,11 @@ var skinMaterialIds = {
     "chrome": 5
 }
 
+var materialIdToName = Object.keys(skinMaterialIds).reduce((acc, key) => {
+    acc[skinMaterialIds[key]] = key;
+    return acc;
+}, {});
+
 var paintMaterials = {
     "glossy": {
         "baseRoughness": 0,
