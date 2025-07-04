@@ -54,7 +54,7 @@ function setupCarpaintMaterial(material) {
         shader.vertexShader = shader.vertexShader.replace('#include <uv_vertex>', '#include <uv_vertex>\n vUv2 = uv2;');
         let inject = `\nvarying vec2 vUv2;\nuniform sampler2D overlayMap1;\nuniform sampler2D overlayMap2;\nuniform sampler2D overlayMap3;\nuniform sampler2D decalMap;\nuniform sampler2D sponsorMap;\nuniform vec3 overlayColor1;\nuniform vec3 overlayColor2;\nuniform vec3 overlayColor3;\n`;
         shader.fragmentShader = inject + shader.fragmentShader;
-        shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', `\n#ifdef USE_MAP\n    vec4 baseCol = texture2D(map, vUv);\n#else\n    vec4 baseCol = vec4(1.0);\n#endif\n    vec4 overlayCol = vec4(1.0);\n    overlayCol *= texture2D(overlayMap1, vUv2) * vec4(overlayColor1,1.0);\n    overlayCol *= texture2D(overlayMap2, vUv2) * vec4(overlayColor2,1.0);\n    overlayCol *= texture2D(overlayMap3, vUv2) * vec4(overlayColor3,1.0);\n    overlayCol *= texture2D(decalMap, vUv2);\n    overlayCol *= texture2D(sponsorMap, vUv2);\n    diffuseColor *= baseCol * overlayCol;\n`);
+        shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', `\n#ifdef USE_MAP\n    vec4 baseCol = texture2D(map, vMapUv);\n#else\n    vec4 baseCol = vec4(1.0);\n#endif\n    vec4 overlayCol = vec4(1.0);\n    overlayCol *= texture2D(overlayMap1, vUv2) * vec4(overlayColor1,1.0);\n    overlayCol *= texture2D(overlayMap2, vUv2) * vec4(overlayColor2,1.0);\n    overlayCol *= texture2D(overlayMap3, vUv2) * vec4(overlayColor3,1.0);\n    overlayCol *= texture2D(decalMap, vUv2);\n    overlayCol *= texture2D(sponsorMap, vUv2);\n    diffuseColor *= baseCol * overlayCol;\n`);
     };
     material.needsUpdate = true;
 }
