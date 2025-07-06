@@ -909,6 +909,17 @@ function applyCarJsonData(data) {
         bodyColours[2] = coloridToHex(data.skinColor3Id);
         document.getElementById('layer3Color').setValue(bodyColours[2]);
     }
+    
+    if (data.skinTemplateKey == 98 || data.skinTemplateKey == 99) { // 98 and 99 are used for colours and should be handled as all-black
+        bodyColours[0] = coloridToHex(1)
+        document.getElementById('layer1Color').setValue(bodyColours[0]);
+
+        bodyColours[1] = coloridToHex(1)
+        document.getElementById('layer2Color').setValue(bodyColours[1]);
+
+        bodyColours[2] = coloridToHex(1)
+        document.getElementById('layer3Color').setValue(bodyColours[2]);
+    }
     if (data.rimColor1Id !== undefined) {
         bodyColours[3] = coloridToHex(data.rimColor1Id);
         document.getElementById('rimColor').setValue(bodyColours[3]);
