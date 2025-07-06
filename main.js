@@ -897,20 +897,22 @@ function changeMaterialColor(materialName, hexColor) {
 }
 
 function applyCarJsonData(data) {
-    if (data.skinColor1Id !== undefined) {
+    let isCarbon = (data.skinTemplateKey == 98 || data.skinTemplateKey == 99); // 98 and 99 are used for colours and should be handled as all-black
+
+    if (data.skinColor1Id !== undefined && !isCarbon) {
         bodyColours[0] = coloridToHex(data.skinColor1Id);
         document.getElementById('layer1Color').setValue(bodyColours[0]);
     }
-    if (data.skinColor2Id !== undefined) {
+    if (data.skinColor2Id !== undefined && !isCarbon) {
         bodyColours[1] = coloridToHex(data.skinColor2Id);
         document.getElementById('layer2Color').setValue(bodyColours[1]);
     }
-    if (data.skinColor3Id !== undefined) {
+    if (data.skinColor3Id !== undefined && !isCarbon) {
         bodyColours[2] = coloridToHex(data.skinColor3Id);
         document.getElementById('layer3Color').setValue(bodyColours[2]);
     }
     
-    if (data.skinTemplateKey == 98 || data.skinTemplateKey == 99) { // 98 and 99 are used for colours and should be handled as all-black
+    if (isCarbon) {
         bodyColours[0] = coloridToHex(1)
         document.getElementById('layer1Color').setValue(bodyColours[0]);
 
