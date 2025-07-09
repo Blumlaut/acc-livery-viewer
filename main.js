@@ -1,12 +1,19 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { SMAAPass } from 'three/addons/postprocessing/SMAAPass.js';
+//import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
 let firstRun = true
 // Flag that indicates when the viewer has finished loading a model
 window.viewerReady = false
 
-let scene, camera, renderer, model, prevModelPath, curModelPath, envMap, currentLivery
+let scene, camera, renderer, model, prevModelPath, curModelPath, envMap, currentLivery, composer, gtaoPass, smaaPass;
+
 
 let extraMeshes = []
 let wheelMeshes = []
@@ -132,12 +139,61 @@ function init() {
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
     renderer = new THREE.WebGLRenderer({
-        antialias: true,
         logarithmicDepthBuffer: true,
         preserveDrawingBuffer: true // allow canvas export via toDataURL
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.getElementById('modelContainer').appendChild(renderer.domElement);
+
+    composer = new EffectComposer(renderer);
+
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+
+    gtaoPass = new GTAOPass(scene, camera, window.innerWidth, window.innerHeight);
+    composer.addPass(gtaoPass);
+
+    gtaoPass.blendIntensity = 1
+
+    // --- GTAO parameter objects ---
+    const aoParameters = {
+        radius: 0.85,
+        distanceExponent: 4.0,
+        thickness: 10.0,
+        scale: 2.0,
+        samples: 32,
+        distanceFallOff: 0.0,
+        screenSpaceRadius: true,
+    };
+    const pdParameters = {
+        lumaPhi: 10.0,
+        depthPhi: 2.0,
+        normalPhi: 3.0,
+        radius: 16.0,
+        radiusExponent: 1.0,
+        rings: 2.0,
+        samples: 16,
+    };
+
+    gtaoPass.updateGtaoMaterial(aoParameters);
+    gtaoPass.updatePdMaterial(pdParameters);
+
+    smaaPass = new SMAAPass(window.innerWidth, window.innerHeight);  
+    composer.addPass(smaaPass);
+
+    smaaPass.enabled = true;
+    const outputPass = new OutputPass();
+    composer.addPass(outputPass);
+
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        composer.setSize(window.innerWidth, window.innerHeight);
+        gtaoPass.setSize(window.innerWidth, window.innerHeight);
+    });
+
+
     console.log("loading cookies")
     loadSettingsCookies()
     console.log("done loading cookies")
@@ -780,10 +836,13 @@ function animate() {
     
     skinColoursElement.innerText = `Colours: ${findColorId(bodyColours[0])}, ${findColorId(bodyColours[1])}, ${findColorId(bodyColours[2])}, ${findColorId(bodyColours[3])}`
 
+    setTimeout( function() {
 
+        requestAnimationFrame( animate );
 
-    requestAnimationFrame(animate);
-    renderer.render(scene, camera);
+    }, 1000 / 60 );
+
+    composer.render();
 }
 
 function applyMaterialPreset(material, preset) {
