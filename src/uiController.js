@@ -1,9 +1,10 @@
 export class UIController {
-    constructor(state, modelLoader, materialManager, environmentManager) {
+    constructor(state, modelLoader, materialManager, environmentManager, liveryEditor) {
         this.state = state;
         this.modelLoader = modelLoader;
         this.materialManager = materialManager;
         this.environmentManager = environmentManager;
+        this.liveryEditor = liveryEditor;
         this.fileActions = {
             'decals.png': (file) => {
                 // Cleanup previous decals URL if exists
@@ -35,9 +36,12 @@ export class UIController {
 
     async initialize() {
         this.cacheDomElements();
+        this.ensureBrushSettings();
         this.populateSelectors();
         this.loadSettingsFromCookies();
         await this.applyUrlParameters();
+        this.syncEditorPanelControls();
+        this.renderLayerList();
         this.registerEventListeners();
         this.registerDragAndDrop();
     }
@@ -64,6 +68,24 @@ export class UIController {
         this.unloadLiveryButton = document.getElementById('unloadCustomLivery');
         this.fileInput = document.getElementById('fileInput');
         this.multiFileUpload = document.getElementById('multiFileUpload');
+        this.editorPanel = document.getElementById('editorPanel');
+        this.editorPanelToggle = document.getElementById('editorPanelToggle');
+        this.editorPanelClose = document.getElementById('editorPanelClose');
+        this.layerList = document.getElementById('layerList');
+        this.createLayerButton = document.getElementById('createLayerButton');
+        this.mergeLayerButton = document.getElementById('mergeLayerButton');
+        this.toolSelect = document.getElementById('toolSelect');
+        this.brushSizeRange = document.getElementById('brushSizeRange');
+        this.brushOpacityRange = document.getElementById('brushOpacityRange');
+        this.brushHardnessRange = document.getElementById('brushHardnessRange');
+        this.mirrorToggleInput = document.getElementById('mirrorToggle');
+        this.mirrorAxisSelect = document.getElementById('mirrorAxisSelect');
+        this.mirrorModeSelect = document.getElementById('mirrorModeSelect');
+        this.stickerUploadInput = document.getElementById('stickerUploadInput');
+        this.textEntryForm = document.getElementById('textEntryForm');
+        this.textEntryInput = document.getElementById('textEntryInput');
+        this.exportLiveryButton = document.getElementById('exportLiveryButton');
+        this.uvBackgroundToggle = document.getElementById('uvBackgroundToggle');
     }
 
     setModelSelection(value) {
@@ -322,6 +344,8 @@ export class UIController {
                 this.togglePostProcessing(event.target.checked);
             });
         }
+
+        this.registerEditorPanelEvents();
     }
 
     registerDragAndDrop() {
@@ -347,6 +371,354 @@ export class UIController {
         });
     }
 
+    registerEditorPanelEvents() {
+        if (this.editorPanelToggle && this.editorPanel) {
+            this.editorPanelToggle.addEventListener('click', () => {
+                const isOpen = !this.editorPanel.classList.contains('open');
+                this.setEditorPanelOpen(isOpen);
+            });
+        }
+
+        if (this.editorPanelClose && this.editorPanel) {
+            this.editorPanelClose.addEventListener('click', () => this.setEditorPanelOpen(false));
+        }
+
+        if (this.layerList) {
+            this.layerList.addEventListener('click', (event) => {
+                const item = event.target.closest('[data-layer-id]');
+                if (!item || !this.layerList.contains(item) || item.classList.contains('locked')) {
+                    return;
+                }
+                this.handleLayerSelection(item.dataset.layerId);
+            });
+        }
+
+        if (this.createLayerButton) {
+            this.createLayerButton.addEventListener('click', () => {
+                const snapshot = this.state.captureEditorState();
+                const layerIndex = this.state.layers.length + 1;
+                const newLayer = this.state.insertLayer({
+                    name: `Layer ${layerIndex}`,
+                    type: 'paint',
+                    metadata: { items: [] }
+                });
+                if (newLayer) {
+                    if (this.liveryEditor) {
+                        this.liveryEditor.ensureLayerSurface(newLayer);
+                        this.liveryEditor.setActiveLayer(newLayer.id);
+                    }
+                    this.state.recordUndoState(snapshot);
+                    this.state.setActiveLayer(newLayer.id);
+                    this.renderLayerList();
+                }
+            });
+        }
+
+        if (this.mergeLayerButton) {
+            this.mergeLayerButton.addEventListener('click', () => this.mergeActiveLayerDown());
+        }
+
+        if (this.toolSelect) {
+            this.toolSelect.addEventListener('change', (event) => {
+                this.state.setActiveTool(event.target.value);
+                if (this.liveryEditor) {
+                    this.liveryEditor.setActiveTool(event.target.value);
+                }
+            });
+        }
+
+        if (this.brushSizeRange) {
+            this.brushSizeRange.addEventListener('input', (event) => {
+                this.updateBrushSetting('size', Number(event.target.value));
+            });
+        }
+
+        if (this.brushOpacityRange) {
+            this.brushOpacityRange.addEventListener('input', (event) => {
+                this.updateBrushSetting('opacity', Number(event.target.value));
+            });
+        }
+
+        if (this.brushHardnessRange) {
+            this.brushHardnessRange.addEventListener('input', (event) => {
+                this.updateBrushSetting('hardness', Number(event.target.value));
+            });
+        }
+
+        if (this.mirrorToggleInput) {
+            this.mirrorToggleInput.addEventListener('change', (event) => {
+                this.state.setSymmetrySettings({ enabled: event.target.checked });
+                if (this.liveryEditor) {
+                    this.liveryEditor.setMirrorSettings({ ...this.state.symmetrySettings });
+                }
+            });
+        }
+
+        if (this.mirrorAxisSelect) {
+            this.mirrorAxisSelect.addEventListener('change', (event) => {
+                this.state.setSymmetrySettings({ axis: event.target.value });
+                if (this.liveryEditor) {
+                    this.liveryEditor.setMirrorSettings({ ...this.state.symmetrySettings, axis: event.target.value });
+                }
+            });
+        }
+
+        if (this.mirrorModeSelect) {
+            this.mirrorModeSelect.addEventListener('change', (event) => {
+                this.state.setSymmetrySettings({ mode: event.target.value });
+                if (this.liveryEditor) {
+                    this.liveryEditor.setMirrorSettings({ ...this.state.symmetrySettings, mode: event.target.value });
+                }
+            });
+        }
+
+        if (this.uvBackgroundToggle) {
+            this.uvBackgroundToggle.addEventListener('change', (event) => {
+                if (this.liveryEditor) {
+                    this.liveryEditor.setTemplateVisibility(event.target.checked);
+                }
+            });
+        }
+
+        if (this.stickerUploadInput) {
+            this.stickerUploadInput.addEventListener('change', (event) => {
+                if (event.target.files?.length) {
+                    this.handleStickerUpload(event.target.files[0]);
+                }
+                event.target.value = '';
+            });
+        }
+
+        if (this.textEntryForm) {
+            this.textEntryForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const textValue = (this.textEntryInput?.value || '').trim();
+                if (!textValue) {
+                    return;
+                }
+                const snapshot = this.state.captureEditorState();
+                const newLayer = this.state.insertLayer({
+                    name: textValue,
+                    type: 'text',
+                    metadata: { items: [] }
+                });
+                if (newLayer) {
+                    if (this.liveryEditor) {
+                        this.liveryEditor.setActiveLayer(newLayer.id);
+                        this.liveryEditor.addTextToLayer(newLayer.id, textValue);
+                    }
+                    this.state.setActiveLayer(newLayer.id);
+                    this.state.recordUndoState(snapshot);
+                    this.renderLayerList();
+                }
+                if (this.textEntryInput) {
+                    this.textEntryInput.value = '';
+                }
+            });
+        }
+
+        if (this.exportLiveryButton) {
+            this.exportLiveryButton.addEventListener('click', () => {
+                document.dispatchEvent(new CustomEvent('editor:exportLivery'));
+            });
+        }
+    }
+
+    setEditorPanelOpen(isOpen) {
+        if (!this.editorPanel) {
+            return;
+        }
+        this.editorPanel.classList.toggle('open', Boolean(isOpen));
+        this.editorPanel.setAttribute('aria-hidden', (!isOpen).toString());
+        if (this.editorPanelToggle) {
+            this.editorPanelToggle.setAttribute('aria-expanded', Boolean(isOpen).toString());
+        }
+    }
+
+    ensureBrushSettings() {
+        if (!this.state.brushSettings) {
+            this.state.brushSettings = {
+                size: this.brushSizeRange ? Number(this.brushSizeRange.value) : 50,
+                opacity: this.brushOpacityRange ? Number(this.brushOpacityRange.value) : 1,
+                hardness: this.brushHardnessRange ? Number(this.brushHardnessRange.value) : 0.8,
+                color: '#ffffff',
+            };
+        } else {
+            this.state.brushSettings = {
+                size: this.state.brushSettings.size ?? (this.brushSizeRange ? Number(this.brushSizeRange.value) : 50),
+                opacity: this.state.brushSettings.opacity ?? (this.brushOpacityRange ? Number(this.brushOpacityRange.value) : 1),
+                hardness: this.state.brushSettings.hardness ?? (this.brushHardnessRange ? Number(this.brushHardnessRange.value) : 0.8),
+                color: this.state.brushSettings.color || '#ffffff',
+            };
+        }
+
+        if (this.liveryEditor) {
+            Object.entries(this.state.brushSettings).forEach(([key, value]) => {
+                this.liveryEditor.updateBrushSetting(key, value);
+            });
+        }
+    }
+
+    syncEditorPanelControls() {
+        if (this.toolSelect) {
+            if (this.state.activeTool) {
+                this.toolSelect.value = this.state.activeTool;
+            } else {
+                this.state.setActiveTool(this.toolSelect.value);
+            }
+            if (this.liveryEditor) {
+                this.liveryEditor.setActiveTool(this.state.activeTool || this.toolSelect.value);
+            }
+        }
+
+        const symmetry = this.state.symmetrySettings || {};
+        if (this.mirrorToggleInput) {
+            this.mirrorToggleInput.checked = Boolean(symmetry.enabled);
+        }
+        if (this.mirrorAxisSelect && symmetry.axis) {
+            this.mirrorAxisSelect.value = symmetry.axis;
+        }
+        if (this.mirrorModeSelect && symmetry.mode) {
+            this.mirrorModeSelect.value = symmetry.mode;
+        }
+        if (this.liveryEditor) {
+            this.liveryEditor.setMirrorSettings(symmetry);
+        }
+
+        if (this.state.brushSettings) {
+            if (this.brushSizeRange && typeof this.state.brushSettings.size === 'number') {
+                this.brushSizeRange.value = String(this.state.brushSettings.size);
+            }
+            if (this.brushOpacityRange && typeof this.state.brushSettings.opacity === 'number') {
+                this.brushOpacityRange.value = String(this.state.brushSettings.opacity);
+            }
+            if (this.brushHardnessRange && typeof this.state.brushSettings.hardness === 'number') {
+                this.brushHardnessRange.value = String(this.state.brushSettings.hardness);
+            }
+        }
+
+        if (this.uvBackgroundToggle && this.liveryEditor) {
+            this.uvBackgroundToggle.checked = this.liveryEditor.isTemplateVisible();
+        }
+    }
+
+    renderLayerList() {
+        if (!this.layerList) {
+            return;
+        }
+
+        this.layerList.innerHTML = '';
+        const layers = Array.isArray(this.state.layers) ? [...this.state.layers] : [];
+        if (!layers.length) {
+            const emptyItem = document.createElement('li');
+            emptyItem.className = 'layer-item layer-item-empty';
+            emptyItem.textContent = 'No layers yet';
+            this.layerList.appendChild(emptyItem);
+            return;
+        }
+
+        const orderedLayers = layers.slice().reverse();
+        orderedLayers.forEach((layer) => {
+            const listItem = document.createElement('li');
+            listItem.className = 'layer-item';
+            listItem.dataset.layerId = layer.id;
+
+            const isBaseLayer = Boolean(
+                this.state.baseLayers && (
+                    this.state.baseLayers.decals === layer.id ||
+                    this.state.baseLayers.sponsors === layer.id
+                )
+            );
+            const isLocked = isBaseLayer || layer.locked;
+            if (isLocked) {
+                listItem.classList.add('locked');
+            }
+            if (this.state.activeLayerId === layer.id) {
+                listItem.classList.add('active');
+            }
+
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = layer.name || layer.id;
+            listItem.appendChild(nameSpan);
+
+            const meta = document.createElement('span');
+            meta.className = 'layer-meta';
+            if (layer.type) {
+                const typeSpan = document.createElement('span');
+                typeSpan.className = 'layer-type';
+                typeSpan.textContent = layer.type;
+                meta.appendChild(typeSpan);
+            }
+            if (isLocked) {
+                const lockSpan = document.createElement('span');
+                lockSpan.className = 'layer-item-lock';
+                lockSpan.setAttribute('aria-label', 'Locked layer');
+                lockSpan.textContent = '🔒';
+                meta.appendChild(lockSpan);
+            }
+            if (meta.childNodes.length) {
+                listItem.appendChild(meta);
+            }
+
+            this.layerList.appendChild(listItem);
+        });
+    }
+
+    handleLayerSelection(layerId) {
+        if (!layerId) {
+            return;
+        }
+        this.state.setActiveLayer(layerId);
+        if (this.liveryEditor) {
+            this.liveryEditor.setActiveLayer(layerId);
+        }
+        this.renderLayerList();
+    }
+
+    mergeActiveLayerDown() {
+        const activeLayerId = this.state.activeLayerId;
+        if (!activeLayerId) {
+            console.warn('No active layer selected to merge.');
+            return;
+        }
+
+        const layers = Array.isArray(this.state.layers) ? this.state.layers : [];
+        const activeIndex = layers.findIndex((layer) => layer.id === activeLayerId);
+        if (activeIndex <= 0) {
+            console.warn('No available layer below to merge with.');
+            return;
+        }
+
+        const targetLayer = layers[activeIndex - 1];
+        const snapshot = this.state.captureEditorState();
+        const merged = this.state.mergeLayers(targetLayer.id, activeLayerId, () => {
+            if (this.liveryEditor) {
+                this.liveryEditor.mergeLayers(targetLayer.id, activeLayerId);
+            }
+        });
+        if (merged) {
+            this.state.recordUndoState(snapshot);
+            this.state.setActiveLayer(targetLayer.id);
+            if (this.liveryEditor) {
+                this.liveryEditor.setActiveLayer(targetLayer.id);
+            }
+            this.renderLayerList();
+        }
+    }
+
+    updateBrushSetting(key, value) {
+        if (!this.state.brushSettings) {
+            this.state.brushSettings = {};
+        }
+        this.state.brushSettings = {
+            ...this.state.brushSettings,
+            [key]: value,
+        };
+        if (this.liveryEditor) {
+            this.liveryEditor.updateBrushSetting(key, value);
+        }
+    }
+
     handleFileUpload(event) {
         const files = Array.from(event.target.files);
         files.forEach((file) => this.processFile(file));
@@ -357,6 +729,50 @@ export class UIController {
                 console.error('Failed to merge decals after upload', error);
             }
         }, 100);
+    }
+
+    handleStickerUpload(file) {
+        if (!file || !this.liveryEditor) {
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            const dataUrl = event.target?.result;
+            if (typeof dataUrl !== 'string') {
+                return;
+            }
+
+            const snapshot = this.state.captureEditorState();
+            let targetLayerId = this.state.activeLayerId;
+
+            if (!targetLayerId) {
+                const newLayer = this.state.insertLayer({
+                    name: file.name.replace(/\.[^/.]+$/, '') || `Sticker ${this.state.layers.length + 1}`,
+                    type: 'sticker',
+                    metadata: { items: [] }
+                });
+                if (newLayer) {
+                    targetLayerId = newLayer.id;
+                    this.state.setActiveLayer(targetLayerId);
+                    this.renderLayerList();
+                }
+            }
+
+            if (!targetLayerId) {
+                return;
+            }
+
+            const sticker = await this.liveryEditor.addStickerToLayer(targetLayerId, dataUrl, { name: file.name });
+            if (!sticker) {
+                return;
+            }
+            this.liveryEditor.setActiveLayer(targetLayerId);
+            this.state.setActiveLayer(targetLayerId);
+            this.state.recordUndoState(snapshot);
+            this.renderLayerList();
+        };
+        reader.readAsDataURL(file);
     }
 
     processFile(file) {

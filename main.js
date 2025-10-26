@@ -11,6 +11,7 @@ import { EnvironmentManager } from './src/environmentManager.js';
 import { MaterialManager } from './src/materialManager.js';
 import { ModelLoader } from './src/modelLoader.js';
 import { UIController } from './src/uiController.js';
+import { LiveryEditor } from './src/liveryEditor.js';
 
 window.viewerReady = false;
 
@@ -19,7 +20,8 @@ const environmentManager = new EnvironmentManager(appState);
 const materialManager = new MaterialManager(appState);
 const modelLoader = new ModelLoader(appState, materialManager);
 materialManager.setModelLoader(modelLoader);
-const uiController = new UIController(appState, modelLoader, materialManager, environmentManager);
+const liveryEditor = new LiveryEditor(appState, materialManager);
+const uiController = new UIController(appState, modelLoader, materialManager, environmentManager, liveryEditor);
 
 const overlayElements = {
     models: document.getElementById('models'),
@@ -100,6 +102,7 @@ function cleanupAllResources() {
 }
 
 async function init() {
+    await liveryEditor.initialize();
     await uiController.initialize();
     setupThreeScene();
     if (uiController.cubemapSelector && appState.currentSkybox) {

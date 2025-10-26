@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ACC Livery Viewer</title>
-	<script type="importmap"> { 
-        "imports": { 
-            "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js", 
+        <script type="importmap"> {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
             "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
-            } 
+            }
         } </script>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5/dist/js/bootstrap.min.js"></script>
@@ -22,8 +22,11 @@
 
     <input type="file" id="fileInput" style="display: none;" multiple>
 
-    <div class="container-fluid mt-2">
-      <div id="settingsLayer" class="row">
+    <div class="app-shell">
+      <button id="editorPanelToggle" class="editor-panel-toggle btn btn-primary" aria-expanded="false" aria-controls="editorPanel">Editor Tools</button>
+      <div class="app-main">
+        <div class="container-fluid mt-2">
+          <div id="settingsLayer" class="row">
             <div class="col-md-3">
             <div class="card">
               <div class="card-header p-2">Render Settings</div>
@@ -45,7 +48,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="col-md-3">
             <div class="card">
               <div class="card-header p-2">Car Settings</div>
@@ -72,7 +75,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="col-md-3">
             <div class="card">
               <div class="card-header p-2">Livery Settings</div>
@@ -87,7 +90,7 @@
               </div>
             </div>
           </div>
-          
+
           <div class="col-md-3">
             <div class="card">
               <div class="card-header p-2">Info</div>
@@ -101,7 +104,7 @@
           </div>
       </div>
 
-        <div id="liveryLayer" class="row">
+          <div id="liveryLayer" class="row">
             <div class="col-md-3">
               <div class="card">
                 <div class="card-header p-2">Layer 1</div>
@@ -191,24 +194,121 @@
               </div>
             </div>
           </div>
-          
-    </div>
-    
-    <div id="dropZone">
-      <div id="modelContainer">
-          <div id="overlay">
-              <p id="models">Models: </p>
-              <p id="textures">Textures: </p>
-              <p id="polygons">Polygons: </p>
-              <p id="drawCalls">Draw Calls: </p>
-              <br>
-              <p id="loadedCar">Car: </p>
-              <p id="skinId">Skin ID: </p>
-              <p id="skinColours">Colours: </p>
 
+        </div>
+
+        <div id="dropZone" class="workspace">
+          <div class="workspace-split">
+            <div class="viewer-pane">
+              <div id="modelContainer">
+                  <div id="overlay">
+                      <p id="models">Models: </p>
+                      <p id="textures">Textures: </p>
+                      <p id="polygons">Polygons: </p>
+                      <p id="drawCalls">Draw Calls: </p>
+                      <br>
+                      <p id="loadedCar">Car: </p>
+                      <p id="skinId">Skin ID: </p>
+                      <p id="skinColours">Colours: </p>
+
+                    </div>
+              </div>
             </div>
+            <div class="canvas-pane">
+              <canvas id="hiddenCanvas" class="editor-canvas" tabindex="0" aria-label="Livery editing canvas"></canvas>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <aside id="editorPanel" class="editor-panel" aria-hidden="true">
+        <div class="editor-panel-content">
+          <button id="editorPanelClose" class="editor-panel-close" aria-label="Close editor panel">&times;</button>
+          <h2 class="editor-panel-title">Editor</h2>
+
+          <section class="editor-section">
+            <h3 class="editor-section-title">Layers</h3>
+            <p class="editor-section-note">Decals and sponsors base layers are locked.</p>
+            <ul id="layerList" class="layer-list"></ul>
+            <div class="layer-actions">
+              <button id="createLayerButton" class="btn btn-sm btn-primary">New Layer</button>
+              <button id="mergeLayerButton" class="btn btn-sm btn-outline-secondary">Merge Down</button>
+            </div>
+          </section>
+
+          <section class="editor-section">
+            <h3 class="editor-section-title">Painting Tools</h3>
+            <div class="form-group">
+              <label for="toolSelect" class="form-label">Active Tool</label>
+              <select id="toolSelect" class="form-select form-select-sm">
+                <option value="brush">Brush</option>
+                <option value="eraser">Eraser</option>
+                <option value="fill">Fill</option>
+              </select>
+            </div>
+            <div class="brush-settings">
+              <label for="brushSizeRange" class="form-label">Brush Size</label>
+              <input type="range" id="brushSizeRange" min="1" max="200" value="50">
+              <label for="brushOpacityRange" class="form-label">Opacity</label>
+              <input type="range" id="brushOpacityRange" min="0" max="1" step="0.01" value="1">
+              <label for="brushHardnessRange" class="form-label">Hardness</label>
+              <input type="range" id="brushHardnessRange" min="0" max="1" step="0.05" value="0.8">
+            </div>
+          </section>
+
+          <section class="editor-section">
+            <h3 class="editor-section-title">Mirror</h3>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="mirrorToggle">
+              <label class="form-check-label" for="mirrorToggle">Enable Mirror Painting</label>
+            </div>
+            <div class="form-group mt-2">
+              <label for="mirrorAxisSelect" class="form-label">Axis</label>
+              <select id="mirrorAxisSelect" class="form-select form-select-sm">
+                <option value="x">X</option>
+                <option value="y">Y</option>
+                <option value="z">Z</option>
+              </select>
+            </div>
+            <div class="form-group mt-2">
+              <label for="mirrorModeSelect" class="form-label">Mode</label>
+              <select id="mirrorModeSelect" class="form-select form-select-sm">
+                <option value="mirror">Mirror</option>
+                <option value="flip">Flip</option>
+              </select>
+            </div>
+          </section>
+
+          <section class="editor-section">
+            <h3 class="editor-section-title">Canvas Display</h3>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="uvBackgroundToggle" checked>
+              <label class="form-check-label" for="uvBackgroundToggle">Show UV Template</label>
+            </div>
+          </section>
+
+          <section class="editor-section">
+            <h3 class="editor-section-title">Stickers</h3>
+            <label for="stickerUploadInput" class="form-label">Upload Sticker</label>
+            <input type="file" id="stickerUploadInput" class="form-control form-control-sm" accept="image/png,image/jpeg,image/webp">
+          </section>
+
+          <section class="editor-section">
+            <h3 class="editor-section-title">Text</h3>
+            <form id="textEntryForm" class="text-entry-form">
+              <label for="textEntryInput" class="form-label">Add Text Layer</label>
+              <input type="text" id="textEntryInput" class="form-control form-control-sm" placeholder="Enter text" required>
+              <button type="submit" class="btn btn-sm btn-primary mt-2">Add Text</button>
+            </form>
+          </section>
+
+          <section class="editor-section">
+            <h3 class="editor-section-title">Export</h3>
+            <button id="exportLiveryButton" class="btn btn-success btn-sm w-100">Export Livery</button>
+          </section>
+        </div>
+      </aside>
     </div>
-	<canvas id="hiddenCanvas" ></canvas>
+
 </body>
 </html>

@@ -10,6 +10,23 @@ export class MaterialManager {
             materials: new Set(),
             meshes: new Set()
         };
+        this.overlayMeshes = new Map();
+        this.editorOverlayMap = {
+            decals: {
+                materialName: 'DecalMaterial',
+                presetKeys: ['customDecal', 'glossy'],
+                fallback: 'glossy'
+            },
+            sponsors: {
+                materialName: 'SponsorMaterial',
+                presetKeys: ['customSponsor', 'matte'],
+                fallback: 'matte'
+            }
+        };
+        this._onEditorCanvasUpdated = this._onEditorCanvasUpdated.bind(this);
+        if (typeof document !== 'undefined' && document.addEventListener) {
+            document.addEventListener('editor:canvasUpdated', this._onEditorCanvasUpdated);
+        }
     }
 
     setModelLoader(modelLoader) {
@@ -133,6 +150,10 @@ export class MaterialManager {
         if (!model || !scene) {
             return null;
         }
+        const existingMesh = this.overlayMeshes.get(materialName);
+        if (existingMesh) {
+            this.cleanupMesh(existingMesh);
+        }
         let mesh = null;
         model.traverse((node) => {
             if (node.isMesh && node.material.name === 'EXT_Carpaint_Inst') {
@@ -165,6 +186,7 @@ export class MaterialManager {
             }
         });
         if (mesh) {
+            this.overlayMeshes.set(materialName, mesh);
             this.state.addExtraMesh(mesh);
         }
         return mesh;
@@ -275,7 +297,19 @@ export class MaterialManager {
             return;
         }
         scene.remove(mesh);
-        
+
+        if (Array.isArray(this.state.extraMeshes) && this.state.extraMeshes.length) {
+            this.state.extraMeshes = this.state.extraMeshes.filter((tracked) => tracked !== mesh);
+        }
+
+        if (this.overlayMeshes && this.overlayMeshes.size) {
+            for (const [name, tracked] of this.overlayMeshes.entries()) {
+                if (tracked === mesh) {
+                    this.overlayMeshes.delete(name);
+                }
+            }
+        }
+
         // Proper cleanup of mesh resources
         if (mesh.material) {
             if (mesh.material.map) {
@@ -298,6 +332,7 @@ export class MaterialManager {
     }
 
     cleanupPreviousMeshes() {
+        this.clearEditorOverlays();
         // Cleanup extra meshes
         this.state.extraMeshes.forEach((mesh) => this.cleanupMesh(mesh));
         this.state.resetExtraMeshes();
@@ -335,6 +370,9 @@ export class MaterialManager {
                 scene.remove(child);
             }
         });
+        if (this.overlayMeshes) {
+            this.overlayMeshes.clear();
+        }
     }
 
     // Add comprehensive cleanup method for all resources
@@ -417,14 +455,23 @@ export class MaterialManager {
         this.applyBodyColours();
         window.viewerReady = true;
         window.dispatchEvent(new Event('viewer-ready'));
+        document.dispatchEvent(new CustomEvent('editor:baseLayersReady', {
+            detail: { modelPath: currentModelPath, liveryId: activeLivery }
+        }));
     }
 
     setDecalsFile(url) {
         this.state.setDecalsFile(url);
+        document.dispatchEvent(new CustomEvent('editor:baseTextureChanged', {
+            detail: { type: 'decals', url }
+        }));
     }
 
     setSponsorsFile(url) {
         this.state.setSponsorsFile(url);
+        document.dispatchEvent(new CustomEvent('editor:baseTextureChanged', {
+            detail: { type: 'sponsors', url }
+        }));
     }
 
     resetCustomLivery() {
@@ -433,6 +480,113 @@ export class MaterialManager {
         this.state.setSponsorsFile(null);
         paintMaterials.customDecal = undefined;
         paintMaterials.customSponsor = undefined;
+        document.dispatchEvent(new CustomEvent('editor:baseTextureChanged', {
+            detail: { type: 'decals', url: null }
+        }));
+        document.dispatchEvent(new CustomEvent('editor:baseTextureChanged', {
+            detail: { type: 'sponsors', url: null }
+        }));
+    }
+
+    _onEditorCanvasUpdated(event) {
+        const detail = event?.detail;
+        if (detail?.origin === 'liveryEditor' && detail?.applied) {
+            return;
+        }
+        if (detail?.overlays && typeof detail.overlays === 'object') {
+            Object.entries(detail.overlays).forEach(([type, canvas]) => {
+                this.updateEditorOverlay(type, canvas);
+            });
+            return;
+        }
+
+        if (detail?.type && detail.canvas) {
+            this.updateEditorOverlay(detail.type, detail.canvas);
+            return;
+        }
+
+        const canvas = detail?.canvas || document.getElementById('hiddenCanvas');
+        if (!canvas) {
+            return;
+        }
+
+        this.updateEditorOverlay('decals', canvas);
+        if (this.overlayMeshes.has('SponsorMaterial')) {
+            this.updateEditorOverlay('sponsors', canvas);
+        }
+    }
+
+    _applyCanvasToMaterial(canvas, materialName, preset) {
+        if (!canvas) {
+            return null;
+        }
+
+        const mesh = this.overlayMeshes.get(materialName);
+        if (mesh && mesh.material && mesh.material.map) {
+            mesh.material.map.image = canvas;
+            mesh.material.map.needsUpdate = true;
+            this.applyMaterialPreset(mesh.material, preset);
+            mesh.material.needsUpdate = true;
+            return mesh;
+        }
+
+        if (!this.state.model || !this.state.scene) {
+            return null;
+        }
+
+        const texture = this.createTextureFromCanvas(canvas);
+        return this.applyTextureToModel(texture, materialName, preset);
+    }
+
+    updateEditorOverlay(type, canvas) {
+        const config = this.editorOverlayMap?.[type];
+        if (!config) {
+            return null;
+        }
+
+        if (!canvas) {
+            this._removeOverlayByMaterial(config.materialName);
+            return null;
+        }
+
+        const preset = this._resolveOverlayPreset(config.presetKeys, config.fallback);
+        return this._applyCanvasToMaterial(canvas, config.materialName, preset);
+    }
+
+    clearEditorOverlays() {
+        Object.keys(this.editorOverlayMap || {}).forEach((type) => {
+            const config = this.editorOverlayMap[type];
+            this._removeOverlayByMaterial(config.materialName);
+        });
+    }
+
+    _resolveOverlayPreset(presetKeys = [], fallbackKey = null) {
+        if (Array.isArray(presetKeys)) {
+            for (const key of presetKeys) {
+                if (paintMaterials?.[key]) {
+                    return paintMaterials[key];
+                }
+            }
+        }
+        if (fallbackKey && paintMaterials?.[fallbackKey]) {
+            return paintMaterials[fallbackKey];
+        }
+        if (paintMaterials?.glossy) {
+            return paintMaterials.glossy;
+        }
+        const firstKey = Object.keys(paintMaterials || {})[0];
+        return firstKey ? paintMaterials[firstKey] : null;
+    }
+
+    _removeOverlayByMaterial(materialName) {
+        if (!materialName) {
+            return;
+        }
+        const mesh = this.overlayMeshes.get(materialName);
+        if (mesh) {
+            this.cleanupMesh(mesh);
+            this.overlayMeshes.delete(materialName);
+        }
     }
 
     applyCarJsonData(data) {

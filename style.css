@@ -3,9 +3,76 @@ body {
     height: 100vh;
 }
 
-canvas {
-    border: 1px solid black;
-    margin-bottom: 10px;
+.app-shell {
+    position: relative;
+    min-height: 100vh;
+}
+
+.app-main {
+    padding-right: 1rem;
+}
+
+.workspace {
+    position: relative;
+    margin: 1rem;
+    border-radius: 0.5rem;
+    background: #ffffff;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+    min-height: 420px;
+    border: 2px dashed transparent;
+    padding: 1rem;
+}
+
+.workspace-split {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    height: 100%;
+}
+
+.viewer-pane,
+.canvas-pane {
+    position: relative;
+    flex: 1 1 420px;
+    min-height: 420px;
+}
+
+.viewer-pane {
+    display: flex;
+    border-radius: 0.5rem;
+    background: #111;
+    overflow: hidden;
+}
+
+.canvas-pane {
+    display: flex;
+    flex-direction: column;
+    border-radius: 0.5rem;
+    background: #101215;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+    padding: 0.75rem;
+}
+
+#dropZone.dragging {
+    border: 2px dashed #0d6efd;
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+#modelContainer {
+    position: relative;
+    height: 100%;
+    flex: 1 1 auto;
+}
+
+#hiddenCanvas {
+    flex: 1 1 auto;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: #1d1f24;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.18);
 }
 
 #overlay {
@@ -50,4 +117,143 @@ canvas {
 color-picker {
     margin-bottom: 0.5rem;
     vertical-align: middle;
+}
+
+.editor-panel-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1100;
+}
+
+.editor-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: 320px;
+    max-width: 90vw;
+    background: #ffffff;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+    transform: translateX(100%);
+    transition: transform 0.3s ease-in-out;
+    z-index: 1090;
+    display: flex;
+    flex-direction: column;
+}
+
+.editor-panel.open {
+    transform: translateX(0);
+}
+
+.editor-panel-content {
+    padding: 1rem;
+    overflow-y: auto;
+    flex: 1 1 auto;
+}
+
+.editor-panel-title {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.editor-panel-close {
+    align-self: flex-end;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    line-height: 1;
+    padding: 0;
+    margin-bottom: 0.5rem;
+}
+
+.editor-section {
+    margin-bottom: 1.5rem;
+}
+
+.editor-section-title {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.editor-section-note {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-bottom: 0.5rem;
+}
+
+.layer-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.75rem 0;
+}
+
+.layer-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4rem 0.6rem;
+    border-radius: 0.35rem;
+    background: #f8f9fa;
+    border: 1px solid transparent;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.layer-item + .layer-item {
+    margin-top: 0.35rem;
+}
+
+.layer-item.active {
+    border-color: #0d6efd;
+    background: rgba(13, 110, 253, 0.1);
+}
+
+.layer-item.locked {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.layer-item-lock {
+    margin-left: 0.35rem;
+    font-size: 0.85rem;
+}
+
+.layer-item-empty {
+    justify-content: center;
+    color: #6c757d;
+    cursor: default;
+}
+
+.layer-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #6c757d;
+}
+
+.layer-type {
+    letter-spacing: 0.05em;
+}
+
+.layer-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.brush-settings label,
+.brush-settings input {
+    display: block;
+}
+
+.brush-settings input {
+    width: 100%;
+    margin-bottom: 0.5rem;
+}
+
+.text-entry-form {
+    display: flex;
+    flex-direction: column;
 }
