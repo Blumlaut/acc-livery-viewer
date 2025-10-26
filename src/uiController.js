@@ -391,6 +391,33 @@ export class UIController {
                 }
                 this.handleLayerSelection(item.dataset.layerId);
             });
+            
+            // Handle delete and reorder buttons
+            this.layerList.addEventListener('click', (event) => {
+                const deleteBtn = event.target.closest('.layer-delete-btn');
+                if (deleteBtn) {
+                    event.stopPropagation();
+                    const layerId = deleteBtn.dataset.layerId;
+                    this.deleteLayer(layerId);
+                    return;
+                }
+                
+                const upBtn = event.target.closest('.layer-up-btn');
+                if (upBtn) {
+                    event.stopPropagation();
+                    const layerId = upBtn.dataset.layerId;
+                    this.moveLayerUp(layerId);
+                    return;
+                }
+                
+                const downBtn = event.target.closest('.layer-down-btn');
+                if (downBtn) {
+                    event.stopPropagation();
+                    const layerId = downBtn.dataset.layerId;
+                    this.moveLayerDown(layerId);
+                    return;
+                }
+            });
         }
 
         if (this.createLayerButton) {
@@ -641,6 +668,36 @@ export class UIController {
             nameSpan.textContent = layer.name || layer.id;
             listItem.appendChild(nameSpan);
 
+            const controls = document.createElement('div');
+            controls.className = 'layer-controls';
+
+            // Add delete button for non-locked layers
+            if (!isLocked) {
+                const deleteButton = document.createElement('button');
+                deleteButton.className = 'btn btn-sm btn-danger layer-delete-btn';
+                deleteButton.setAttribute('aria-label', 'Delete layer');
+                deleteButton.textContent = '✕';
+                deleteButton.dataset.layerId = layer.id;
+                controls.appendChild(deleteButton);
+            }
+
+            // Add reorder buttons for non-locked layers
+            if (!isLocked) {
+                const upButton = document.createElement('button');
+                upButton.className = 'btn btn-sm btn-secondary layer-up-btn';
+                upButton.setAttribute('aria-label', 'Move layer up');
+                upButton.textContent = '↑';
+                upButton.dataset.layerId = layer.id;
+                controls.appendChild(upButton);
+
+                const downButton = document.createElement('button');
+                downButton.className = 'btn btn-sm btn-secondary layer-down-btn';
+                downButton.setAttribute('aria-label', 'Move layer down');
+                downButton.textContent = '↓';
+                downButton.dataset.layerId = layer.id;
+                controls.appendChild(downButton);
+            }
+
             const meta = document.createElement('span');
             meta.className = 'layer-meta';
             if (layer.type) {
@@ -660,6 +717,7 @@ export class UIController {
                 listItem.appendChild(meta);
             }
 
+            listItem.appendChild(controls);
             this.layerList.appendChild(listItem);
         });
     }
@@ -846,5 +904,114 @@ export class UIController {
     // Method to get current post processing mode
     getPostProcessingMode() {
         return this.postProcessingToggle ? this.postProcessingToggle.checked : false;
+    }
+
+    deleteLayer(layerId) {
+        if (!layerId) {
+            return;
+        }
+        
+        // Check if this is a base layer that shouldn't be deleted
+        const layer = this.state.getLayerById(layerId);
+        if (!layer) {
+            return;
+        }
+        
+        const isBaseLayer = Boolean(
+            this.state.baseLayers && (
+                this.state.baseLayers.decals === layerId ||
+                this.state.baseLayers.sponsors === layerId
+            )
+        );
+        
+        if (isBaseLayer || layer.locked) {
+            console.warn('Attempted to delete a protected layer:', layerId);
+            return;
+        }
+        
+        const snapshot = this.state.captureEditorState();
+        const deleted = this.state.deleteLayer(layerId);
+        if (deleted) {
+            // Remove the layer from the editor's internal state
+            if (this.liveryEditor) {
+                this.liveryEditor.removeLayer(layerId);
+            }
+            this.state.recordUndoState(snapshot);
+            this.renderLayerList();
+        }
+    }
+
+    moveLayerUp(layerId) {
+        if (!layerId) {
+            return;
+        }
+        
+        const layer = this.state.getLayerById(layerId);
+        if (!layer) {
+            return;
+        }
+        
+        const isBaseLayer = Boolean(
+            this.state.baseLayers && (
+                this.state.baseLayers.decals === layerId ||
+                this.state.baseLayers.sponsors === layerId
+            )
+        );
+        
+        if (isBaseLayer || layer.locked) {
+            console.warn('Attempted to move a protected layer:', layerId);
+            return;
+        }
+        
+        const layers = Array.isArray(this.state.layers) ? this.state.layers : [];
+        const currentIndex = layers.findIndex(l => l.id === layerId);
+        if (currentIndex <= 0) {
+            return; // Already at the top
+        }
+        
+        const newIndex = currentIndex - 1;
+        const snapshot = this.state.captureEditorState();
+        const moved = this.state.reorderLayer(layerId, newIndex);
+        if (moved) {
+            this.state.recordUndoState(snapshot);
+            this.renderLayerList();
+        }
+    }
+
+    moveLayerDown(layerId) {
+        if (!layerId) {
+            return;
+        }
+        
+        const layer = this.state.getLayerById(layerId);
+        if (!layer) {
+            return;
+        }
+        
+        const isBaseLayer = Boolean(
+            this.state.baseLayers && (
+                this.state.baseLayers.decals === layerId ||
+                this.state.baseLayers.sponsors === layerId
+            )
+        );
+        
+        if (isBaseLayer || layer.locked) {
+            console.warn('Attempted to move a protected layer:', layerId);
+            return;
+        }
+        
+        const layers = Array.isArray(this.state.layers) ? this.state.layers : [];
+        const currentIndex = layers.findIndex(l => l.id === layerId);
+        if (currentIndex === -1 || currentIndex >= layers.length - 1) {
+            return; // Already at the bottom
+        }
+        
+        const newIndex = currentIndex + 1;
+        const snapshot = this.state.captureEditorState();
+        const moved = this.state.reorderLayer(layerId, newIndex);
+        if (moved) {
+            this.state.recordUndoState(snapshot);
+            this.renderLayerList();
+        }
     }
 }

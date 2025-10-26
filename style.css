@@ -257,3 +257,18 @@ color-picker {
     display: flex;
     flex-direction: column;
 }
+
+.layer-controls {
+    display: flex;
+    gap: 0.25rem;
+}
+
+.layer-delete-btn {
+    padding: 0.1rem 0.25rem;
+    font-size: 0.75rem;
+}
+
+.layer-up-btn, .layer-down-btn {
+    padding: 0.1rem 0.25rem;
+    font-size: 0.75rem;
+}
