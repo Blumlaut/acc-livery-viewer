@@ -48,6 +48,7 @@ export class UIController {
         this.cubemapSelector = document.getElementById('cubemapSelector');
         this.lodSelector = document.getElementById('lodSelector');
         this.skyboxToggle = document.getElementById('skybox-toggle');
+        this.postProcessingToggle = document.getElementById('post-processing-toggle');
         this.layerColourPickers = [
             document.getElementById('layer1Color'),
             document.getElementById('layer2Color'),
@@ -122,6 +123,10 @@ export class UIController {
             const enabled = getCookie('skyboxActive') === 'true';
             this.state.setSkyboxEnabled(enabled);
             this.skyboxToggle.checked = enabled;
+        }
+        if (getCookie('postProcessing')) {
+            const enabled = getCookie('postProcessing') === 'true';
+            this.togglePostProcessing(enabled);
         }
         if (getCookie('model')) {
             const modelPath = getCookie('model');
@@ -310,6 +315,13 @@ export class UIController {
         });
 
         this.multiFileUpload.addEventListener('change', (event) => this.handleFileUpload(event));
+
+        // Add post-processing toggle listener
+        if (this.postProcessingToggle) {
+            this.postProcessingToggle.addEventListener('change', (event) => {
+                this.togglePostProcessing(event.target.checked);
+            });
+        }
     }
 
     registerDragAndDrop() {
@@ -397,5 +409,26 @@ export class UIController {
                 this.layerMaterialSelectors[index].value = material;
             }
         });
+    }
+
+    togglePostProcessing(enabled) {
+        // Store the setting in cookies
+        setCookie('postProcessing', enabled);
+        
+        // Update post-processing effects
+        if (this.state.composer && this.state.smaaPass) {
+            this.state.smaaPass.enabled = enabled;
+            this.state.gtaoPass.enabled = enabled
+        }
+        
+        // Update UI to reflect current state
+        if (this.postProcessingToggle) {
+            this.postProcessingToggle.checked = enabled;
+        }
+    }
+    
+    // Method to get current post processing mode
+    getPostProcessingMode() {
+        return this.postProcessingToggle ? this.postProcessingToggle.checked : false;
     }
 }

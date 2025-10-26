@@ -34,11 +34,19 @@ export class MaterialManager {
         }
 
         if (material && material.id) {
+            // Early return if preset is the same
+            if (material._lastPreset === preset) {
+                return material;
+            }
+            
             material.clearcoat = preset.clearCoat;
             material.clearcoatRoughness = preset.clearCoatRoughness;
             material.metalness = preset.metallic;
             material.roughness = preset.baseRoughness;
             material.needsUpdate = true;
+            
+            // Cache the preset for future use
+            material._lastPreset = preset;
             return material;
         }
 

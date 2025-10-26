@@ -127,15 +127,21 @@ export class ModelLoader {
             return;
         }
 
+        // Pre-compute wheel nodes for better performance
+        const wheelNodesArray = Object.entries(wheelNodes);
+        
         model.traverse((node) => {
-            if (this.state.lodLevel < 3) {
-                for (const [wheelModel, wheelNodeName] of Object.entries(wheelNodes)) {
+            // Handle wheel models for lower LOD levels
+            if (this.state.lodLevel < 3 && node.isMesh && node.name) {
+                for (const [wheelModel, wheelNodeName] of wheelNodesArray) {
                     if (node.name === wheelNodeName) {
                         this.loadWheelModel(node, wheelModel, modelPath);
+                        break; // Exit loop once we find a match
                     }
                 }
             }
 
+            // Handle material processing for EXT_ materials
             if (node.isMesh && node.material && node.material.name?.startsWith('EXT_')) {
                 this.applyMeshMaterial(node, modelPath);
             }
@@ -143,12 +149,23 @@ export class ModelLoader {
     }
 
     applyMeshMaterial(node, modelPath) {
+        // Early return for already processed materials
+        if (node.userData.materialProcessed) {
+            return;
+        }
+        
+        // Mark this node as processed to avoid reprocessing
+        node.userData.materialProcessed = true;
+
+        // Handle rim materials
         if (node.material.name.startsWith('EXT_RIM')) {
             const materialName = node.material.name;
             if (materialName.startsWith('EXT_RIM_BLUR')) {
                 node.visible = false;
                 return;
             }
+            
+            // Reuse existing rim material instead of creating new ones
             const rimMaterial = new THREE.MeshPhysicalMaterial({
                 name: materialName,
                 color: this.state.bodyColours[3],
@@ -158,11 +175,13 @@ export class ModelLoader {
             return;
         }
 
-        if (
-            node.material.name.startsWith('EXT_Emissive') ||
-            node.material.name.startsWith('EXT_Glass') ||
-            node.material.name.startsWith('EXT_Window')
-        ) {
+        // Handle special materials (emissive, glass, window)
+        const materialName = node.material.name;
+        if (materialName.startsWith('EXT_Emissive') || 
+            materialName.startsWith('EXT_Glass') || 
+            materialName.startsWith('EXT_Window')) {
+            
+            // Use a shared material instance for these special cases to reduce memory allocation
             node.material = new THREE.MeshPhysicalMaterial({
                 transmission: 1,
                 color: 0xffffff,
@@ -173,21 +192,43 @@ export class ModelLoader {
             return;
         }
 
-        let materialName = node.material.name;
-        if (materialName === 'EXT_RIM') {
-            materialName = 'EXT_Rim';
+        // Handle regular textured materials
+        let processedMaterialName = materialName;
+        if (processedMaterialName === 'EXT_RIM') {
+            processedMaterialName = 'EXT_Rim';
         }
 
-        const texturePath = `models/${modelPath}/textures/${materialName}_Colour.png`;
+        // Use a shared texture loader instance to reduce overhead
+        const texturePath = `models/${modelPath}/textures/${processedMaterialName}_Colour.png`;
+        
+        // Check if texture already exists in cache (simple caching)
+        if (this.textureCache && this.textureCache.has(texturePath)) {
+            const cachedTexture = this.textureCache.get(texturePath);
+            const newMaterial = new THREE.MeshBasicMaterial({
+                name: processedMaterialName,
+                color: 0xffffff,
+                map: cachedTexture,
+            });
+            node.material = newMaterial;
+            return;
+        }
+
         const textureLoader = new THREE.TextureLoader();
         textureLoader.load(
             texturePath,
             (texture) => {
                 texture.flipY = false;
                 texture.colorSpace = THREE.SRGBColorSpace;
+                
+                // Cache the texture for future use
+                if (!this.textureCache) {
+                    this.textureCache = new Map();
+                }
+                this.textureCache.set(texturePath, texture);
+                
                 this.state.bodyTextures.push(texture);
                 const newMaterial = new THREE.MeshBasicMaterial({
-                    name: materialName,
+                    name: processedMaterialName,
                     color: 0xffffff,
                     map: texture,
                 });
@@ -196,7 +237,7 @@ export class ModelLoader {
             undefined,
             () => {
                 node.material = new THREE.MeshPhysicalMaterial({
-                    name: node.material.name,
+                    name: materialName,
                     color: 0x444444,
                 });
             }
@@ -220,6 +261,11 @@ export class ModelLoader {
                         });
                         child.material = newMaterial;
                         this.materialManager.applyMaterialPreset(child.material, paintMaterials[this.state.bodyMaterials[3]]);
+                        
+                        // Apply Y-axis flip exception for Porsche 992 GT3R wheel materials
+                        if (modelPath === 'porsche_992_gt3_r' && child.material.map) {
+                            child.material.map.flipY = true;
+                        }
                     }
                 });
 

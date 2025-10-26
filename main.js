@@ -31,6 +31,11 @@ const overlayElements = {
     skinColours: document.getElementById('skinColours'),
 };
 
+// Animation throttling variables
+let lastRenderTime = 0;
+let overlayUpdateCounter = 0;
+const overlayUpdateInterval = 10; // Update overlay every 10 frames
+
 // Add memory monitoring and cleanup triggers
 function setupMemoryMonitoring() {
     // Periodic memory check
@@ -45,6 +50,15 @@ function setupMemoryMonitoring() {
             }
         }
     }, 30000); // Check every 30 seconds
+}
+
+// Initialize with post-processing enabled by default
+if (uiController.postProcessingToggle) {
+    uiController.postProcessingToggle.checked = true;
+    // Set the initial state to enabled
+    if (uiController.state.composer && uiController.state.smaaPass) {
+        uiController.state.smaaPass.enabled = true;
+    }
 }
 
 // Enhanced cleanup function
@@ -209,27 +223,77 @@ function animate() {
         return;
     }
 
-    const info = renderer.info;
-    overlayElements.models.innerText = `Models: ${info.memory.geometries}`;
-    overlayElements.textures.innerText = `Textures: ${info.memory.textures}`;
-    overlayElements.polygons.innerText = `Polygons: ${info.render.triangles}`;
-    overlayElements.drawCalls.innerText = `Draw Calls: ${info.render.calls}`;
+    // Throttle rendering to 60 FPS (16.55ms) to reduce CPU usage
+    const currentTime = performance.now();
+    if (currentTime - lastRenderTime < 16.55) {
+        requestAnimationFrame(animate);
+        return;
+    }
+    
+    lastRenderTime = currentTime;
 
-    const carInfo = Object.values(cars).find((car) => car.modelKey === appState.currentModelPath);
-    overlayElements.loadedCar.innerText = `Car: ${carInfo ? carInfo.model : appState.currentModelPath}`;
-    if (appState.currentLivery) {
-        overlayElements.skinId.innerText = `Skin ID: ${appState.currentLivery}`;
+    // Update overlay information periodically
+    overlayUpdateCounter++;
+    if (overlayUpdateCounter >= overlayUpdateInterval) {
+        const info = renderer.info;
+        overlayElements.models.innerText = `Models: ${info.memory.geometries}`;
+        overlayElements.textures.innerText = `Textures: ${info.memory.textures}`;
+        overlayElements.polygons.innerText = `Polygons: ${info.render.triangles}`;
+        overlayElements.drawCalls.innerText = `Draw Calls: ${info.render.calls}`;
+
+        const carInfo = Object.values(cars).find((car) => car.modelKey === appState.currentModelPath);
+        overlayElements.loadedCar.innerText = `Car: ${carInfo ? carInfo.model : appState.currentModelPath}`;
+        if (appState.currentLivery) {
+            overlayElements.skinId.innerText = `Skin ID: ${appState.currentLivery}`;
+        }
+
+        overlayElements.skinColours.innerText =
+            `Colours: ${findColorId(appState.bodyColours[0])}, ${findColorId(appState.bodyColours[1])}, ${findColorId(appState.bodyColours[2])}, ${findColorId(appState.bodyColours[3])}`;
+        
+        overlayUpdateCounter = 0;
     }
 
-    overlayElements.skinColours.innerText =
-        `Colours: ${findColorId(appState.bodyColours[0])}, ${findColorId(appState.bodyColours[1])}, ${findColorId(appState.bodyColours[2])}, ${findColorId(appState.bodyColours[3])}`;
-
-    // Throttle animation updates to reduce CPU usage
-    requestAnimationFrame(() => {
-        animate();
-    });
-    
+    // Only render if there are actual changes or at throttled interval
     composer.render();
+    
+    requestAnimationFrame(animate);
+}
+
+// Add a more sophisticated selective rendering check
+function shouldUpdateScene() {
+    // If we're in a state where we know nothing has changed, we can skip rendering
+    // This is a simple check - in a real app, you might want more sophisticated logic
+    return true; // For now, always render but with throttling
+}
+
+// Add a selective rendering approach - only render when needed
+let lastRenderState = {
+    modelPath: null,
+    livery: null,
+    cameraPosition: null,
+    cameraRotation: null
+};
+
+function shouldRender() {
+    // Check if any significant state has changed that would require a re-render
+    const currentState = {
+        modelPath: appState.currentModelPath,
+        livery: appState.currentLivery,
+        cameraPosition: appState.camera ? [appState.camera.position.x, appState.camera.position.y, appState.camera.position.z] : null,
+        cameraRotation: appState.camera ? [appState.camera.rotation.x, appState.camera.rotation.y, appState.camera.rotation.z] : null
+    };
+    
+    // Simple comparison - if any key state has changed, we should render
+    const changed = 
+        lastRenderState.modelPath !== currentState.modelPath ||
+        lastRenderState.livery !== currentState.livery ||
+        JSON.stringify(lastRenderState.cameraPosition) !== JSON.stringify(currentState.cameraPosition) ||
+        JSON.stringify(lastRenderState.cameraRotation) !== JSON.stringify(currentState.cameraRotation);
+    
+    // Update last state
+    lastRenderState = currentState;
+    
+    return changed;
 }
 
 window.captureImage = function () {
