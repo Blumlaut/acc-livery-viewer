@@ -18,13 +18,19 @@ class ColorPicker extends HTMLElement {
                     position: relative;
                 }
                 .color-picker-button {
-                    padding: 10px;
-                    font-size: 16px;
+                    padding: 8px 12px;
+                    font-size: 14px;
                     display: flex;
                     align-items: center;
                     cursor: pointer;
                     border: 1px solid #ccc;
-                    border-radius: 5px;
+                    border-radius: 4px;
+                    background-color: #fff;
+                    transition: all 0.2s ease;
+                }
+                .color-picker-button:hover {
+                    background-color: #f8f9fa;
+                    border-color: #adb5bd;
                 }
                 .color-preview {
                     display: inline-block;
@@ -32,7 +38,8 @@ class ColorPicker extends HTMLElement {
                     height: 20px;
                     margin-left: 8px;
                     background-color: ${this.value};
-                    border-radius: 4px;
+                    border-radius: 3px;
+                    border: 1px solid #dee2e6;
                 }
                 .color-picker-overlay {
                     position: fixed;
@@ -48,16 +55,17 @@ class ColorPicker extends HTMLElement {
                 }
                 .color-picker-popup {
                     background-color: #fff;
-                    border: 1px solid #ccc;
-                    padding: 10px;
+                    border: 1px solid #dee2e6;
+                    padding: 15px;
                     border-radius: 8px;
                     z-index: 100;
                     display: grid;
-                    grid-template-columns: repeat(30, 40px);
+                    grid-template-columns: repeat(15, 40px);
                     gap: 8px;
                     max-width: calc(100vw - 40px); /* Responsive width with padding */
                     max-height: calc(100vh - 40px); /* Responsive height with padding */
                     overflow: auto; /* Allow scrolling if content overflows */
+                    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
                 }
                 .color-picker-popup div {
                     width: 40px;
@@ -65,29 +73,44 @@ class ColorPicker extends HTMLElement {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 14px;
+                    font-size: 12px;
                     color: #fff;
                     cursor: pointer;
                     border-radius: 4px;
+                    border: 1px solid #dee2e6;
+                    transition: transform 0.2s ease;
+                }
+                .color-picker-popup div:hover {
+                    transform: scale(1.1);
+                    z-index: 101;
                 }
                 .close-button {
                     cursor: pointer;
-                    padding: 5px;
-                    background: #e74c3c;
+                    padding: 8px 16px;
+                    background: #dc3545;
                     color: #fff;
                     border: none;
                     border-radius: 4px;
-                    margin-bottom: 10px;
+                    margin-bottom: 15px;
+                    font-size: 14px;
+                    transition: background-color 0.2s ease;
+                }
+                .close-button:hover {
+                    background: #c82333;
+                }
+                .color-label {
+                    margin-right: 8px;
+                    font-weight: 500;
                 }
             </style>
             <div class="color-picker-container">
-                <button class="color-picker-button">
+                <button class="color-picker-button btn btn-sm">
                     <span class="color-label">Selected Color: ${this.pickerId}</span>
                     <span class="color-preview" style="background-color: ${this.value};"></span>
                 </button>
                 <div class="color-picker-overlay">
                     <div class="color-picker-popup">
-                        <button class="close-button">Close</button>
+                        <button class="close-button btn btn-danger btn-sm">Close</button>
                     </div>
                 </div>
             </div>
