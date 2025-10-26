@@ -75,9 +75,13 @@ export class MaterialManager {
         }
         const color = new THREE.Color(hexColor);
         scene.traverse((object) => {
-            if (object.isMesh && object.material && object.material.name === materialName) {
-                object.material.color = color;
-                object.material.needsUpdate = true;
+            if (object.isMesh && object.material) {
+                // Handle both exact name matches and rim material patterns
+                if (object.material.name === materialName || 
+                    (materialName === 'EXT_RIM' && object.material.name.startsWith('EXT_RIM'))) {
+                    object.material.color = color;
+                    object.material.needsUpdate = true;
+                }
             }
         });
     }

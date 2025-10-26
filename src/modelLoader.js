@@ -165,13 +165,21 @@ export class ModelLoader {
                 return;
             }
             
-            // Reuse existing rim material instead of creating new ones
-            const rimMaterial = new THREE.MeshPhysicalMaterial({
-                name: materialName,
-                color: this.state.bodyColours[3],
-            });
-            node.material = rimMaterial;
-            this.materialManager.applyMaterialPreset(node.material, paintMaterials.glossy);
+            // For rim materials, we should update the existing material rather than replacing it
+            // This ensures consistent material properties and avoids UV mapping issues
+            if (node.material.isMeshPhysicalMaterial) {
+                // Update existing rim material color
+                node.material.color.set(this.state.bodyColours[3]);
+                node.material.needsUpdate = true;
+            } else {
+                // Reuse existing rim material instead of creating new ones
+                const rimMaterial = new THREE.MeshPhysicalMaterial({
+                    name: materialName,
+                    color: this.state.bodyColours[3],
+                });
+                node.material = rimMaterial;
+            }
+            this.materialManager.applyMaterialPreset(node.material, paintMaterials[this.state.bodyMaterials[3]]);
             return;
         }
 
@@ -254,18 +262,33 @@ export class ModelLoader {
                 const wheelObject = wheelModel.children[0];
                 wheelModel.traverse((child) => {
                     if (child.isMesh && child.material) {
-                        const newMaterial = new THREE.MeshPhysicalMaterial({
-                            name: child.material.name,
-                            color: this.state.bodyColours[3],
-                            side: THREE.DoubleSide,
-                        });
-                        child.material = newMaterial;
-                        this.materialManager.applyMaterialPreset(child.material, paintMaterials[this.state.bodyMaterials[3]]);
-                        
-                        // Apply Y-axis flip exception for Porsche 992 GT3R wheel materials
-                        if (modelPath === 'porsche_992_gt3_r' && child.material.map) {
-                            child.material.map.flipY = true;
+                        // For wheel materials, we should ensure consistent material handling
+                        if (child.material.name.startsWith('EXT_RIM')) {
+                            // Update existing rim material color instead of replacing
+                            if (child.material.isMeshPhysicalMaterial) {
+                                child.material.color.set(this.state.bodyColours[3]);
+                                child.material.needsUpdate = true;
+                            } else {
+                                // Create a new material with consistent properties
+                                const newMaterial = new THREE.MeshPhysicalMaterial({
+                                    name: child.material.name,
+                                    color: this.state.bodyColours[3],
+                                    side: THREE.DoubleSide,
+                                    // Preserve important material properties to avoid issues
+                                    roughness: child.material.roughness || 0.5,
+                                    metalness: child.material.metalness || 0.0,
+                                });
+                                child.material = newMaterial;
+                            }
+                        } else {
+                            const newMaterial = new THREE.MeshPhysicalMaterial({
+                                name: child.material.name,
+                                color: this.state.bodyColours[3],
+                                side: THREE.DoubleSide,
+                            });
+                            child.material = newMaterial;
                         }
+                        this.materialManager.applyMaterialPreset(child.material, paintMaterials[this.state.bodyMaterials[3]]);
                     }
                 });
 
