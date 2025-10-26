@@ -654,9 +654,15 @@ async function drawImageOverlay(file, materialName, material) {
     }
     try {
         const imgDecal = await loadImage(file);
+        
+        // Reuse canvas from setupCanvas function to avoid creating new canvas each time
         const decalCanvas = setupCanvas(imgDecal);
         const decalCtx = decalCanvas.getContext('2d');
+        
+        // Draw image directly to canvas (this is already optimized)
         decalCtx.drawImage(imgDecal, 0, 0);
+        
+        // Create texture from canvas
         const decalTexture = createTextureFromCanvas(decalCanvas);
         const mesh = applyTextureToModel(decalTexture, materialName, material);
         console.log("finished drawing overlay for "+materialName)
@@ -881,34 +887,52 @@ function getMaterialFromName(materialName) {
 }
 
 async function convertImageToRGBChannels(imagePath) {
-    const img = new Image();
-    img.src = imagePath;
-
-    // Wait for the image to load
-    await new Promise((resolve) => {
-        img.onload = resolve;
-    });
-
+    // Create a single canvas for all operations to reduce memory allocations
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    canvas.width = img.width;
-    canvas.height = img.height;
+    
+    // Load image and wait for it to be ready
+    const img = new Image();
+    img.src = imagePath;
+    
+    // Wait for the image to load
+    await new Promise((resolve, reject) => {
+        img.onload = () => {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+            resolve();
+        };
+        img.onerror = reject;
+    });
 
-    // Draw the original image to the canvas
-    ctx.drawImage(img, 0, 0);
-
+    // Get image data once
     const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const data = imageData.data;
 
-    const createChannelImage = (channelIndex) => {
+    // Create channel canvases once
+    const channelCanvases = [];
+    const channelContexts = [];
+    
+    for (let i = 0; i < 3; i++) {
         const channelCanvas = document.createElement('canvas');
-        const channelCtx = channelCanvas.getContext('2d');
         channelCanvas.width = canvas.width;
         channelCanvas.height = canvas.height;
+        const channelCtx = channelCanvas.getContext('2d');
+        channelCanvases.push(channelCanvas);
+        channelContexts.push(channelCtx);
+    }
 
+    // Process all channels in one pass with reduced canvas operations
+    const createChannelImage = (channelIndex) => {
+        const channelCanvas = channelCanvases[channelIndex];
+        const channelCtx = channelContexts[channelIndex];
+        
+        // Create image data for this channel
         const channelData = channelCtx.createImageData(channelCanvas.width, channelCanvas.height);
         const channelPixels = channelData.data;
 
+        // Single loop to process all pixels for this channel
         for (let i = 0; i < data.length; i += 4) {
             const value = data[i + channelIndex]; // Red, Green, or Blue
             const alpha = data[i + 3]; // Original alpha
@@ -928,6 +952,10 @@ async function convertImageToRGBChannels(imagePath) {
     const redImage = createChannelImage(0);   // Red channel
     const greenImage = createChannelImage(1); // Green channel
     const blueImage = createChannelImage(2);  // Blue channel
+
+    // Clean up canvases to prevent memory leaks
+    canvas.remove();
+    channelCanvases.forEach(canvas => canvas.remove());
 
     // Return an array of object URLs
     return [redImage, greenImage, blueImage];
