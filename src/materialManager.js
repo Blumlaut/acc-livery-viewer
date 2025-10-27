@@ -11,11 +11,16 @@ export class MaterialManager {
             meshes: new Set()
         };
         this.overlayMeshes = new Map();
+        this.editorOverlayCanvases = new Map();
+        this.editorDecalBaseCanvas = null;
+        this.editorDecalOverlayCanvas = null;
+        this.editorDecalMaskData = null;
         this.editorOverlayMap = {
             decals: {
                 materialName: 'DecalMaterial',
                 presetKeys: ['customDecal', 'glossy'],
-                fallback: 'glossy'
+                fallback: 'glossy',
+                aliases: ['fanatec_overlay']
             },
             sponsors: {
                 materialName: 'SponsorMaterial',
@@ -119,6 +124,26 @@ export class MaterialManager {
         this.applyMaterialPreset('EXT_RIM', paintMaterials[bodyMaterials[3]]);
         setCookie('rimColour', findColorId(rimColour));
         setCookie('rimMaterial', bodyMaterials[3]);
+
+        this._refreshEditorBaseTemplate({ emit: true });
+    }
+
+    refreshEditorDecalTemplate(options = {}) {
+        const { emit = true } = options;
+        const captured = this._hydrateDecalOverlayFromViewer();
+
+        if (this.editorDecalMaskData) {
+            this._refreshEditorBaseTemplate({ emit: false });
+        }
+
+        if (emit) {
+            this._emitDecalTemplateUpdate({
+                emit: true,
+                materialName: captured?.materialName
+            });
+        }
+
+        return this.getEditorOverlayCanvas('decals');
     }
 
     loadImage(src) {
@@ -128,6 +153,26 @@ export class MaterialManager {
             img.onload = () => resolve(img);
             img.onerror = () => reject(`Failed to load image from ${src}`);
         });
+    }
+
+    async _ensureCanvasFromSource(source) {
+        if (!source) {
+            return null;
+        }
+        if (typeof HTMLCanvasElement !== 'undefined' && source instanceof HTMLCanvasElement) {
+            return source;
+        }
+        if (typeof HTMLImageElement !== 'undefined' && source instanceof HTMLImageElement) {
+            const canvas = setupCanvas(source);
+            const context = canvas.getContext('2d');
+            context.drawImage(source, 0, 0);
+            return canvas;
+        }
+        if (typeof source === 'string') {
+            const image = await this.loadImage(source);
+            return this._ensureCanvasFromSource(image);
+        }
+        return null;
     }
 
     createTextureFromCanvas(canvas) {
@@ -192,17 +237,21 @@ export class MaterialManager {
         return mesh;
     }
 
-    async drawImageOverlay(file, materialName, preset) {
-        if (!file) {
+    async drawImageOverlay(source, materialName, preset) {
+        if (!source) {
             return null;
         }
         try {
-            const image = await this.loadImage(file);
-            const canvas = setupCanvas(image);
-            const context = canvas.getContext('2d');
-            context.drawImage(image, 0, 0);
+            const canvas = await this._ensureCanvasFromSource(source);
+            if (!canvas) {
+                return null;
+            }
             const texture = this.createTextureFromCanvas(canvas);
-            return this.applyTextureToModel(texture, materialName, preset);
+            const mesh = this.applyTextureToModel(texture, materialName, preset);
+            if (mesh) {
+                this._notifyEditorTemplateUpdate(materialName, canvas);
+            }
+            return mesh;
         } catch (error) {
             console.error(error);
             return null;
@@ -237,12 +286,15 @@ export class MaterialManager {
             channelContexts.push(channelCanvas.getContext('2d'));
         }
 
-        const channelDataArray = channelContexts.map((ctx) => ctx.createImageData(canvas.width, canvas.height));
+        const channelDataArray = channelContexts.map((channelCtx) => channelCtx.createImageData(canvas.width, canvas.height));
 
         for (let i = 0; i < data.length; i += 4) {
-            const [r, g, b, alpha] = [data[i], data[i + 1], data[i + 2], data[i + 3]];
-            const channels = [r, g, b];
-            channels.forEach((value, channelIndex) => {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            const alpha = data[i + 3];
+
+            [r, g, b].forEach((value, channelIndex) => {
                 const channelData = channelDataArray[channelIndex].data;
                 channelData[i] = value;
                 channelData[i + 1] = value;
@@ -251,14 +303,187 @@ export class MaterialManager {
             });
         }
 
-        channelContexts.forEach((ctx, index) => {
-            ctx.putImageData(channelDataArray[index], 0, 0);
+        channelContexts.forEach((channelCtx, index) => {
+            channelCtx.putImageData(channelDataArray[index], 0, 0);
         });
 
-        const results = channelCanvases.map((channelCanvas) => channelCanvas.toDataURL('image/png'));
-        canvas.remove();
-        channelCanvases.forEach((channelCanvas) => channelCanvas.remove());
-        return results;
+        this.editorDecalMaskData = {
+            width: canvas.width,
+            height: canvas.height,
+            data: new Uint8ClampedArray(imageData.data)
+        };
+
+        const compositeCanvas = this._createTintedTemplateFromMask();
+
+        return {
+            channels: channelCanvases,
+            composite: compositeCanvas
+        };
+    }
+
+    _refreshEditorBaseTemplate(options = {}) {
+        if (!this.editorDecalMaskData) {
+            return;
+        }
+        const tinted = this._createTintedTemplateFromMask();
+        if (tinted) {
+            this._updateDecalTemplateBase(tinted, { ...options, clone: false });
+        } else if (options.emit) {
+            this._updateDecalTemplateBase(null, options);
+        }
+    }
+
+    _createTintedTemplateFromMask() {
+        if (!this.editorDecalMaskData || typeof document === 'undefined') {
+            return null;
+        }
+        const { width, height, data } = this.editorDecalMaskData;
+        if (!width || !height || !data) {
+            return null;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        const tinted = ctx.createImageData(width, height);
+
+        const colours = this._getBodyColourComponents();
+
+        for (let i = 0; i < data.length; i += 4) {
+            const rMask = data[i] / 255;
+            const gMask = data[i + 1] / 255;
+            const bMask = data[i + 2] / 255;
+            const alphaMask = data[i + 3] / 255;
+
+            let r = 0;
+            let g = 0;
+            let b = 0;
+
+            [rMask, gMask, bMask].forEach((mask, index) => {
+                const colour = colours[index];
+                if (!colour) {
+                    return;
+                }
+                r += colour.r * mask;
+                g += colour.g * mask;
+                b += colour.b * mask;
+            });
+
+            tinted.data[i] = Math.min(255, Math.round(r));
+            tinted.data[i + 1] = Math.min(255, Math.round(g));
+            tinted.data[i + 2] = Math.min(255, Math.round(b));
+            const alpha = Math.max(alphaMask, rMask, gMask, bMask);
+            tinted.data[i + 3] = Math.min(255, Math.round(alpha * 255));
+        }
+
+        ctx.putImageData(tinted, 0, 0);
+        return canvas;
+    }
+
+    _getBodyColourComponents() {
+        const defaults = ['#ffffff', '#ffffff', '#ffffff'];
+        return defaults.map((fallback, index) => {
+            const colour = this.state?.bodyColours?.[index] || fallback;
+            const parsed = new THREE.Color(colour);
+            return {
+                r: parsed.r * 255,
+                g: parsed.g * 255,
+                b: parsed.b * 255,
+            };
+        });
+    }
+
+    _updateDecalTemplateBase(canvas, options = {}) {
+        const { emit = true, clone = true, materialName } = options;
+        this.editorDecalBaseCanvas = canvas
+            ? (clone ? this._cloneCanvas(canvas) : canvas)
+            : null;
+        this._emitDecalTemplateUpdate({ emit, materialName });
+    }
+
+    _updateDecalTemplateOverlay(canvas, options = {}) {
+        const { emit = true, clone = true, materialName } = options;
+        this.editorDecalOverlayCanvas = canvas
+            ? (clone ? this._cloneCanvas(canvas) : canvas)
+            : null;
+        this._emitDecalTemplateUpdate({ emit, materialName });
+    }
+
+    _resetDecalTemplate(options = {}) {
+        this.editorDecalBaseCanvas = null;
+        this.editorDecalOverlayCanvas = null;
+        this.editorOverlayCanvases.delete('decals');
+        this.editorDecalMaskData = null;
+        const { emit = true, materialName } = options;
+        if (emit) {
+            this._dispatchOverlayEvent('decals', materialName || this.editorOverlayMap.decals.materialName, null);
+        }
+    }
+
+    _emitDecalTemplateUpdate(options = {}) {
+        const { emit = true, materialName } = options;
+        const composite = this._composeDecalTemplate();
+        if (composite) {
+            this.editorOverlayCanvases.set('decals', composite);
+        } else {
+            this.editorOverlayCanvases.delete('decals');
+        }
+        if (emit) {
+            this._dispatchOverlayEvent(
+                'decals',
+                materialName || this.editorOverlayMap.decals.materialName,
+                composite || null
+            );
+        }
+    }
+
+    _composeDecalTemplate() {
+        const base = this.editorDecalBaseCanvas;
+        const overlay = this.editorDecalOverlayCanvas;
+        if ((!base || !base.width || !base.height) && (!overlay || !overlay.width || !overlay.height)) {
+            return null;
+        }
+        const width = base?.width || overlay?.width;
+        const height = base?.height || overlay?.height;
+        if (!width || !height || typeof document === 'undefined') {
+            return null;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (base && base.width && base.height) {
+            ctx.drawImage(base, 0, 0, width, height);
+        }
+        if (overlay && overlay.width && overlay.height) {
+            ctx.drawImage(overlay, 0, 0, width, height);
+        }
+        return canvas;
+    }
+
+    _dispatchOverlayEvent(type, materialName, canvas) {
+        if (typeof document === 'undefined' || typeof CustomEvent === 'undefined' || !document.dispatchEvent) {
+            return;
+        }
+        document.dispatchEvent(new CustomEvent('viewer:overlayUpdated', {
+            detail: {
+                type,
+                material: materialName,
+                canvas
+            }
+        }));
+    }
+
+    _cloneCanvas(source) {
+        if (!source || !source.width || !source.height || typeof document === 'undefined') {
+            return null;
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = source.width;
+        canvas.height = source.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(source, 0, 0);
+        return canvas;
     }
 
     async setBaseLivery(modelPath, livery) {
@@ -277,8 +502,15 @@ export class MaterialManager {
             images = await this.convertImageToRGBChannels(`models/${modelPath}/skins/custom/${liveryPath}/EXT_Skin_Custom.png`);
         }
 
-        for (let i = 0; i < images.length; i++) {
-            await this.drawImageOverlay(images[i], `baseLivery${i + 1}`, paintMaterials.customDecal || paintMaterials.glossy);
+        const channelSources = images?.channels || images || [];
+        for (let i = 0; i < channelSources.length; i++) {
+            await this.drawImageOverlay(channelSources[i], `baseLivery${i + 1}`, paintMaterials.customDecal || paintMaterials.glossy);
+        }
+
+        if (images?.composite) {
+            this._updateDecalTemplateBase(images.composite, { emit: false, clone: false });
+        } else {
+            this._updateDecalTemplateBase(null, { emit: false });
         }
 
         if (liveryData.hasDecals) {
@@ -287,6 +519,8 @@ export class MaterialManager {
                 'fanatec_overlay',
                 paintMaterials.glossy
             );
+        } else {
+            this._updateDecalTemplateOverlay(null, { emit: true, materialName: 'fanatec_overlay' });
         }
         this.applyBodyColours();
     }
@@ -521,21 +755,25 @@ export class MaterialManager {
             return null;
         }
 
-        const mesh = this.overlayMeshes.get(materialName);
+        let mesh = this.overlayMeshes.get(materialName);
         if (mesh && mesh.material && mesh.material.map) {
             mesh.material.map.image = canvas;
             mesh.material.map.needsUpdate = true;
             this.applyMaterialPreset(mesh.material, preset);
             mesh.material.needsUpdate = true;
-            return mesh;
+        } else {
+            if (!this.state.model || !this.state.scene) {
+                return null;
+            }
+
+            const texture = this.createTextureFromCanvas(canvas);
+            mesh = this.applyTextureToModel(texture, materialName, preset);
         }
 
-        if (!this.state.model || !this.state.scene) {
-            return null;
+        if (mesh) {
+            this._notifyEditorTemplateUpdate(materialName, canvas);
         }
-
-        const texture = this.createTextureFromCanvas(canvas);
-        return this.applyTextureToModel(texture, materialName, preset);
+        return mesh;
     }
 
     updateEditorOverlay(type, canvas) {
@@ -545,19 +783,216 @@ export class MaterialManager {
         }
 
         if (!canvas) {
+            this.editorOverlayCanvases.delete(type);
             this._removeOverlayByMaterial(config.materialName);
             return null;
         }
 
         const preset = this._resolveOverlayPreset(config.presetKeys, config.fallback);
-        return this._applyCanvasToMaterial(canvas, config.materialName, preset);
+        const mesh = this._applyCanvasToMaterial(canvas, config.materialName, preset);
+        if (mesh) {
+            this.editorOverlayCanvases.set(type, canvas);
+        }
+        return mesh;
     }
 
     clearEditorOverlays() {
+        this._resetDecalTemplate({ emit: true });
         Object.keys(this.editorOverlayMap || {}).forEach((type) => {
             const config = this.editorOverlayMap[type];
             this._removeOverlayByMaterial(config.materialName);
+            this.editorOverlayCanvases.delete(type);
         });
+    }
+
+    _getOverlayTypeFromMaterial(materialName) {
+        if (!materialName || !this.editorOverlayMap) {
+            return null;
+        }
+        for (const [type, config] of Object.entries(this.editorOverlayMap)) {
+            if (config.materialName === materialName) {
+                return type;
+            }
+            if (Array.isArray(config.aliases) && config.aliases.includes(materialName)) {
+                return type;
+            }
+        }
+        return null;
+    }
+
+    _notifyEditorTemplateUpdate(materialName, canvas) {
+        const overlayType = this._getOverlayTypeFromMaterial(materialName);
+        if (!overlayType) {
+            return;
+        }
+        if (overlayType === 'decals') {
+            const validCanvas = canvas && canvas.width && canvas.height ? canvas : null;
+            const emit = materialName !== this.editorOverlayMap.decals.materialName;
+            this._updateDecalTemplateOverlay(validCanvas, { emit, materialName });
+            return;
+        }
+        if (!canvas || !canvas.width || !canvas.height) {
+            this.editorOverlayCanvases.delete(overlayType);
+        } else {
+            this.editorOverlayCanvases.set(overlayType, canvas);
+        }
+        if (typeof document === 'undefined' || typeof CustomEvent === 'undefined' || !document.dispatchEvent) {
+            return;
+        }
+        document.dispatchEvent(new CustomEvent('viewer:overlayUpdated', {
+            detail: {
+                type: overlayType,
+                material: materialName,
+                canvas: canvas && canvas.width && canvas.height ? canvas : null
+            }
+        }));
+    }
+
+    getEditorOverlayCanvas(type) {
+        return this.editorOverlayCanvases.get(type) || null;
+    }
+
+    _hydrateDecalOverlayFromViewer() {
+        if (typeof document === 'undefined') {
+            return null;
+        }
+
+        const candidates = this._getOverlayMaterialCandidates('decals');
+        for (const materialName of candidates) {
+            const canvas = this._captureOverlayCanvasFromMaterial(materialName);
+            if (canvas) {
+                this._updateDecalTemplateOverlay(canvas, {
+                    emit: false,
+                    clone: false,
+                    materialName
+                });
+                return { canvas, materialName };
+            }
+        }
+
+        return null;
+    }
+
+    _getOverlayMaterialCandidates(type) {
+        const config = this.editorOverlayMap?.[type];
+        if (!config) {
+            return [];
+        }
+
+        const names = new Set();
+        if (config.materialName) {
+            names.add(config.materialName);
+        }
+        if (Array.isArray(config.aliases)) {
+            config.aliases.forEach((alias) => names.add(alias));
+        }
+
+        return Array.from(names);
+    }
+
+    _captureOverlayCanvasFromMaterial(materialName) {
+        if (!materialName || typeof document === 'undefined') {
+            return null;
+        }
+
+        const mesh = this.overlayMeshes.get(materialName);
+        const directCanvas = this._cloneTextureImage(mesh?.material?.map?.image);
+        if (directCanvas) {
+            return directCanvas;
+        }
+
+        const materials = this.getMaterialFromName(materialName) || [];
+        for (const material of materials) {
+            const cloned = this._cloneTextureImage(material?.map?.image);
+            if (cloned) {
+                return cloned;
+            }
+        }
+
+        return null;
+    }
+
+    _cloneTextureImage(image) {
+        if (!image || typeof document === 'undefined') {
+            return null;
+        }
+
+        if (typeof HTMLCanvasElement !== 'undefined' && image instanceof HTMLCanvasElement) {
+            return this._cloneCanvas(image);
+        }
+
+        if (typeof OffscreenCanvas !== 'undefined' && image instanceof OffscreenCanvas) {
+            const canvas = document.createElement('canvas');
+            canvas.width = image.width;
+            canvas.height = image.height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.drawImage(image, 0, 0);
+                return canvas;
+            }
+            return null;
+        }
+
+        if (typeof ImageBitmap !== 'undefined' && image instanceof ImageBitmap) {
+            const canvas = document.createElement('canvas');
+            canvas.width = image.width;
+            canvas.height = image.height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.drawImage(image, 0, 0);
+                return canvas;
+            }
+            return null;
+        }
+
+        if (typeof HTMLImageElement !== 'undefined' && image instanceof HTMLImageElement) {
+            const width = image.naturalWidth || image.width;
+            const height = image.naturalHeight || image.height;
+            if (!width || !height) {
+                return null;
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                ctx.drawImage(image, 0, 0, width, height);
+                return canvas;
+            }
+            return null;
+        }
+
+        if (image.data && image.width && image.height) {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = image.width;
+                canvas.height = image.height;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    return null;
+                }
+                let imageData = null;
+                if (typeof ImageData !== 'undefined' && image instanceof ImageData) {
+                    imageData = image;
+                } else {
+                    const dataArray = image.data instanceof Uint8ClampedArray
+                        ? image.data
+                        : new Uint8ClampedArray(image.data);
+                    const expectedLength = image.width * image.height * 4;
+                    if (dataArray.length < expectedLength) {
+                        return null;
+                    }
+                    imageData = new ImageData(dataArray.slice(0, expectedLength), image.width, image.height);
+                }
+                ctx.putImageData(imageData, 0, 0);
+                return canvas;
+            } catch (error) {
+                console.warn('Failed to clone texture image data', error);
+                return null;
+            }
+        }
+
+        return null;
     }
 
     _resolveOverlayPreset(presetKeys = [], fallbackKey = null) {
@@ -581,6 +1016,10 @@ export class MaterialManager {
     _removeOverlayByMaterial(materialName) {
         if (!materialName) {
             return;
+        }
+        if (materialName === 'fanatec_overlay' || materialName === this.editorOverlayMap?.decals?.materialName) {
+            const emit = materialName !== this.editorOverlayMap?.decals?.materialName;
+            this._updateDecalTemplateOverlay(null, { emit, clone: false, materialName });
         }
         const mesh = this.overlayMeshes.get(materialName);
         if (mesh) {

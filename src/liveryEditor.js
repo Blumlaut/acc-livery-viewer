@@ -30,6 +30,8 @@ export class LiveryEditor {
         this.handleRadius = 9;
         this.rotationHandleOffset = 48;
         this.currentCursor = 'default';
+        this._suppressViewerOverlayEvents = false;
+        this._viewerOverlayListenerAttached = false;
 
         this._handleEditorEvent = this._handleEditorEvent.bind(this);
         this._onPointerDown = this._onPointerDown.bind(this);
@@ -37,6 +39,7 @@ export class LiveryEditor {
         this._onPointerUp = this._onPointerUp.bind(this);
         this._onBaseTextureChange = this._onBaseTextureChange.bind(this);
         this._onBaseLayersReady = this._onBaseLayersReady.bind(this);
+        this._onViewerOverlayUpdated = this._onViewerOverlayUpdated.bind(this);
     }
 
     async initialize() {
@@ -56,10 +59,18 @@ export class LiveryEditor {
         document.addEventListener('editor:exportLivery', () => this.exportLivery());
         document.addEventListener('editor:baseTextureChanged', this._onBaseTextureChange);
         document.addEventListener('editor:baseLayersReady', this._onBaseLayersReady);
+        if (!this._viewerOverlayListenerAttached) {
+            document.addEventListener('viewer:overlayUpdated', this._onViewerOverlayUpdated);
+            this._viewerOverlayListenerAttached = true;
+        }
 
+        const hasViewerTemplate = this._hydrateTemplateFromViewer();
         this.ensureBaseLayers();
         this.state.layers.forEach((layer) => this.ensureLayerSurface(layer));
-        await this._loadTemplateFromSelection();
+        await this._loadTemplateFromSelection({ skipTemplate: hasViewerTemplate });
+        if (!hasViewerTemplate) {
+            this._hydrateTemplateFromViewer();
+        }
         this.renderComposite();
     }
 
@@ -117,11 +128,39 @@ export class LiveryEditor {
 
     setTemplateVisibility(visible) {
         const nextValue = Boolean(visible);
-        if (this.showTemplate === nextValue) {
+        const wasVisible = this.showTemplate;
+
+        if (!nextValue && !wasVisible) {
             return;
         }
+
         this.showTemplate = nextValue;
-        this.renderComposite();
+        if (this.showTemplate) {
+            let viewerTemplate = null;
+            if (this.materialManager && typeof this.materialManager.refreshEditorDecalTemplate === 'function') {
+                viewerTemplate = this.materialManager.refreshEditorDecalTemplate({ emit: true }) || null;
+            }
+            if (viewerTemplate && viewerTemplate.width && viewerTemplate.height) {
+                this.templateImage = viewerTemplate;
+                this._ensureCanvasSize(viewerTemplate.width, viewerTemplate.height);
+            } else {
+                const hydrated = this._hydrateTemplateFromViewer();
+                if (!hydrated && typeof requestAnimationFrame === 'function') {
+                    requestAnimationFrame(() => {
+                        if (this.showTemplate && (!this.templateImage || !this.templateImage.width || !this.templateImage.height)) {
+                            const refreshed = this._hydrateTemplateFromViewer();
+                            if (refreshed) {
+                                this.renderComposite();
+                            }
+                        }
+                    });
+                }
+            }
+        }
+
+        if (this.showTemplate || wasVisible !== this.showTemplate) {
+            this.renderComposite();
+        }
     }
 
     isTemplateVisible() {
@@ -459,14 +498,37 @@ export class LiveryEditor {
             return false;
         }
         let applied = false;
-        Object.entries(outputs).forEach(([type, surface]) => {
-            const canvas = surface?.canvas && surface.canvas.width && surface.canvas.height
-                ? surface.canvas
-                : null;
-            this.materialManager.updateEditorOverlay(type, canvas);
-            applied = true;
-        });
+        this._suppressViewerOverlayEvents = true;
+        try {
+            Object.entries(outputs).forEach(([type, surface]) => {
+                const canvas = surface?.canvas && surface.canvas.width && surface.canvas.height
+                    ? surface.canvas
+                    : null;
+                this.materialManager.updateEditorOverlay(type, canvas);
+                applied = true;
+            });
+        } finally {
+            this._suppressViewerOverlayEvents = false;
+        }
         return applied;
+    }
+
+    _onViewerOverlayUpdated(event) {
+        if (this._suppressViewerOverlayEvents) {
+            return;
+        }
+        const detail = event?.detail;
+        if (!detail || detail.type !== 'decals') {
+            return;
+        }
+        const canvas = detail.canvas;
+        if (canvas && canvas.width && canvas.height) {
+            this.templateImage = canvas;
+            this._ensureCanvasSize(canvas.width, canvas.height);
+        } else {
+            this.templateImage = null;
+        }
+        this.renderComposite();
     }
 
     exportLivery() {
@@ -537,7 +599,8 @@ export class LiveryEditor {
         }
     }
 
-    async _loadTemplateFromSelection() {
+    async _loadTemplateFromSelection(options = {}) {
+        const { skipTemplate = false } = options;
         const modelPath = this.state.currentModelPath;
         const liveryId = this.state.currentLivery;
         const liveryData = modelPath && liveryId ? globalThis.baseLiveries?.[modelPath]?.[liveryId] : null;
@@ -557,10 +620,25 @@ export class LiveryEditor {
             }
         }
 
-        await this._loadTemplate(templateSrc);
+        if (!skipTemplate) {
+            await this._loadTemplate(templateSrc);
+        }
         await this._applyBaseTexture('decals', decalsSrc || templateSrc);
         await this._applyBaseTexture('sponsors', sponsorsSrc);
         this.renderComposite();
+    }
+
+    _hydrateTemplateFromViewer() {
+        if (!this.materialManager || typeof this.materialManager.getEditorOverlayCanvas !== 'function') {
+            return false;
+        }
+        const canvas = this.materialManager.getEditorOverlayCanvas('decals');
+        if (!canvas || !canvas.width || !canvas.height) {
+            return false;
+        }
+        this.templateImage = canvas;
+        this._ensureCanvasSize(canvas.width, canvas.height);
+        return true;
     }
 
     async _loadTemplate(src) {
