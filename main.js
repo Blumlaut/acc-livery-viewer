@@ -181,6 +181,9 @@ function setupThreeScene() {
     appState.setComposer(composer);
     appState.setGtaoPass(gtaoPass);
     appState.setSmaaPass(smaaPass);
+    if (uiController) {
+        uiController.adjustCameraForMode(uiController.currentWorkspaceMode || 'view');
+    }
 
     // Add cleanup on window unload
     window.addEventListener('beforeunload', cleanupAllResources);

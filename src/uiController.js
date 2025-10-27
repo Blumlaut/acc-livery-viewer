@@ -5,6 +5,7 @@ export class UIController {
         this.materialManager = materialManager;
         this.environmentManager = environmentManager;
         this.liveryEditor = liveryEditor;
+        this.currentWorkspaceMode = 'view';
         this.fileActions = {
             'decals.png': (file) => {
                 // Cleanup previous decals URL if exists
@@ -68,9 +69,6 @@ export class UIController {
         this.unloadLiveryButton = document.getElementById('unloadCustomLivery');
         this.fileInput = document.getElementById('fileInput');
         this.multiFileUpload = document.getElementById('multiFileUpload');
-        this.editorPanel = document.getElementById('editorPanel');
-        this.editorPanelToggle = document.getElementById('editorPanelToggle');
-        this.editorPanelClose = document.getElementById('editorPanelClose');
         this.layerList = document.getElementById('layerList');
         this.createLayerButton = document.getElementById('createLayerButton');
         this.mergeLayerButton = document.getElementById('mergeLayerButton');
@@ -86,6 +84,8 @@ export class UIController {
         this.textEntryInput = document.getElementById('textEntryInput');
         this.exportLiveryButton = document.getElementById('exportLiveryButton');
         this.uvBackgroundToggle = document.getElementById('uvBackgroundToggle');
+        this.workspace = document.getElementById('dropZone');
+        this.appTabList = document.getElementById('appTabList');
     }
 
     setModelSelection(value) {
@@ -345,7 +345,8 @@ export class UIController {
             });
         }
 
-        this.registerEditorPanelEvents();
+        this.registerEditorControls();
+        this.registerTabEvents();
     }
 
     registerDragAndDrop() {
@@ -371,18 +372,7 @@ export class UIController {
         });
     }
 
-    registerEditorPanelEvents() {
-        if (this.editorPanelToggle && this.editorPanel) {
-            this.editorPanelToggle.addEventListener('click', () => {
-                const isOpen = !this.editorPanel.classList.contains('open');
-                this.setEditorPanelOpen(isOpen);
-            });
-        }
-
-        if (this.editorPanelClose && this.editorPanel) {
-            this.editorPanelClose.addEventListener('click', () => this.setEditorPanelOpen(false));
-        }
-
+    registerEditorControls() {
         if (this.layerList) {
             this.layerList.addEventListener('click', (event) => {
                 const item = event.target.closest('[data-layer-id]');
@@ -551,15 +541,55 @@ export class UIController {
         }
     }
 
-    setEditorPanelOpen(isOpen) {
-        if (!this.editorPanel) {
+    registerTabEvents() {
+        if (!this.appTabList) {
             return;
         }
-        this.editorPanel.classList.toggle('open', Boolean(isOpen));
-        this.editorPanel.setAttribute('aria-hidden', (!isOpen).toString());
-        if (this.editorPanelToggle) {
-            this.editorPanelToggle.setAttribute('aria-expanded', Boolean(isOpen).toString());
+
+        const tabButtons = this.appTabList.querySelectorAll('button[data-bs-toggle="tab"]');
+        tabButtons.forEach((button) => {
+            button.addEventListener('shown.bs.tab', (event) => {
+                const targetId = event.target.getAttribute('data-bs-target');
+                if (targetId === '#editorTab') {
+                    this.setWorkspaceMode('editor');
+                } else {
+                    this.setWorkspaceMode('view');
+                }
+            });
+        });
+
+        const activeButton = this.appTabList.querySelector('button.active');
+        if (activeButton) {
+            const targetId = activeButton.getAttribute('data-bs-target');
+            this.setWorkspaceMode(targetId === '#editorTab' ? 'editor' : 'view');
+        } else {
+            this.setWorkspaceMode('view');
         }
+    }
+
+    setWorkspaceMode(mode) {
+        this.currentWorkspaceMode = mode;
+        if (!this.workspace) {
+            return;
+        }
+        const isEditor = mode === 'editor';
+        this.workspace.classList.toggle('workspace-editor', isEditor);
+        this.workspace.classList.toggle('workspace-view-only', !isEditor);
+        this.adjustCameraForMode(mode);
+    }
+
+    adjustCameraForMode(mode) {
+        const camera = this.state.camera;
+        if (!camera) {
+            return;
+        }
+
+        if (mode === 'editor') {
+            camera.position.set(0.5, 1.2, 5.2);
+        } else {
+            camera.position.set(0, 1.1, 4.2);
+        }
+        camera.lookAt(0, 1, 0);
     }
 
     ensureBrushSettings() {
