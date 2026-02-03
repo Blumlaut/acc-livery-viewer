@@ -224,6 +224,88 @@ export class UIController {
                 console.error('Failed to load carJson', error);
             }
         }
+
+        if (urlParams.has('decalsJson')) {
+            try {
+                const base64Data = urlParams.get('decalsJson');
+                const content = JSON.parse(atob(base64Data));
+                this.fileActions['decals.json'](content);
+            } catch (error) {
+                console.error('Failed to load decalsJson from URL', error);
+            }
+        }
+
+        if (urlParams.has('sponsorsJson')) {
+            try {
+                const base64Data = urlParams.get('sponsorsJson');
+                const content = JSON.parse(atob(base64Data));
+                this.fileActions['sponsors.json'](content);
+            } catch (error) {
+                console.error('Failed to load sponsorsJson from URL', error);
+            }
+        }
+
+        if (urlParams.has('decalsImage')) {
+            try {
+                const base64Data = urlParams.get('decalsImage');
+                const content = atob(base64Data);
+                const blob = new Blob([content], { type: 'image/png' });
+                const file = new File([blob], 'decals.png', { type: 'image/png' });
+                this.fileActions['decals.png'](file);
+            } catch (error) {
+                console.error('Failed to load decalsImage from URL', error);
+            }
+        }
+
+        if (urlParams.has('sponsorsImage')) {
+            try {
+                const base64Data = urlParams.get('sponsorsImage');
+                const content = atob(base64Data);
+                const blob = new Blob([content], { type: 'image/png' });
+                const file = new File([blob], 'sponsors.png', { type: 'image/png' });
+                this.fileActions['sponsors.png'](file);
+            } catch (error) {
+                console.error('Failed to load sponsorsImage from URL', error);
+            }
+        }
+
+        if (urlParams.has('liveryFiles')) {
+            try {
+                await this.loadLiveryFilesFromUrl(urlParams.get('liveryFiles'));
+            } catch (error) {
+                console.error('Failed to load livery files from URL', error);
+            }
+        }
+    }
+
+    async loadLiveryFilesFromUrl(encodedFiles) {
+        const files = JSON.parse(atob(encodedFiles));
+        const filePromises = [];
+
+        Object.entries(files).forEach(([filename, base64Content]) => {
+            const promise = new Promise((resolve) => {
+                try {
+                    const content = atob(base64Content);
+                    const blob = new Blob([content], { type: 'image/png' });
+                    const file = new File([blob], filename, { type: 'image/png' });
+                    this.processFile(file);
+                    resolve();
+                } catch (error) {
+                    console.error(`Failed to load file ${filename} from URL`, error);
+                    resolve();
+                }
+            });
+            filePromises.push(promise);
+        });
+
+        await Promise.all(filePromises);
+        setTimeout(async () => {
+            try {
+                await this.materialManager.mergeAndSetDecals(this.state.currentLivery);
+            } catch (error) {
+                console.error('Failed to merge decals after loading livery files', error);
+            }
+        }, 100);
     }
 
     registerEventListeners() {

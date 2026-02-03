@@ -101,6 +101,7 @@ function cleanupAllResources() {
 
 async function init() {
     await uiController.initialize();
+    await uiController.loadLiveryFilesFromUrl();
     setupThreeScene();
     if (uiController.cubemapSelector && appState.currentSkybox) {
         uiController.cubemapSelector.value = appState.currentSkybox;
