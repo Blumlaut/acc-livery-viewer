@@ -278,72 +278,139 @@ export class UIController {
         }
     }
 
+    async loadLiveryFromAttrition(liveryId, attritionUrl) {
+        console.log('[loadLiveryFromAttrition] Starting with liveryId:', liveryId, 'attritionUrl:', attritionUrl);
+        try {
+            const url = `${attritionUrl}/liveries/${liveryId}/preview-viewer`;
+            console.log('[loadLiveryFromAttrition] Fetching URL:', url);
+            const response = await fetch(url);
+            console.log('[loadLiveryFromAttrition] Response received, status:', response.status);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch livery: ${response.status}`);
+            }
+            const data = await response.json();
+            console.log('[loadLiveryFromAttrition] Response data:', data);
+            console.log('[loadLiveryFromAttrition] Has encodedFiles:', !!data.encodedFiles);
+            console.log('[loadLiveryFromAttrition] encodedFiles type:', typeof data.encodedFiles);
+            console.log('[loadLiveryFromAttrition] encodedFiles length:', data.encodedFiles?.length);
+            if (!data.encodedFiles) {
+                throw new Error('No livery data available');
+            }
+            console.log('[loadLiveryFromAttrition] Calling loadLiveryFilesFromUrl with:', data.encodedFiles.substring(0, 100) + '...');
+            await this.loadLiveryFilesFromUrl(data.encodedFiles);
+            console.log('[loadLiveryFromAttrition] Successfully loaded livery files');
+        } catch (error) {
+            console.error('[loadLiveryFromAttrition] Failed to load livery from attrition:', error);
+            alert('Failed to load livery from attrition. Please try again later.');
+        }
+    }
+
     async loadLiveryFilesFromUrl(encodedFiles) {
+        console.log('[loadLiveryFilesFromUrl] Starting with encodedFiles length:', encodedFiles?.length);
         if (!encodedFiles) {
-            console.error('No encoded files parameter provided');
+            console.error('[loadLiveryFilesFromUrl] No encoded files parameter provided');
             return;
         }
 
         try {
+            console.log('[loadLiveryFilesFromUrl] Decoding JSON from base64');
             const decodedJson = this.base64Decode(encodedFiles);
+            console.log('[loadLiveryFilesFromUrl] Decoded JSON length:', decodedJson.length);
+            console.log('[loadLiveryFilesFromUrl] Parsed JSON structure:', typeof decodedJson);
             const files = JSON.parse(decodedJson);
+            console.log('[loadLiveryFilesFromUrl] Files object keys:', Object.keys(files));
+            console.log('[loadLiveryFilesFromUrl] Number of files to process:', Object.keys(files).length);
 
             const filePromises = [];
 
-            Object.entries(files).forEach(([filename, base64Content]) => {
+            Object.entries(files).forEach(([filename, base64Content], index) => {
+                console.log(`[loadLiveryFilesFromUrl] Processing file ${index + 1}/${Object.keys(files).length}:`, filename);
+                console.log(`[loadLiveryFilesFromUrl] File content length:`, base64Content?.length);
+                console.log(`[loadLiveryFilesFromUrl] File content first 50 chars:`, base64Content?.substring(0, 50));
+                
                 const promise = new Promise((resolve) => {
                     try {
+                        console.log(`[loadLiveryFilesFromUrl] Decoding ${filename} from base64`);
                         const content = this.base64Decode(base64Content);
+                        console.log(`[loadLiveryFilesFromUrl] ${filename} decoded successfully, length:`, content.length);
 
                         if (filename.endsWith('.json')) {
                             try {
                                 const jsonContent = JSON.parse(content);
+                                console.log(`[loadLiveryFilesFromUrl] Parsed ${filename} JSON, keys:`, Object.keys(jsonContent));
                                 if (this.fileActions[filename]) {
                                     this.fileActions[filename](jsonContent);
+                                    console.log(`[loadLiveryFilesFromUrl] Applied ${filename} via fileActions`);
+                                } else {
+                                    console.log(`[loadLiveryFilesFromUrl] No fileActions handler for ${filename}`);
                                 }
                             } catch (jsonError) {
-                                console.error(`Failed to parse JSON file ${filename}`, jsonError);
+                                console.error(`[loadLiveryFilesFromUrl] Failed to parse JSON file ${filename}`, jsonError);
                             }
                         } else if (filename.endsWith('.png')) {
+                            console.log(`[loadLiveryFilesFromUrl] Creating blob for ${filename}`);
                             const blob = new Blob([content], { type: 'image/png' });
+                            console.log(`[loadLiveryFilesFromUrl] Blob created, size:`, blob.size);
                             const file = new File([blob], filename, { type: 'image/png' });
+                            console.log(`[loadLiveryFilesFromUrl] File created, name:`, file.name);
                             if (this.fileActions[filename]) {
                                 this.fileActions[filename](file);
+                                console.log(`[loadLiveryFilesFromUrl] Applied ${filename} via fileActions`);
+                            } else {
+                                console.log(`[loadLiveryFilesFromUrl] No fileActions handler for ${filename}`);
                             }
                         }
 
                         resolve();
                     } catch (error) {
-                        console.error(`Failed to load file ${filename} from URL`, error);
+                        console.error(`[loadLiveryFilesFromUrl] Failed to load file ${filename} from URL`, error);
                         resolve();
                     }
                 });
                 filePromises.push(promise);
             });
 
+            console.log('[loadLiveryFilesFromUrl] Waiting for all file promises to resolve');
             await Promise.all(filePromises);
+            console.log('[loadLiveryFilesFromUrl] All files processed successfully');
 
             setTimeout(async () => {
                 try {
+                    console.log('[loadLiveryFilesFromUrl] Merging and setting decals');
                     await this.materialManager.mergeAndSetDecals(this.state.currentLivery);
+                    console.log('[loadLiveryFilesFromUrl] Decals merged successfully');
                 } catch (error) {
-                    console.error('Failed to merge decals after loading livery files', error);
+                    console.error('[loadLiveryFilesFromUrl] Failed to merge decals after loading livery files', error);
                 }
             }, 100);
         } catch (error) {
-            console.error('Error in loadLiveryFilesFromUrl', error);
+            console.error('[loadLiveryFilesFromUrl] Error in loadLiveryFilesFromUrl', error);
+            console.error('[loadLiveryFilesFromUrl] Error details:', error.message);
+            console.error('[loadLiveryFilesFromUrl] Error stack:', error.stack);
         }
     }
 
     base64Decode(str) {
+        console.log('[base64Decode] Input length:', str?.length);
+        console.log('[base64Decode] Input first 100 chars:', str?.substring(0, 100));
+        console.log('[base64Decode] Input last 100 chars:', str?.substring(str.length - 100));
+        console.log('[base64Decode] Input is valid base64:', /^[A-Za-z0-9+/]+=*$/.test(str));
         if (!str || str.trim() === '') {
+            console.log('[base64Decode] Empty or whitespace input, returning empty string');
             return '';
         }
         try {
+            console.log('[base64Decode] Attempting atob decode');
             const decoded = window.atob(str);
-            return decodeURIComponent(escape(decoded));
+            console.log('[base64Decode] atob succeeded, length:', decoded.length);
+            console.log('[base64Decode] Attempting decodeURIComponent');
+            const result = decodeURIComponent(escape(decoded));
+            console.log('[base64Decode] Full decode succeeded, length:', result.length);
+            return result;
         } catch (e) {
-            console.error('Base64 decode error:', e);
+            console.error('[base64Decode] Base64 decode error:', e);
+            console.error('[base64Decode] Error details:', e.message);
+            console.error('[base64Decode] Error stack:', e.stack);
             return '';
         }
     }
