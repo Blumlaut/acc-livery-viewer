@@ -279,34 +279,60 @@ export class UIController {
     }
 
     async loadLiveryFilesFromUrl(encodedFiles) {
-        const base64EncodedFiles = encodedFiles;
-        const files = JSON.parse(this.base64Decode(base64EncodedFiles));
-        const filePromises = [];
+        if (!encodedFiles) {
+            console.error('No encoded files parameter provided');
+            return;
+        }
 
-        Object.entries(files).forEach(([filename, base64Content]) => {
-            const promise = new Promise((resolve) => {
-                try {
-                    const content = this.base64Decode(base64Content);
-                    const blob = new Blob([content], { type: 'image/png' });
-                    const file = new File([blob], filename, { type: 'image/png' });
-                    this.processFile(file);
-                    resolve();
-                } catch (error) {
-                    console.error(`Failed to load file ${filename} from URL`, error);
-                    resolve();
-                }
+        try {
+            const decodedJson = this.base64Decode(encodedFiles);
+            const files = JSON.parse(decodedJson);
+
+            const filePromises = [];
+
+            Object.entries(files).forEach(([filename, base64Content]) => {
+                const promise = new Promise((resolve) => {
+                    try {
+                        const content = this.base64Decode(base64Content);
+
+                        if (filename.endsWith('.json')) {
+                            try {
+                                const jsonContent = JSON.parse(content);
+                                if (this.fileActions[filename]) {
+                                    this.fileActions[filename](jsonContent);
+                                }
+                            } catch (jsonError) {
+                                console.error(`Failed to parse JSON file ${filename}`, jsonError);
+                            }
+                        } else if (filename.endsWith('.png')) {
+                            const blob = new Blob([content], { type: 'image/png' });
+                            const file = new File([blob], filename, { type: 'image/png' });
+                            if (this.fileActions[filename]) {
+                                this.fileActions[filename](file);
+                            }
+                        }
+
+                        resolve();
+                    } catch (error) {
+                        console.error(`Failed to load file ${filename} from URL`, error);
+                        resolve();
+                    }
+                });
+                filePromises.push(promise);
             });
-            filePromises.push(promise);
-        });
 
-        await Promise.all(filePromises);
-        setTimeout(async () => {
-            try {
-                await this.materialManager.mergeAndSetDecals(this.state.currentLivery);
-            } catch (error) {
-                console.error('Failed to merge decals after loading livery files', error);
-            }
-        }, 100);
+            await Promise.all(filePromises);
+
+            setTimeout(async () => {
+                try {
+                    await this.materialManager.mergeAndSetDecals(this.state.currentLivery);
+                } catch (error) {
+                    console.error('Failed to merge decals after loading livery files', error);
+                }
+            }, 100);
+        } catch (error) {
+            console.error('Error in loadLiveryFilesFromUrl', error);
+        }
     }
 
     base64Decode(str) {
@@ -486,8 +512,6 @@ export class UIController {
             const { bodyColours, bodyMaterials } = this.materialManager.applyCarJsonData(content);
             this.updateColourPickers(bodyColours);
             this.updateMaterialSelectors(bodyMaterials);
-        } else {
-            console.log('Unrecognized JSON file content.', content);
         }
     }
 
