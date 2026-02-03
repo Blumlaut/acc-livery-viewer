@@ -101,7 +101,10 @@ function cleanupAllResources() {
 
 async function init() {
     await uiController.initialize();
-    await uiController.loadLiveryFilesFromUrl();
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('liveryFiles')) {
+        await uiController.loadLiveryFilesFromUrl();
+    }
     setupThreeScene();
     if (uiController.cubemapSelector && appState.currentSkybox) {
         uiController.cubemapSelector.value = appState.currentSkybox;

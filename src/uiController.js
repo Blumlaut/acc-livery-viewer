@@ -279,13 +279,14 @@ export class UIController {
     }
 
     async loadLiveryFilesFromUrl(encodedFiles) {
-        const files = JSON.parse(atob(encodedFiles));
+        const base64EncodedFiles = encodedFiles;
+        const files = JSON.parse(this.base64Decode(base64EncodedFiles));
         const filePromises = [];
 
         Object.entries(files).forEach(([filename, base64Content]) => {
             const promise = new Promise((resolve) => {
                 try {
-                    const content = atob(base64Content);
+                    const content = this.base64Decode(base64Content);
                     const blob = new Blob([content], { type: 'image/png' });
                     const file = new File([blob], filename, { type: 'image/png' });
                     this.processFile(file);
@@ -306,6 +307,19 @@ export class UIController {
                 console.error('Failed to merge decals after loading livery files', error);
             }
         }, 100);
+    }
+
+    base64Decode(str) {
+        if (!str || str.trim() === '') {
+            return '';
+        }
+        try {
+            const decoded = window.atob(str);
+            return decodeURIComponent(escape(decoded));
+        } catch (e) {
+            console.error('Base64 decode error:', e);
+            return '';
+        }
     }
 
     registerEventListeners() {
