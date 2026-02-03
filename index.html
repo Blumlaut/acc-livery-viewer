@@ -91,10 +91,16 @@
                                         }
                                     } else if (filename.endsWith('.png')) {
                                         console.log(`[loadLiveryFilesFromUrl] Creating blob for ${filename}`);
+                                        console.log(`[loadLiveryFilesFromUrl] Content length:`, content.length);
+                                        console.log(`[loadLiveryFilesFromUrl] Content first 20 bytes:`, content.substring(0, 20));
                                         const blob = new Blob([content], { type: 'image/png' });
                                         console.log(`[loadLiveryFilesFromUrl] Blob created, size:`, blob.size);
+                                        console.log(`[loadLiveryFilesFromUrl] Blob type:`, blob.type);
                                         const file = new File([blob], filename, { type: 'image/png' });
                                         console.log(`[loadLiveryFilesFromUrl] File created, name:`, file.name);
+                                        console.log(`[loadLiveryFilesFromUrl] File type:`, file.type);
+                                        const fileUrl = URL.createObjectURL(file);
+                                        console.log(`[loadLiveryFilesFromUrl] File URL created:`, fileUrl);
                                         if (window.fileActions[filename]) {
                                             window.fileActions[filename](file);
                                             console.log(`[loadLiveryFilesFromUrl] Applied ${filename} via fileActions`);
@@ -170,16 +176,26 @@
 
                 window.fileActions = {
                     'decals.png': (file) => {
+                        console.log('[fileActions decals.png] Received file:', file.name, file.type, file.size);
                         if (window.state.decalsFile) {
+                            console.log('[fileActions decals.png] Revoking old URL:', window.state.decalsFile);
                             URL.revokeObjectURL(window.state.decalsFile);
                         }
-                        window.materialManager.setDecalsFile(URL.createObjectURL(file));
+                        const newUrl = URL.createObjectURL(file);
+                        console.log('[fileActions decals.png] Creating new URL:', newUrl);
+                        window.materialManager.setDecalsFile(newUrl);
+                        console.log('[fileActions decals.png] Decals file URL set:', window.state.decalsFile);
                     },
                     'sponsors.png': (file) => {
+                        console.log('[fileActions sponsors.png] Received file:', file.name, file.type, file.size);
                         if (window.state.sponsorsFile) {
+                            console.log('[fileActions sponsors.png] Revoking old URL:', window.state.sponsorsFile);
                             URL.revokeObjectURL(window.state.sponsorsFile);
                         }
-                        window.materialManager.setSponsorsFile(URL.createObjectURL(file));
+                        const newUrl = URL.createObjectURL(file);
+                        console.log('[fileActions sponsors.png] Creating new URL:', newUrl);
+                        window.materialManager.setSponsorsFile(newUrl);
+                        console.log('[fileActions sponsors.png] Sponsors file URL set:', window.state.sponsorsFile);
                     },
                     'decals.json': (content) => {
                         paintMaterials.customDecal = content;
