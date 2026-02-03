@@ -469,6 +469,17 @@ export class MaterialManager {
             this.state.bodyMaterials[3] = materialIdToName[data.rimMaterialType1];
         }
 
+        if (data.carModelType !== undefined && this.modelLoader) {
+            const modelPath = cars[data.carModelType]?.modelKey;
+            if (modelPath && modelPath !== this.state.currentModelPath) {
+                this.modelLoader.loadModel(modelPath).then(() => {
+                    console.log(`Loaded model ${modelPath} for carModelType ${data.carModelType}`);
+                }).catch(error => {
+                    console.error(`Failed to load model ${modelPath} for carModelType ${data.carModelType}`, error);
+                });
+            }
+        }
+
         this.applyBodyColours();
         return {
             bodyColours: [...this.state.bodyColours],
