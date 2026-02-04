@@ -154,9 +154,13 @@ export class MaterialManager {
 
         const blob = await response.blob();
         if (typeof createImageBitmap === 'function') {
-            const bitmap = await createImageBitmap(blob);
-            console.log('[materialManager loadImage] Image loaded as ImageBitmap:', src, bitmap.width, bitmap.height);
-            return bitmap;
+            try {
+                const bitmap = await createImageBitmap(blob);
+                console.log('[materialManager loadImage] Image loaded as ImageBitmap:', src, bitmap.width, bitmap.height);
+                return bitmap;
+            } catch (error) {
+                console.warn('[materialManager loadImage] ImageBitmap failed, falling back to Image element:', error);
+            }
         }
 
         return new Promise((resolve, reject) => {
