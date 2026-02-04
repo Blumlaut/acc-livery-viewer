@@ -6,6 +6,9 @@ export class ModelLoader {
         this.state = state;
         this.materialManager = materialManager;
         this.loader = new GLTFLoader();
+        this.textureLoader = new THREE.TextureLoader();
+        this.textureCache = new Map();
+        this.materialCache = new Map();
         // Track model resources for cleanup
         this.trackedModels = new Set();
     }
@@ -41,6 +44,8 @@ export class ModelLoader {
             // Remove from tracked models
             this.trackedModels.delete(model);
         }
+
+        this.clearMaterialCaches();
     }
 
     disposeWheels() {
@@ -100,10 +105,18 @@ export class ModelLoader {
                         this.state.setPrevModelPath(this.state.currentModelPath);
                     }
 
+                    if (this.state.isAttritionMode) {
+                        this.state.attritionModelReady = true;
+                    }
                     const livery = this.state.currentLivery ?? this.getDefaultLivery(modelPath);
                     if (livery) {
                         this.state.setCurrentLivery(livery);
-                        await this.materialManager.mergeAndSetDecals(livery);
+                        if (!this.state.deferLiveryMerge) {
+                            await this.materialManager.mergeAndSetDecals(livery);
+                        } else if (this.state.attritionLiveryReady) {
+                            this.state.deferLiveryMerge = false;
+                            await this.materialManager.mergeAndSetDecals(livery);
+                        }
                     }
 
                     this.materialManager.applyMaterialPreset('baseLivery1', paintMaterials[this.state.bodyMaterials[0]]);
@@ -210,28 +223,18 @@ export class ModelLoader {
         const texturePath = `models/${modelPath}/textures/${processedMaterialName}_Colour.png`;
         
         // Check if texture already exists in cache (simple caching)
-        if (this.textureCache && this.textureCache.has(texturePath)) {
-            const cachedTexture = this.textureCache.get(texturePath);
-            const newMaterial = new THREE.MeshBasicMaterial({
-                name: processedMaterialName,
-                color: 0xffffff,
-                map: cachedTexture,
-            });
-            node.material = newMaterial;
+        if (this.textureCache.has(texturePath) && this.materialCache.has(texturePath)) {
+            node.material = this.materialCache.get(texturePath);
             return;
         }
 
-        const textureLoader = new THREE.TextureLoader();
-        textureLoader.load(
+        this.textureLoader.load(
             texturePath,
             (texture) => {
                 texture.flipY = false;
                 texture.colorSpace = THREE.SRGBColorSpace;
                 
                 // Cache the texture for future use
-                if (!this.textureCache) {
-                    this.textureCache = new Map();
-                }
                 this.textureCache.set(texturePath, texture);
                 
                 this.state.bodyTextures.push(texture);
@@ -240,6 +243,7 @@ export class ModelLoader {
                     color: 0xffffff,
                     map: texture,
                 });
+                this.materialCache.set(texturePath, newMaterial);
                 node.material = newMaterial;
             },
             undefined,
@@ -340,5 +344,25 @@ export class ModelLoader {
             }
         });
         this.trackedModels.clear();
+        this.clearMaterialCaches();
+    }
+
+    clearMaterialCaches() {
+        this.materialCache.forEach((material) => {
+            try {
+                material.dispose();
+            } catch (e) {
+                // Ignore errors during disposal
+            }
+        });
+        this.materialCache.clear();
+        this.textureCache.forEach((texture) => {
+            try {
+                texture.dispose();
+            } catch (e) {
+                // Ignore errors during disposal
+            }
+        });
+        this.textureCache.clear();
     }
 }

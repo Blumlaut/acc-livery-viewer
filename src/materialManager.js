@@ -16,10 +16,6 @@ export class MaterialManager {
         this.modelLoader = modelLoader;
     }
 
-    setModelLoader(modelLoader) {
-        this.modelLoader = modelLoader;
-    }
-
     updateUiForModel(modelPath) {
         // Update UI selectors for the new model
         if (typeof window !== 'undefined' && window.uiController && window.uiController.setModelSelection) {
@@ -169,6 +165,15 @@ export class MaterialManager {
         return texture;
     }
 
+    applyCanvasOverlay(canvas, materialName, preset) {
+        if (!canvas) {
+            return null;
+        }
+        const texture = this.createTextureFromCanvas(canvas);
+        canvas.remove();
+        return this.applyTextureToModel(texture, materialName, preset);
+    }
+
     applyTextureToModel(texture, materialName, preset) {
         const { model, scene } = this.state;
         if (!model || !scene) {
@@ -282,10 +287,8 @@ export class MaterialManager {
             ctx.putImageData(channelDataArray[index], 0, 0);
         });
 
-        const results = channelCanvases.map((channelCanvas) => channelCanvas.toDataURL('image/png'));
         canvas.remove();
-        channelCanvases.forEach((channelCanvas) => channelCanvas.remove());
-        return results;
+        return channelCanvases;
     }
 
     async setBaseLivery(modelPath, livery) {
@@ -307,9 +310,11 @@ export class MaterialManager {
             images = await this.convertImageToRGBChannels(`models/${modelPath}/skins/custom/${liveryPath}/EXT_Skin_Custom.png`);
         }
 
-        for (let i = 0; i < images.length; i++) {
-            await this.drawImageOverlay(images[i], `baseLivery${i + 1}`, paintMaterials.customDecal || paintMaterials.glossy);
-        }
+        await Promise.all(
+            images.map((canvas, index) =>
+                this.applyCanvasOverlay(canvas, `baseLivery${index + 1}`, paintMaterials.customDecal || paintMaterials.glossy)
+            )
+        );
 
         if (liveryData.hasDecals) {
             await this.drawImageOverlay(

@@ -135,6 +135,8 @@ async function init() {
         // When skipping default model, ensure currentModelPath is null
         // so that applyCarJsonData can properly load the correct model
         appState.setCurrentModelPath(null);
+        appState.setPrevModelPath(null);
+        await uiController.loadLiveryFromAttrition(urlParams.get('liveryId'), urlParams.get('attritionUrl'));
     }
 
     setupMemoryMonitoring();

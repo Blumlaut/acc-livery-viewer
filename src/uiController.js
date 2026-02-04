@@ -114,6 +114,8 @@ export class UIController {
     }
 
     loadSettingsFromCookies() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const isAttritionMode = urlParams.has('liveryId') && urlParams.has('attritionUrl');
         if (getCookie('skybox')) {
             const skybox = getCookie('skybox');
             this.state.setSkybox(skybox);
@@ -128,14 +130,17 @@ export class UIController {
             const enabled = getCookie('postProcessing') === 'true';
             this.togglePostProcessing(enabled);
         }
-        if (getCookie('model')) {
+        if (!isAttritionMode && getCookie('model')) {
             const modelPath = getCookie('model');
             this.state.firstRun = false;
             this.state.setCurrentModelPath(modelPath);
             this.modelSelector.value = modelPath;
             this.populateLiverySelector(modelPath);
+        } else if (isAttritionMode) {
+            this.state.setCurrentModelPath(null);
+            this.state.setPrevModelPath(null);
         }
-        if (getCookie('currentLivery')) {
+        if (!isAttritionMode && getCookie('currentLivery')) {
             const livery = getCookie('currentLivery');
             this.state.setCurrentLivery(livery);
             this.liverySelector.value = livery;
@@ -198,6 +203,12 @@ export class UIController {
             // Skip loading default model when these parameters are present
             // The model will be loaded from car.json in the livery files
             console.log('[applyUrlParameters] Skipping default model load for attrition livery');
+            this.state.isAttritionMode = true;
+            this.state.deferLiveryMerge = true;
+            this.state.attritionLiveryReady = false;
+            this.state.attritionModelReady = false;
+            this.state.setCurrentModelPath(null);
+            this.state.setPrevModelPath(null);
         } else {
             // Normal flow for other URL parameters
             if (urlParams.has('carId')) {
@@ -353,24 +364,12 @@ export class UIController {
             // Check if we need to load a model from car.json
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('liveryId') && urlParams.has('attritionUrl')) {
+                this.state.attritionLiveryReady = true;
                 // When loading from attrition, we need to ensure the model is loaded
                 // The car.json file should contain the model information
                 // The model loading happens asynchronously in applyCarJsonData,
                 // so we need to wait for it to complete before merging decals
-                setTimeout(async () => {
-                    try {
-                        // Check if model is already loaded
-                        if (this.state.currentModelPath && this.state.model) {
-                            await this.materialManager.mergeAndSetDecals(this.state.currentLivery);
-                        } else {
-                            // Model not loaded yet, wait a bit longer
-                            await new Promise(resolve => setTimeout(resolve, 500));
-                            await this.materialManager.mergeAndSetDecals(this.state.currentLivery);
-                        }
-                    } catch (error) {
-                        console.error('[loadLiveryFilesFromUrl] Failed to merge decals after loading livery files', error);
-                    }
-                }, 100);
+                this.tryFinalizeAttritionLiveryLoad();
             }
         } catch (error) {
             console.error('[loadLiveryFilesFromUrl] Error in loadLiveryFilesFromUrl', error);
@@ -396,7 +395,8 @@ export class UIController {
         }
         try {
             const decoded = window.atob(cleaned);
-            return decodeURIComponent(escape(decoded));
+            const isBinary = /[^\x00-\x7F]/.test(decoded);
+            return isBinary ? decoded : decodeURIComponent(escape(decoded));
         } catch (e) {
             console.error('[base64Decode] Base64 decode error:', e);
             return '';
@@ -410,15 +410,25 @@ export class UIController {
         }
         try {
             const decoded = window.atob(cleaned);
-            const bytes = new Uint8Array(decoded.length);
-            for (let i = 0; i < decoded.length; i += 1) {
-                bytes[i] = decoded.charCodeAt(i);
-            }
-            return bytes;
+            return this.binaryStringToUint8Array(decoded);
         } catch (e) {
-            console.error('[base64ToUint8Array] Base64 decode error:', e);
+            return this.binaryStringToUint8Array(cleaned, e);
+        }
+    }
+
+    binaryStringToUint8Array(content, error) {
+        if (!content) {
             return new Uint8Array();
         }
+        if (error) {
+            console.error('[base64ToUint8Array] Base64 decode error:', error);
+            console.info('[base64ToUint8Array] Falling back to binary string conversion.');
+        }
+        const bytes = new Uint8Array(content.length);
+        for (let i = 0; i < content.length; i += 1) {
+            bytes[i] = content.charCodeAt(i);
+        }
+        return bytes;
     }
 
     registerEventListeners() {
@@ -617,6 +627,24 @@ export class UIController {
         // Update UI to reflect current state
         if (this.postProcessingToggle) {
             this.postProcessingToggle.checked = enabled;
+        }
+    }
+
+    async tryFinalizeAttritionLiveryLoad() {
+        if (!this.state.isAttritionMode) {
+            return;
+        }
+        if (!this.state.attritionLiveryReady || !this.state.attritionModelReady) {
+            return;
+        }
+        if (!this.state.currentModelPath || !this.state.model) {
+            return;
+        }
+        try {
+            this.state.deferLiveryMerge = false;
+            await this.materialManager.mergeAndSetDecals(this.state.currentLivery);
+        } catch (error) {
+            console.error('[tryFinalizeAttritionLiveryLoad] Failed to merge decals after attrition load', error);
         }
     }
     

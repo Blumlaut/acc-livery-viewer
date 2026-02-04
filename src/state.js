@@ -22,6 +22,10 @@ export class AppState {
         this.decalsFile = null;
         this.sponsorsFile = null;
         this.firstRun = true;
+        this.isAttritionMode = false;
+        this.deferLiveryMerge = false;
+        this.attritionLiveryReady = false;
+        this.attritionModelReady = false;
         // Resource tracking for memory monitoring
         this.resourceStats = {
             textures: 0,
