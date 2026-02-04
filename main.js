@@ -114,18 +114,25 @@ async function init() {
     }
     environmentManager.applySkybox(appState.currentSkybox);
 
-    const initialModel = appState.currentModelPath || Object.keys(modelFiles)[0];
-    appState.setCurrentModelPath(initialModel);
-    uiController.setModelSelection(initialModel);
-    uiController.populateLiverySelector(initialModel);
+    // Check if we should skip loading default model (when liveryId and attritionUrl are present)
+    const urlParams = new URLSearchParams(window.location.search);
+    const shouldSkipDefaultModel = urlParams.has('liveryId') && urlParams.has('attritionUrl');
 
-    const defaultLivery = appState.currentLivery || modelLoader.getDefaultLivery(initialModel);
-    if (defaultLivery) {
-        appState.setCurrentLivery(defaultLivery);
-        uiController.setLiverySelection(defaultLivery);
+    if (!shouldSkipDefaultModel) {
+        const initialModel = appState.currentModelPath || Object.keys(modelFiles)[0];
+        appState.setCurrentModelPath(initialModel);
+        uiController.setModelSelection(initialModel);
+        uiController.populateLiverySelector(initialModel);
+
+        const defaultLivery = appState.currentLivery || modelLoader.getDefaultLivery(initialModel);
+        if (defaultLivery) {
+            appState.setCurrentLivery(defaultLivery);
+            uiController.setLiverySelection(defaultLivery);
+        }
+
+        await modelLoader.loadModel(initialModel);
     }
 
-    await modelLoader.loadModel(initialModel);
     setupMemoryMonitoring();
     animate();
 }

@@ -193,87 +193,95 @@ export class UIController {
             });
         }
 
-        if (urlParams.has('carId')) {
-            const carInfo = cars[urlParams.get('carId')];
-            if (carInfo?.modelKey) {
-                this.state.setCurrentModelPath(carInfo.modelKey);
-                this.modelSelector.value = carInfo.modelKey;
-                this.populateLiverySelector(carInfo.modelKey);
+        // Handle liveryId and attritionUrl parameters
+        if (urlParams.has('liveryId') && urlParams.has('attritionUrl')) {
+            // Skip loading default model when these parameters are present
+            // The model will be loaded from car.json in the livery files
+            console.log('[applyUrlParameters] Skipping default model load for attrition livery');
+        } else {
+            // Normal flow for other URL parameters
+            if (urlParams.has('carId')) {
+                const carInfo = cars[urlParams.get('carId')];
+                if (carInfo?.modelKey) {
+                    this.state.setCurrentModelPath(carInfo.modelKey);
+                    this.modelSelector.value = carInfo.modelKey;
+                    this.populateLiverySelector(carInfo.modelKey);
+                }
+            } else if (urlParams.has('model')) {
+                const modelPath = urlParams.get('model');
+                this.state.setCurrentModelPath(modelPath);
+                this.modelSelector.value = modelPath;
+                this.populateLiverySelector(modelPath);
             }
-        } else if (urlParams.has('model')) {
-            const modelPath = urlParams.get('model');
-            this.state.setCurrentModelPath(modelPath);
-            this.modelSelector.value = modelPath;
-            this.populateLiverySelector(modelPath);
-        }
 
-        if (urlParams.has('livery')) {
-            const livery = urlParams.get('livery');
-            this.state.setCurrentLivery(livery);
-            this.liverySelector.value = livery;
-        }
-
-        if (urlParams.has('carJson')) {
-            try {
-                const response = await fetch(urlParams.get('carJson'));
-                const data = await response.json();
-                const { bodyColours, bodyMaterials } = this.materialManager.applyCarJsonData(data);
-                this.updateColourPickers(bodyColours);
-                this.updateMaterialSelectors(bodyMaterials);
-            } catch (error) {
-                console.error('Failed to load carJson', error);
+            if (urlParams.has('livery')) {
+                const livery = urlParams.get('livery');
+                this.state.setCurrentLivery(livery);
+                this.liverySelector.value = livery;
             }
-        }
 
-        if (urlParams.has('decalsJson')) {
-            try {
-                const base64Data = urlParams.get('decalsJson');
-                const content = JSON.parse(atob(base64Data));
-                this.fileActions['decals.json'](content);
-            } catch (error) {
-                console.error('Failed to load decalsJson from URL', error);
+            if (urlParams.has('carJson')) {
+                try {
+                    const response = await fetch(urlParams.get('carJson'));
+                    const data = await response.json();
+                    const { bodyColours, bodyMaterials } = this.materialManager.applyCarJsonData(data);
+                    this.updateColourPickers(bodyColours);
+                    this.updateMaterialSelectors(bodyMaterials);
+                } catch (error) {
+                    console.error('Failed to load carJson', error);
+                }
             }
-        }
 
-        if (urlParams.has('sponsorsJson')) {
-            try {
-                const base64Data = urlParams.get('sponsorsJson');
-                const content = JSON.parse(atob(base64Data));
-                this.fileActions['sponsors.json'](content);
-            } catch (error) {
-                console.error('Failed to load sponsorsJson from URL', error);
+            if (urlParams.has('decalsJson')) {
+                try {
+                    const base64Data = urlParams.get('decalsJson');
+                    const content = JSON.parse(atob(base64Data));
+                    this.fileActions['decals.json'](content);
+                } catch (error) {
+                    console.error('Failed to load decalsJson from URL', error);
+                }
             }
-        }
 
-        if (urlParams.has('decalsImage')) {
-            try {
-                const base64Data = urlParams.get('decalsImage');
-                const bytes = this.base64ToUint8Array(base64Data);
-                const blob = new Blob([bytes], { type: 'image/png' });
-                const file = new File([blob], 'decals.png', { type: 'image/png' });
-                this.fileActions['decals.png'](file);
-            } catch (error) {
-                console.error('Failed to load decalsImage from URL', error);
+            if (urlParams.has('sponsorsJson')) {
+                try {
+                    const base64Data = urlParams.get('sponsorsJson');
+                    const content = JSON.parse(atob(base64Data));
+                    this.fileActions['sponsors.json'](content);
+                } catch (error) {
+                    console.error('Failed to load sponsorsJson from URL', error);
+                }
             }
-        }
 
-        if (urlParams.has('sponsorsImage')) {
-            try {
-                const base64Data = urlParams.get('sponsorsImage');
-                const bytes = this.base64ToUint8Array(base64Data);
-                const blob = new Blob([bytes], { type: 'image/png' });
-                const file = new File([blob], 'sponsors.png', { type: 'image/png' });
-                this.fileActions['sponsors.png'](file);
-            } catch (error) {
-                console.error('Failed to load sponsorsImage from URL', error);
+            if (urlParams.has('decalsImage')) {
+                try {
+                    const base64Data = urlParams.get('decalsImage');
+                    const bytes = this.base64ToUint8Array(base64Data);
+                    const blob = new Blob([bytes], { type: 'image/png' });
+                    const file = new File([blob], 'decals.png', { type: 'image/png' });
+                    this.fileActions['decals.png'](file);
+                } catch (error) {
+                    console.error('Failed to load decalsImage from URL', error);
+                }
             }
-        }
 
-        if (urlParams.has('liveryFiles')) {
-            try {
-                await this.loadLiveryFilesFromUrl(urlParams.get('liveryFiles'));
-            } catch (error) {
-                console.error('Failed to load livery files from URL', error);
+            if (urlParams.has('sponsorsImage')) {
+                try {
+                    const base64Data = urlParams.get('sponsorsImage');
+                    const bytes = this.base64ToUint8Array(base64Data);
+                    const blob = new Blob([bytes], { type: 'image/png' });
+                    const file = new File([blob], 'sponsors.png', { type: 'image/png' });
+                    this.fileActions['sponsors.png'](file);
+                } catch (error) {
+                    console.error('Failed to load sponsorsImage from URL', error);
+                }
+            }
+
+            if (urlParams.has('liveryFiles')) {
+                try {
+                    await this.loadLiveryFilesFromUrl(urlParams.get('liveryFiles'));
+                } catch (error) {
+                    console.error('Failed to load livery files from URL', error);
+                }
             }
         }
     }
@@ -342,13 +350,19 @@ export class UIController {
 
             await Promise.all(filePromises);
 
-            setTimeout(async () => {
-                try {
-                    await this.materialManager.mergeAndSetDecals(this.state.currentLivery);
-                } catch (error) {
-                    console.error('[loadLiveryFilesFromUrl] Failed to merge decals after loading livery files', error);
-                }
-            }, 100);
+            // Check if we need to load a model from car.json
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('liveryId') && urlParams.has('attritionUrl')) {
+                // When loading from attrition, we need to ensure the model is loaded
+                // The car.json file should contain the model information
+                setTimeout(async () => {
+                    try {
+                        await this.materialManager.mergeAndSetDecals(this.state.currentLivery);
+                    } catch (error) {
+                        console.error('[loadLiveryFilesFromUrl] Failed to merge decals after loading livery files', error);
+                    }
+                }, 100);
+            }
         } catch (error) {
             console.error('[loadLiveryFilesFromUrl] Error in loadLiveryFilesFromUrl', error);
         }
