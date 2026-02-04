@@ -104,12 +104,34 @@ export class MaterialManager {
         setCookie('rimMaterial', bodyMaterials[3]);
     }
 
-    loadImage(src) {
+    async loadImage(src) {
+        console.log('[materialManager loadImage] Attempting to load image from src:', src);
+        
+        // Handle blob URLs by creating a new object URL
+        if (src.startsWith('blob:')) {
+            try {
+                const response = await fetch(src);
+                const blob = await response.blob();
+                src = URL.createObjectURL(blob);
+                console.log('[materialManager loadImage] Created new object URL from blob:', src);
+            } catch (error) {
+                console.error('[materialManager loadImage] Failed to handle blob URL:', error);
+                throw error;
+            }
+        }
+        
         return new Promise((resolve, reject) => {
             const img = new Image();
+            img.crossOrigin = 'Anonymous';
             img.src = src;
-            img.onload = () => resolve(img);
-            img.onerror = () => reject(`Failed to load image from ${src}`);
+            img.onload = () => {
+                console.log('[materialManager loadImage] Image loaded successfully:', src, img.width, img.height);
+                resolve(img);
+            };
+            img.onerror = () => {
+                console.error('[materialManager loadImage] Failed to load image from src:', src);
+                reject(`Failed to load image from ${src}`);
+            };
         });
     }
 
@@ -171,18 +193,26 @@ export class MaterialManager {
     }
 
     async drawImageOverlay(file, materialName, preset) {
+        console.log('[materialManager drawImageOverlay] Called with file:', file, 'materialName:', materialName, 'preset:', preset);
         if (!file) {
+            console.log('[materialManager drawImageOverlay] No file provided, returning null');
             return null;
         }
         try {
+            console.log('[materialManager drawImageOverlay] Calling loadImage');
             const image = await this.loadImage(file);
+            console.log('[materialManager drawImageOverlay] Image loaded, creating canvas');
             const canvas = setupCanvas(image);
             const context = canvas.getContext('2d');
             context.drawImage(image, 0, 0);
+            console.log('[materialManager drawImageOverlay] Canvas created, creating texture');
             const texture = this.createTextureFromCanvas(canvas);
-            return this.applyTextureToModel(texture, materialName, preset);
+            console.log('[materialManager drawImageOverlay] Texture created, applying to model');
+            const result = this.applyTextureToModel(texture, materialName, preset);
+            console.log('[materialManager drawImageOverlay] Applied texture to model, result:', result);
+            return result;
         } catch (error) {
-            console.error(error);
+            console.error('[materialManager drawImageOverlay] Error:', error);
             return null;
         }
     }
@@ -240,8 +270,11 @@ export class MaterialManager {
     }
 
     async setBaseLivery(modelPath, livery) {
+        console.log('[materialManager setBaseLivery] Called with modelPath:', modelPath, 'livery:', livery);
         const liveryData = baseLiveries[modelPath]?.[livery];
+        console.log('[materialManager setBaseLivery] Livery data found:', !!liveryData);
         if (!liveryData) {
+            console.log('[materialManager setBaseLivery] No livery data found, returning');
             return;
         }
         this.state.setCurrentLivery(livery);
@@ -375,8 +408,13 @@ export class MaterialManager {
     }
 
     async mergeAndSetDecals(livery) {
+        console.log('[materialManager mergeAndSetDecals] Called with livery:', livery);
+        console.log('[materialManager mergeAndSetDecals] Current model path:', this.state.currentModelPath);
+        console.log('[materialManager mergeAndSetDecals] Decals file URL:', this.state.decalsFile);
+        console.log('[materialManager mergeAndSetDecals] Sponsors file URL:', this.state.sponsorsFile);
         const currentModelPath = this.state.currentModelPath;
         if (!currentModelPath) {
+            console.log('[materialManager mergeAndSetDecals] No current model path, returning');
             return;
         }
 

@@ -12,7 +12,7 @@ import { MaterialManager } from './src/materialManager.js';
 import { ModelLoader } from './src/modelLoader.js';
 import { UIController } from './src/uiController.js';
 
-window.viewerReady = false;
+ window.viewerReady = false;
 
 const appState = new AppState();
 const environmentManager = new EnvironmentManager(appState);
@@ -20,6 +20,10 @@ const materialManager = new MaterialManager(appState);
 const modelLoader = new ModelLoader(appState, materialManager);
 materialManager.setModelLoader(modelLoader);
 const uiController = new UIController(appState, modelLoader, materialManager, environmentManager);
+
+window.state = appState;
+window.materialManager = materialManager;
+window.uiController = uiController;
 
 const overlayElements = {
     models: document.getElementById('models'),

@@ -17,6 +17,155 @@
     <script src="util.js"></script>
     <script type="module" src="colour-picker.js"></script>
     <script type="module" src="main.js" defer></script>
+    <script>
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('liveryId') && urlParams.has('attritionUrl')) {
+                window.loadLiveryFromAttrition = async (liveryId, attritionUrl) => {
+                    try {
+                        const url = `${attritionUrl}/liveries/${liveryId}/preview-viewer`;
+                        const response = await fetch(url);
+                        if (!response.ok) {
+                            throw new Error(`Failed to fetch livery: ${response.status}`);
+                        }
+                        const data = await response.json();
+                        if (!data.encodedFiles) {
+                            throw new Error('No livery data available');
+                        }
+                        await window.loadLiveryFilesFromUrl(data.encodedFiles);
+                    } catch (error) {
+                        console.error('[loadLiveryFromAttrition] Failed to load livery from attrition:', error);
+                        alert('Failed to load livery from attrition. Please try again later.');
+                    }
+                };
+                window.loadLiveryFilesFromUrl = async (encodedFiles) => {
+                    console.log('[loadLiveryFilesFromUrl] Starting with encodedFiles length:', encodedFiles?.length);
+                    if (!encodedFiles) {
+                        console.error('[loadLiveryFilesFromUrl] No encoded files parameter provided');
+                        return;
+                    }
+
+                    try {
+                        const decodedJson = window.base64Decode(encodedFiles);
+                        const files = JSON.parse(decodedJson);
+
+                        const filePromises = [];
+
+                        Object.entries(files).forEach(([filename, base64Content], index) => {
+                            const promise = new Promise((resolve) => {
+                                try {
+                                    const content = window.base64Decode(base64Content);
+
+                                    if (filename.endsWith('.json')) {
+                                        try {
+                                            const jsonContent = JSON.parse(content);
+                                            if (window.fileActions[filename]) {
+                                                window.fileActions[filename](jsonContent);
+                                            }
+                                        } catch (jsonError) {
+                                            console.error(`[loadLiveryFilesFromUrl] Failed to parse JSON file ${filename}`, jsonError);
+                                        }
+                                     } else if (filename.endsWith('.png')) {
+                                        // Content is already decoded base64, convert to Uint8Array for Blob
+                                        const bytes = new Uint8Array(content.length);
+                                        for (let i = 0; i < content.length; i++) {
+                                            bytes[i] = content.charCodeAt(i);
+                                        }
+                                        const blob = new Blob([bytes], { type: 'image/png' });
+                                        const file = new File([blob], filename, { type: 'image/png' });
+                                        const fileUrl = URL.createObjectURL(file);
+                                        if (window.fileActions[filename]) {
+                                            window.fileActions[filename](file);
+                                        }
+                                    }
+
+                                    resolve();
+                                } catch (error) {
+                                    console.error(`[loadLiveryFilesFromUrl] Failed to load file ${filename} from URL`, error);
+                                    resolve();
+                                }
+                            });
+                            filePromises.push(promise);
+                        });
+
+                        await Promise.all(filePromises);
+
+                        setTimeout(async () => {
+                            try {
+                                await window.materialManager.mergeAndSetDecals(window.state.currentLivery);
+                            } catch (error) {
+                                console.error('[loadLiveryFilesFromUrl] Failed to merge decals after loading livery files', error);
+                            }
+                        }, 100);
+                    } catch (error) {
+                        console.error('[loadLiveryFilesFromUrl] Error in loadLiveryFilesFromUrl', error);
+                        console.error('[loadLiveryFilesFromUrl] Error details:', error.message);
+                        console.error('[loadLiveryFilesFromUrl] Error stack:', error.stack);
+                    }
+                };
+
+                window.base64Decode = function(str) {
+                    if (!str || str.trim() === '') {
+                        return '';
+                    }
+                    try {
+                        const decoded = window.atob(str);
+                        
+                        // Check if this is binary data (contains bytes > 127)
+                        // Binary data will have %xx sequences when escaped, which causes decodeURIComponent to fail
+                        const isBinary = /[^\x00-\x7F]/.test(decoded);
+                        
+                        if (isBinary) {
+                            return decoded;
+                        } else {
+                            return decodeURIComponent(escape(decoded));
+                        }
+                    } catch (e) {
+                        console.error('[base64Decode] Base64 decode error:', e);
+                        return '';
+                    }
+                };
+
+                window.fileActions = {
+                    'decals.png': (file) => {
+                        console.log('[fileActions decals.png] Received file:', file.name, file.type, file.size);
+                        if (window.state && window.state.decalsFile) {
+                            console.log('[fileActions decals.png] Revoking old URL:', window.state.decalsFile);
+                            URL.revokeObjectURL(window.state.decalsFile);
+                        }
+                        const newUrl = URL.createObjectURL(file);
+                        console.log('[fileActions decals.png] Creating new URL:', newUrl);
+                        window.materialManager.setDecalsFile(newUrl);
+                        console.log('[fileActions decals.png] Decals file URL set');
+                    },
+                    'sponsors.png': (file) => {
+                        console.log('[fileActions sponsors.png] Received file:', file.name, file.type, file.size);
+                        if (window.state.sponsorsFile) {
+                            console.log('[fileActions sponsors.png] Revoking old URL:', window.state.sponsorsFile);
+                            URL.revokeObjectURL(window.state.sponsorsFile);
+                        }
+                        const newUrl = URL.createObjectURL(file);
+                        console.log('[fileActions sponsors.png] Creating new URL:', newUrl);
+                        window.materialManager.setSponsorsFile(newUrl);
+                        console.log('[fileActions sponsors.png] Sponsors file URL set:', window.state.sponsorsFile);
+                    },
+                    'decals.json': (content) => {
+                        paintMaterials.customDecal = content;
+                    },
+                    'sponsors.json': (content) => {
+                        paintMaterials.customSponsor = content;
+                    },
+                    'car.json': (content) => {
+                        const { bodyColours, bodyMaterials } = window.materialManager.applyCarJsonData(content);
+                        window.uiController.updateColourPickers(bodyColours);
+                        window.uiController.updateMaterialSelectors(bodyMaterials);
+                    },
+                };
+
+                window.loadLiveryFromAttrition(urlParams.get('liveryId'), urlParams.get('attritionUrl'));
+            }
+        });
+    </script>
 </head>
 <body class="bg-light">
 

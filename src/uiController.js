@@ -248,8 +248,8 @@ export class UIController {
         if (urlParams.has('decalsImage')) {
             try {
                 const base64Data = urlParams.get('decalsImage');
-                const content = atob(base64Data);
-                const blob = new Blob([content], { type: 'image/png' });
+                const bytes = this.base64ToUint8Array(base64Data);
+                const blob = new Blob([bytes], { type: 'image/png' });
                 const file = new File([blob], 'decals.png', { type: 'image/png' });
                 this.fileActions['decals.png'](file);
             } catch (error) {
@@ -260,8 +260,8 @@ export class UIController {
         if (urlParams.has('sponsorsImage')) {
             try {
                 const base64Data = urlParams.get('sponsorsImage');
-                const content = atob(base64Data);
-                const blob = new Blob([content], { type: 'image/png' });
+                const bytes = this.base64ToUint8Array(base64Data);
+                const blob = new Blob([bytes], { type: 'image/png' });
                 const file = new File([blob], 'sponsors.png', { type: 'image/png' });
                 this.fileActions['sponsors.png'](file);
             } catch (error) {
@@ -278,9 +278,27 @@ export class UIController {
         }
     }
 
+    async loadLiveryFromAttrition(liveryId, attritionUrl) {
+        try {
+            const url = `${attritionUrl}/liveries/${liveryId}/preview-viewer`;
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch livery: ${response.status}`);
+            }
+            const data = await response.json();
+            if (!data.encodedFiles) {
+                throw new Error('No livery data available');
+            }
+            await this.loadLiveryFilesFromUrl(data.encodedFiles);
+        } catch (error) {
+            console.error('[loadLiveryFromAttrition] Failed to load livery from attrition:', error);
+            alert('Failed to load livery from attrition. Please try again later.');
+        }
+    }
+
     async loadLiveryFilesFromUrl(encodedFiles) {
         if (!encodedFiles) {
-            console.error('No encoded files parameter provided');
+            console.error('[loadLiveryFilesFromUrl] No encoded files parameter provided');
             return;
         }
 
@@ -302,10 +320,11 @@ export class UIController {
                                     this.fileActions[filename](jsonContent);
                                 }
                             } catch (jsonError) {
-                                console.error(`Failed to parse JSON file ${filename}`, jsonError);
+                                console.error(`[loadLiveryFilesFromUrl] Failed to parse JSON file ${filename}`, jsonError);
                             }
                         } else if (filename.endsWith('.png')) {
-                            const blob = new Blob([content], { type: 'image/png' });
+                            const bytes = this.base64ToUint8Array(content);
+                            const blob = new Blob([bytes], { type: 'image/png' });
                             const file = new File([blob], filename, { type: 'image/png' });
                             if (this.fileActions[filename]) {
                                 this.fileActions[filename](file);
@@ -314,7 +333,7 @@ export class UIController {
 
                         resolve();
                     } catch (error) {
-                        console.error(`Failed to load file ${filename} from URL`, error);
+                        console.error(`[loadLiveryFilesFromUrl] Failed to load file ${filename} from URL`, error);
                         resolve();
                     }
                 });
@@ -327,24 +346,55 @@ export class UIController {
                 try {
                     await this.materialManager.mergeAndSetDecals(this.state.currentLivery);
                 } catch (error) {
-                    console.error('Failed to merge decals after loading livery files', error);
+                    console.error('[loadLiveryFilesFromUrl] Failed to merge decals after loading livery files', error);
                 }
             }, 100);
         } catch (error) {
-            console.error('Error in loadLiveryFilesFromUrl', error);
+            console.error('[loadLiveryFilesFromUrl] Error in loadLiveryFilesFromUrl', error);
         }
     }
 
+    stripBase64Header(str) {
+        if (!str) {
+            return '';
+        }
+        const trimmed = str.trim();
+        const commaIndex = trimmed.indexOf(',');
+        if (trimmed.startsWith('data:') && commaIndex !== -1) {
+            return trimmed.slice(commaIndex + 1);
+        }
+        return trimmed;
+    }
+
     base64Decode(str) {
-        if (!str || str.trim() === '') {
+        const cleaned = this.stripBase64Header(str);
+        if (!cleaned || cleaned.trim() === '') {
             return '';
         }
         try {
-            const decoded = window.atob(str);
+            const decoded = window.atob(cleaned);
             return decodeURIComponent(escape(decoded));
         } catch (e) {
-            console.error('Base64 decode error:', e);
+            console.error('[base64Decode] Base64 decode error:', e);
             return '';
+        }
+    }
+
+    base64ToUint8Array(str) {
+        const cleaned = this.stripBase64Header(str);
+        if (!cleaned || cleaned.trim() === '') {
+            return new Uint8Array();
+        }
+        try {
+            const decoded = window.atob(cleaned);
+            const bytes = new Uint8Array(decoded.length);
+            for (let i = 0; i < decoded.length; i += 1) {
+                bytes[i] = decoded.charCodeAt(i);
+            }
+            return bytes;
+        } catch (e) {
+            console.error('[base64ToUint8Array] Base64 decode error:', e);
+            return new Uint8Array();
         }
     }
 
