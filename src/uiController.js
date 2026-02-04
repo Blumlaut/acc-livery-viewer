@@ -322,42 +322,25 @@ export class UIController {
         }
 
         try {
-            const decodedJson = this.base64Decode(encodedFiles);
-            const files = JSON.parse(decodedJson);
-
-            const filePromises = [];
-
-            Object.entries(files).forEach(([filename, base64Content]) => {
-                const promise = new Promise((resolve) => {
-                    try {
-                        const content = this.base64Decode(base64Content);
-
-                        if (filename.endsWith('.json')) {
-                            try {
-                                const jsonContent = JSON.parse(content);
-                                if (this.fileActions[filename]) {
-                                    this.fileActions[filename](jsonContent);
-                                }
-                            } catch (jsonError) {
-                                console.error(`[loadLiveryFilesFromUrl] Failed to parse JSON file ${filename}`, jsonError);
-                            }
-                        } else if (filename.endsWith('.png')) {
-                            const bytes = this.base64ToUint8Array(content);
-                            const blob = new Blob([bytes], { type: 'image/png' });
-                            const file = new File([blob], filename, { type: 'image/png' });
-                            if (this.fileActions[filename]) {
-                                this.fileActions[filename](file);
-                            }
-                        }
-
-                        resolve();
-                    } catch (error) {
-                        console.error(`[loadLiveryFilesFromUrl] Failed to load file ${filename} from URL`, error);
-                        resolve();
+            const decodedFiles = await this.decodeLiveryFiles(encodedFiles);
+            const filePromises = decodedFiles.map((entry) => new Promise((resolve) => {
+                try {
+                    if (entry.type === 'json' && entry.content && this.fileActions[entry.filename]) {
+                        this.fileActions[entry.filename](entry.content);
                     }
-                });
-                filePromises.push(promise);
-            });
+                    if (entry.type === 'binary') {
+                        const blob = new Blob([entry.content], { type: 'image/png' });
+                        const file = new File([blob], entry.filename, { type: 'image/png' });
+                        if (this.fileActions[entry.filename]) {
+                            this.fileActions[entry.filename](file);
+                        }
+                    }
+                    resolve();
+                } catch (error) {
+                    console.error(`[loadLiveryFilesFromUrl] Failed to load file ${entry.filename} from URL`, error);
+                    resolve();
+                }
+            }));
 
             await Promise.all(filePromises);
 
@@ -374,6 +357,136 @@ export class UIController {
         } catch (error) {
             console.error('[loadLiveryFilesFromUrl] Error in loadLiveryFilesFromUrl', error);
         }
+    }
+
+    async decodeLiveryFiles(encodedFiles) {
+        if (window.Worker) {
+            try {
+                const workerResults = await this.decodeLiveryFilesInWorker(encodedFiles);
+                if (workerResults.length > 0) {
+                    return workerResults;
+                }
+            } catch (error) {
+                console.warn('[decodeLiveryFiles] Worker decode failed, falling back to main thread', error);
+            }
+        }
+
+        const decodedJson = this.base64Decode(encodedFiles);
+        const files = JSON.parse(decodedJson);
+        return Object.entries(files).map(([filename, base64Content]) => {
+            const content = this.base64Decode(base64Content);
+            if (filename.endsWith('.json')) {
+                try {
+                    return { filename, type: 'json', content: JSON.parse(content) };
+                } catch (jsonError) {
+                    console.error(`[decodeLiveryFiles] Failed to parse JSON file ${filename}`, jsonError);
+                    return { filename, type: 'json', content: null };
+                }
+            }
+            if (filename.endsWith('.png')) {
+                return { filename, type: 'binary', content: this.base64ToUint8Array(content) };
+            }
+            return { filename, type: 'unknown', content };
+        });
+    }
+
+    decodeLiveryFilesInWorker(encodedFiles) {
+        const workerScript = `
+            self.onmessage = (event) => {
+                const encodedFiles = event.data;
+                const stripBase64Header = (str) => {
+                    if (!str) return '';
+                    const trimmed = str.trim();
+                    const commaIndex = trimmed.indexOf(',');
+                    if (trimmed.startsWith('data:') && commaIndex !== -1) {
+                        return trimmed.slice(commaIndex + 1);
+                    }
+                    return trimmed;
+                };
+                const base64Decode = (str) => {
+                    const cleaned = stripBase64Header(str);
+                    if (!cleaned || cleaned.trim() === '') {
+                        return '';
+                    }
+                    try {
+                        const decoded = self.atob(cleaned);
+                        const isBinary = /[^\\x00-\\x7F]/.test(decoded);
+                        return isBinary ? decoded : decodeURIComponent(escape(decoded));
+                    } catch (e) {
+                        return '';
+                    }
+                };
+                const base64ToUint8Array = (str) => {
+                    const cleaned = stripBase64Header(str);
+                    if (!cleaned || cleaned.trim() === '') {
+                        return new Uint8Array();
+                    }
+                    let decoded;
+                    try {
+                        decoded = self.atob(cleaned);
+                    } catch (e) {
+                        decoded = cleaned;
+                    }
+                    const bytes = new Uint8Array(decoded.length);
+                    for (let i = 0; i < decoded.length; i += 1) {
+                        bytes[i] = decoded.charCodeAt(i);
+                    }
+                    return bytes;
+                };
+                let decodedJson = base64Decode(encodedFiles);
+                if (!decodedJson) {
+                    self.postMessage([]);
+                    return;
+                }
+                let files;
+                try {
+                    files = JSON.parse(decodedJson);
+                } catch (e) {
+                    self.postMessage([]);
+                    return;
+                }
+                const results = [];
+                const transfers = [];
+                Object.entries(files).forEach(([filename, base64Content]) => {
+                    const content = base64Decode(base64Content);
+                    if (filename.endsWith('.json')) {
+                        try {
+                            results.push({ filename, type: 'json', content: JSON.parse(content) });
+                        } catch (e) {
+                            results.push({ filename, type: 'json', content: null });
+                        }
+                    } else if (filename.endsWith('.png')) {
+                        const bytes = base64ToUint8Array(content);
+                        results.push({ filename, type: 'binary', content: bytes.buffer });
+                        transfers.push(bytes.buffer);
+                    }
+                });
+                self.postMessage(results, transfers);
+            };
+        `;
+
+        return new Promise((resolve, reject) => {
+            const blob = new Blob([workerScript], { type: 'application/javascript' });
+            const worker = new Worker(URL.createObjectURL(blob));
+            const cleanup = () => {
+                worker.terminate();
+            };
+            worker.onmessage = (event) => {
+                const results = (event.data || []).map((entry) => {
+                    if (entry.type === 'binary') {
+                        return { ...entry, content: new Uint8Array(entry.content) };
+                    }
+                    return entry;
+                });
+                cleanup();
+                resolve(results);
+            };
+            worker.onerror = (error) => {
+                cleanup();
+                reject(error);
+            };
+            worker.postMessage(encodedFiles);
+        });
     }
 
     stripBase64Header(str) {

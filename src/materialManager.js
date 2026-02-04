@@ -10,10 +10,33 @@ export class MaterialManager {
             materials: new Set(),
             meshes: new Set()
         };
+        this.overlayTargets = [];
+        this.overlayTargetsModel = null;
+        this.baseLiveryCache = new Map();
+        this.baseLiveryCacheOrder = [];
+        this.maxBaseLiveryCacheEntries = 6;
     }
 
     setModelLoader(modelLoader) {
         this.modelLoader = modelLoader;
+    }
+
+    setOverlayTargets(model) {
+        if (!model || model === this.overlayTargetsModel) {
+            return;
+        }
+        this.overlayTargetsModel = model;
+        this.overlayTargets = [];
+        model.traverse((node) => {
+            if (node.isMesh && node.material && node.material.name === 'EXT_Carpaint_Inst') {
+                this.overlayTargets.push(node);
+            }
+        });
+    }
+
+    clearOverlayTargets() {
+        this.overlayTargets = [];
+        this.overlayTargetsModel = null;
     }
 
     updateUiForModel(modelPath) {
@@ -121,29 +144,33 @@ export class MaterialManager {
 
     async loadImage(src) {
         console.log('[materialManager loadImage] Attempting to load image from src:', src);
-        
-        // Handle blob URLs by creating a new object URL
-        if (src.startsWith('blob:')) {
-            try {
-                const response = await fetch(src);
-                const blob = await response.blob();
-                src = URL.createObjectURL(blob);
-                console.log('[materialManager loadImage] Created new object URL from blob:', src);
-            } catch (error) {
-                console.error('[materialManager loadImage] Failed to handle blob URL:', error);
-                throw error;
-            }
+        let response;
+        try {
+            response = await fetch(src);
+        } catch (error) {
+            console.error('[materialManager loadImage] Failed to fetch image:', error);
+            throw error;
         }
-        
+
+        const blob = await response.blob();
+        if (typeof createImageBitmap === 'function') {
+            const bitmap = await createImageBitmap(blob);
+            console.log('[materialManager loadImage] Image loaded as ImageBitmap:', src, bitmap.width, bitmap.height);
+            return bitmap;
+        }
+
         return new Promise((resolve, reject) => {
             const img = new Image();
+            const objectUrl = URL.createObjectURL(blob);
             img.crossOrigin = 'Anonymous';
-            img.src = src;
+            img.src = objectUrl;
             img.onload = () => {
+                URL.revokeObjectURL(objectUrl);
                 console.log('[materialManager loadImage] Image loaded successfully:', src, img.width, img.height);
                 resolve(img);
             };
             img.onerror = () => {
+                URL.revokeObjectURL(objectUrl);
                 console.error('[materialManager loadImage] Failed to load image from src:', src);
                 reject(`Failed to load image from ${src}`);
             };
@@ -180,39 +207,39 @@ export class MaterialManager {
             return null;
         }
         let mesh = null;
-        model.traverse((node) => {
-            if (node.isMesh && node.material.name === 'EXT_Carpaint_Inst') {
-                const material = new THREE.MeshPhysicalMaterial({
-                    name: materialName,
-                    map: texture,
-                    transparent: true,
-                    opacity: 1,
-                    envMap: scene.environment,
-                    depthWrite: false,
-                    depthTest: true,
-                });
-                this.applyMaterialPreset(material, preset);
-                
-                // Track material for cleanup
-                this.resourceTracker.materials.add(material);
-                this.state.trackResource('materials');
-                
-                const overlayMesh = new THREE.Mesh(node.geometry, material);
-                overlayMesh.position.copy(node.position);
-                overlayMesh.rotation.copy(node.rotation);
-                overlayMesh.scale.copy(node.scale).multiplyScalar(1.0001);
-                
-                // Track mesh for cleanup
-                this.resourceTracker.meshes.add(overlayMesh);
-                this.state.trackResource('meshes');
-                
-                scene.add(overlayMesh);
-                mesh = overlayMesh;
-            }
-        });
-        if (mesh) {
-            this.state.addExtraMesh(mesh);
+        if (!this.overlayTargetsModel || this.overlayTargetsModel !== model) {
+            this.setOverlayTargets(model);
         }
+
+        this.overlayTargets.forEach((node) => {
+            const material = new THREE.MeshPhysicalMaterial({
+                name: materialName,
+                map: texture,
+                transparent: true,
+                opacity: 1,
+                envMap: scene.environment,
+                depthWrite: false,
+                depthTest: true,
+            });
+            this.applyMaterialPreset(material, preset);
+            
+            // Track material for cleanup
+            this.resourceTracker.materials.add(material);
+            this.state.trackResource('materials');
+            
+            const overlayMesh = new THREE.Mesh(node.geometry, material);
+            overlayMesh.position.copy(node.position);
+            overlayMesh.rotation.copy(node.rotation);
+            overlayMesh.scale.copy(node.scale).multiplyScalar(1.0001);
+            
+            // Track mesh for cleanup
+            this.resourceTracker.meshes.add(overlayMesh);
+            this.state.trackResource('meshes');
+            
+            scene.add(overlayMesh);
+            mesh = overlayMesh;
+            this.state.addExtraMesh(overlayMesh);
+        });
         return mesh;
     }
 
@@ -244,32 +271,18 @@ export class MaterialManager {
     async convertImageToRGBChannels(imagePath) {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        const img = new Image();
-        img.src = imagePath;
-        await new Promise((resolve, reject) => {
-            img.onload = () => {
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
-                resolve();
-            };
-            img.onerror = reject;
-        });
+        const img = await this.loadImage(imagePath);
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
 
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const data = imageData.data;
-        const channelCanvases = [];
-        const channelContexts = [];
-
-        for (let i = 0; i < 3; i++) {
-            const channelCanvas = document.createElement('canvas');
-            channelCanvas.width = canvas.width;
-            channelCanvas.height = canvas.height;
-            channelCanvases.push(channelCanvas);
-            channelContexts.push(channelCanvas.getContext('2d'));
-        }
-
-        const channelDataArray = channelContexts.map((ctx) => ctx.createImageData(canvas.width, canvas.height));
+        const channelDataArray = [
+            ctx.createImageData(canvas.width, canvas.height),
+            ctx.createImageData(canvas.width, canvas.height),
+            ctx.createImageData(canvas.width, canvas.height),
+        ];
 
         for (let i = 0; i < data.length; i += 4) {
             const [r, g, b, alpha] = [data[i], data[i + 1], data[i + 2], data[i + 3]];
@@ -283,12 +296,39 @@ export class MaterialManager {
             });
         }
 
-        channelContexts.forEach((ctx, index) => {
-            ctx.putImageData(channelDataArray[index], 0, 0);
-        });
-
         canvas.remove();
-        return channelCanvases;
+        return {
+            channelDataArray,
+            width: canvas.width,
+            height: canvas.height,
+        };
+    }
+
+    buildCanvasesFromChannelData(channelDataArray, width, height) {
+        return channelDataArray.map((channelData) => {
+            const channelCanvas = document.createElement('canvas');
+            channelCanvas.width = width;
+            channelCanvas.height = height;
+            const channelContext = channelCanvas.getContext('2d');
+            channelContext.putImageData(channelData, 0, 0);
+            return channelCanvas;
+        });
+    }
+
+    getCachedBaseLivery(liveryKey) {
+        return this.baseLiveryCache.get(liveryKey) || null;
+    }
+
+    cacheBaseLivery(liveryKey, data) {
+        if (this.baseLiveryCache.has(liveryKey)) {
+            return;
+        }
+        this.baseLiveryCache.set(liveryKey, data);
+        this.baseLiveryCacheOrder.push(liveryKey);
+        if (this.baseLiveryCacheOrder.length > this.maxBaseLiveryCacheEntries) {
+            const oldestKey = this.baseLiveryCacheOrder.shift();
+            this.baseLiveryCache.delete(oldestKey);
+        }
     }
 
     async setBaseLivery(modelPath, livery) {
@@ -303,12 +343,16 @@ export class MaterialManager {
         setCookie('currentLivery', livery || 100);
 
         const liveryPath = liveryData.path;
-        let images;
-        if (liveryData.sponsor) {
-            images = await this.convertImageToRGBChannels(`models/${modelPath}/skins/custom/${liveryPath}/EXT_Skin_Sponsors.png`);
-        } else {
-            images = await this.convertImageToRGBChannels(`models/${modelPath}/skins/custom/${liveryPath}/EXT_Skin_Custom.png`);
+        const liveryKey = `${modelPath}:${liveryPath}:${liveryData.sponsor ? 'sponsor' : 'custom'}`;
+        let cached = this.getCachedBaseLivery(liveryKey);
+        if (!cached) {
+            const imagePath = liveryData.sponsor
+                ? `models/${modelPath}/skins/custom/${liveryPath}/EXT_Skin_Sponsors.png`
+                : `models/${modelPath}/skins/custom/${liveryPath}/EXT_Skin_Custom.png`;
+            cached = await this.convertImageToRGBChannels(imagePath);
+            this.cacheBaseLivery(liveryKey, cached);
         }
+        const images = this.buildCanvasesFromChannelData(cached.channelDataArray, cached.width, cached.height);
 
         await Promise.all(
             images.map((canvas, index) =>
@@ -398,6 +442,7 @@ export class MaterialManager {
     cleanupAllResources() {
         // Cleanup previous meshes
         this.cleanupPreviousMeshes();
+        this.clearOverlayTargets();
         
         // Cleanup any remaining tracked resources
         this.resourceTracker.textures.forEach(texture => {
@@ -426,6 +471,8 @@ export class MaterialManager {
             }
         });
         this.resourceTracker.meshes.clear();
+        this.baseLiveryCache.clear();
+        this.baseLiveryCacheOrder = [];
         
         // Reset tracking
         this.state.cleanupResources();

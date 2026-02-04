@@ -9,6 +9,7 @@ export class ModelLoader {
         this.textureLoader = new THREE.TextureLoader();
         this.textureCache = new Map();
         this.materialCache = new Map();
+        this.texturePromiseCache = new Map();
         // Track model resources for cleanup
         this.trackedModels = new Set();
     }
@@ -46,6 +47,7 @@ export class ModelLoader {
         }
 
         this.clearMaterialCaches();
+        this.materialManager.clearOverlayTargets();
     }
 
     disposeWheels() {
@@ -98,7 +100,8 @@ export class ModelLoader {
                     // Track the new model
                     this.trackedModels.add(gltf.scene);
 
-                    this.applyMaterialsToModel(modelPath);
+                    this.materialManager.setOverlayTargets(gltf.scene);
+                    await this.applyMaterialsToModel(modelPath);
 
                     if (this.state.currentModelPath !== this.state.prevModelPath || this.state.firstRun) {
                         this.state.firstRun = false;
@@ -134,7 +137,7 @@ export class ModelLoader {
         });
     }
 
-    applyMaterialsToModel(modelPath) {
+    async applyMaterialsToModel(modelPath) {
         const { model } = this.state;
         if (!model) {
             return;
@@ -142,6 +145,7 @@ export class ModelLoader {
 
         // Pre-compute wheel nodes for better performance
         const wheelNodesArray = Object.entries(wheelNodes);
+        const textureAssignments = new Map();
         
         model.traverse((node) => {
             // Handle wheel models for lower LOD levels
@@ -156,15 +160,38 @@ export class ModelLoader {
 
             // Handle material processing for EXT_ materials
             if (node.isMesh && node.material && node.material.name?.startsWith('EXT_')) {
-                this.applyMeshMaterial(node, modelPath);
+                const assignment = this.prepareMeshMaterial(node, modelPath);
+                if (assignment) {
+                    const { texturePath, nodes, materialName } = assignment;
+                    if (!textureAssignments.has(texturePath)) {
+                        textureAssignments.set(texturePath, {
+                            nodes,
+                            materialName,
+                            promise: this.getSharedMaterial(texturePath, materialName, node.material.name),
+                        });
+                    } else {
+                        textureAssignments.get(texturePath).nodes.push(node);
+                    }
+                }
             }
         });
+
+        const texturePromises = Array.from(textureAssignments.values()).map(async (entry) => {
+            const material = await entry.promise;
+            entry.nodes.forEach((node) => {
+                if (node.isMesh) {
+                    node.material = material;
+                }
+            });
+        });
+
+        await Promise.all(texturePromises);
     }
 
-    applyMeshMaterial(node, modelPath) {
+    prepareMeshMaterial(node, modelPath) {
         // Early return for already processed materials
         if (node.userData.materialProcessed) {
-            return;
+            return null;
         }
         
         // Mark this node as processed to avoid reprocessing
@@ -175,7 +202,7 @@ export class ModelLoader {
             const materialName = node.material.name;
             if (materialName.startsWith('EXT_RIM_BLUR')) {
                 node.visible = false;
-                return;
+                return null;
             }
             
             // For rim materials, we should update the existing material rather than replacing it
@@ -193,7 +220,7 @@ export class ModelLoader {
                 node.material = rimMaterial;
             }
             this.materialManager.applyMaterialPreset(node.material, paintMaterials[this.state.bodyMaterials[3]]);
-            return;
+            return null;
         }
 
         // Handle special materials (emissive, glass, window)
@@ -210,7 +237,7 @@ export class ModelLoader {
                 thickness: 0,
                 dispersion: 0,
             });
-            return;
+            return null;
         }
 
         // Handle regular textured materials
@@ -221,39 +248,55 @@ export class ModelLoader {
 
         // Use a shared texture loader instance to reduce overhead
         const texturePath = `models/${modelPath}/textures/${processedMaterialName}_Colour.png`;
-        
-        // Check if texture already exists in cache (simple caching)
-        if (this.textureCache.has(texturePath) && this.materialCache.has(texturePath)) {
-            node.material = this.materialCache.get(texturePath);
-            return;
+        return {
+            texturePath,
+            materialName: processedMaterialName,
+            nodes: [node],
+        };
+    }
+
+    getSharedMaterial(texturePath, processedMaterialName, fallbackMaterialName) {
+        if (this.materialCache.has(texturePath)) {
+            return Promise.resolve(this.materialCache.get(texturePath));
         }
 
-        this.textureLoader.load(
-            texturePath,
-            (texture) => {
-                texture.flipY = false;
-                texture.colorSpace = THREE.SRGBColorSpace;
-                
-                // Cache the texture for future use
-                this.textureCache.set(texturePath, texture);
-                
-                this.state.bodyTextures.push(texture);
-                const newMaterial = new THREE.MeshBasicMaterial({
-                    name: processedMaterialName,
-                    color: 0xffffff,
-                    map: texture,
-                });
-                this.materialCache.set(texturePath, newMaterial);
-                node.material = newMaterial;
-            },
-            undefined,
-            () => {
-                node.material = new THREE.MeshPhysicalMaterial({
-                    name: materialName,
-                    color: 0x444444,
-                });
-            }
-        );
+        if (this.texturePromiseCache.has(texturePath)) {
+            return this.texturePromiseCache.get(texturePath);
+        }
+
+        const loadPromise = new Promise((resolve) => {
+            this.textureLoader.load(
+                texturePath,
+                (texture) => {
+                    texture.flipY = false;
+                    texture.colorSpace = THREE.SRGBColorSpace;
+                    
+                    // Cache the texture for future use
+                    this.textureCache.set(texturePath, texture);
+                    
+                    this.state.bodyTextures.push(texture);
+                    const newMaterial = new THREE.MeshBasicMaterial({
+                        name: processedMaterialName,
+                        color: 0xffffff,
+                        map: texture,
+                    });
+                    this.materialCache.set(texturePath, newMaterial);
+                    this.texturePromiseCache.delete(texturePath);
+                    resolve(newMaterial);
+                },
+                undefined,
+                () => {
+                    this.texturePromiseCache.delete(texturePath);
+                    resolve(new THREE.MeshPhysicalMaterial({
+                        name: fallbackMaterialName,
+                        color: 0x444444,
+                    }));
+                }
+            );
+        });
+
+        this.texturePromiseCache.set(texturePath, loadPromise);
+        return loadPromise;
     }
 
     loadWheelModel(node, model, modelPath) {
@@ -364,5 +407,6 @@ export class ModelLoader {
             }
         });
         this.textureCache.clear();
+        this.texturePromiseCache.clear();
     }
 }
