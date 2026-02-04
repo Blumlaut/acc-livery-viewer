@@ -131,6 +131,10 @@ async function init() {
         }
 
         await modelLoader.loadModel(initialModel);
+    } else {
+        // When skipping default model, ensure currentModelPath is null
+        // so that applyCarJsonData can properly load the correct model
+        appState.setCurrentModelPath(null);
     }
 
     setupMemoryMonitoring();

@@ -25,8 +25,8 @@ export class UIController {
             'sponsors.json': (content) => {
                 paintMaterials.customSponsor = content;
             },
-            'car.json': (content) => {
-                const { bodyColours, bodyMaterials } = this.materialManager.applyCarJsonData(content);
+            'car.json': async (content) => {
+                const { bodyColours, bodyMaterials } = await this.materialManager.applyCarJsonData(content);
                 this.updateColourPickers(bodyColours);
                 this.updateMaterialSelectors(bodyMaterials);
             },
@@ -224,7 +224,7 @@ export class UIController {
                 try {
                     const response = await fetch(urlParams.get('carJson'));
                     const data = await response.json();
-                    const { bodyColours, bodyMaterials } = this.materialManager.applyCarJsonData(data);
+                    const { bodyColours, bodyMaterials } = await this.materialManager.applyCarJsonData(data);
                     this.updateColourPickers(bodyColours);
                     this.updateMaterialSelectors(bodyMaterials);
                 } catch (error) {
@@ -355,9 +355,18 @@ export class UIController {
             if (urlParams.has('liveryId') && urlParams.has('attritionUrl')) {
                 // When loading from attrition, we need to ensure the model is loaded
                 // The car.json file should contain the model information
+                // The model loading happens asynchronously in applyCarJsonData,
+                // so we need to wait for it to complete before merging decals
                 setTimeout(async () => {
                     try {
-                        await this.materialManager.mergeAndSetDecals(this.state.currentLivery);
+                        // Check if model is already loaded
+                        if (this.state.currentModelPath && this.state.model) {
+                            await this.materialManager.mergeAndSetDecals(this.state.currentLivery);
+                        } else {
+                            // Model not loaded yet, wait a bit longer
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                            await this.materialManager.mergeAndSetDecals(this.state.currentLivery);
+                        }
                     } catch (error) {
                         console.error('[loadLiveryFilesFromUrl] Failed to merge decals after loading livery files', error);
                     }
@@ -567,13 +576,13 @@ export class UIController {
         };
     }
 
-    handleJsonFile(file, dataUrl) {
+    async handleJsonFile(file, dataUrl) {
         const base64Data = dataUrl.split(',')[1];
         const content = JSON.parse(atob(base64Data));
         if (this.fileActions[file.name]) {
-            this.fileActions[file.name](content);
+            await this.fileActions[file.name](content);
         } else if (content.hasOwnProperty('raceNumber')) {
-            const { bodyColours, bodyMaterials } = this.materialManager.applyCarJsonData(content);
+            const { bodyColours, bodyMaterials } = await this.materialManager.applyCarJsonData(content);
             this.updateColourPickers(bodyColours);
             this.updateMaterialSelectors(bodyMaterials);
         }

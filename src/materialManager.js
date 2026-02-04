@@ -16,6 +16,25 @@ export class MaterialManager {
         this.modelLoader = modelLoader;
     }
 
+    setModelLoader(modelLoader) {
+        this.modelLoader = modelLoader;
+    }
+
+    updateUiForModel(modelPath) {
+        // Update UI selectors for the new model
+        if (typeof window !== 'undefined' && window.uiController && window.uiController.setModelSelection) {
+            window.uiController.setModelSelection(modelPath);
+            window.uiController.populateLiverySelector(modelPath);
+            
+            // Set a default livery for the model
+            const defaultLivery = this.modelLoader.getDefaultLivery(modelPath);
+            if (defaultLivery) {
+                this.state.setCurrentLivery(defaultLivery);
+                window.uiController.setLiverySelection(defaultLivery);
+            }
+        }
+    }
+
     applyMaterialPreset(material, preset) {
         if (typeof material === 'string') {
             material = this.getMaterialFromName(material);
@@ -473,7 +492,7 @@ export class MaterialManager {
         paintMaterials.customSponsor = undefined;
     }
 
-    applyCarJsonData(data) {
+    async applyCarJsonData(data) {
         const isCarbon = data.skinTemplateKey === 98 || data.skinTemplateKey === 99;
         if (data.skinColor1Id !== undefined && !isCarbon) {
             this.state.bodyColours[0] = coloridToHex(data.skinColor1Id);
@@ -509,12 +528,19 @@ export class MaterialManager {
 
         if (data.carModelType !== undefined && this.modelLoader) {
             const modelPath = cars[data.carModelType]?.modelKey;
-            if (modelPath && modelPath !== this.state.currentModelPath) {
-                this.modelLoader.loadModel(modelPath).then(() => {
+            if (modelPath) {
+                // Always load the model if it's different from current, or if no model is loaded yet
+                if (modelPath !== this.state.currentModelPath || !this.state.currentModelPath) {
+                    this.state.setCurrentModelPath(modelPath);
+                    await this.modelLoader.loadModel(modelPath);
                     console.log(`Loaded model ${modelPath} for carModelType ${data.carModelType}`);
-                }).catch(error => {
-                    console.error(`Failed to load model ${modelPath} for carModelType ${data.carModelType}`, error);
-                });
+                    // Update UI after model is loaded
+                    this.updateUiForModel(modelPath);
+                } else {
+                    console.log(`Model ${modelPath} is already loaded`);
+                    // Still update UI selectors even if model is already loaded
+                    this.updateUiForModel(modelPath);
+                }
             }
         }
 

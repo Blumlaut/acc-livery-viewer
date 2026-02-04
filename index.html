@@ -155,32 +155,13 @@
                     'sponsors.json': (content) => {
                         paintMaterials.customSponsor = content;
                     },
-                    'car.json': (content) => {
-                        const { bodyColours, bodyMaterials } = window.materialManager.applyCarJsonData(content);
+                    'car.json': async (content) => {
+                        const { bodyColours, bodyMaterials } = await window.materialManager.applyCarJsonData(content);
                         window.uiController.updateColourPickers(bodyColours);
                         window.uiController.updateMaterialSelectors(bodyMaterials);
                         
-                        // Extract model path from car.json and load the model
-                        if (content.modelPath) {
-                            console.log('[fileActions car.json] Loading model:', content.modelPath);
-                            window.state.setCurrentModelPath(content.modelPath);
-                            window.uiController.setModelSelection(content.modelPath);
-                            window.uiController.populateLiverySelector(content.modelPath);
-                            
-                            // Set a default livery for the model
-                            const defaultLivery = window.modelLoader.getDefaultLivery(content.modelPath);
-                            if (defaultLivery) {
-                                window.state.setCurrentLivery(defaultLivery);
-                                window.uiController.setLiverySelection(defaultLivery);
-                            }
-                            
-                            // Load the model
-                            window.modelLoader.loadModel(content.modelPath).then(() => {
-                                console.log('[fileActions car.json] Model loaded successfully');
-                            }).catch(error => {
-                                console.error('[fileActions car.json] Failed to load model', error);
-                            });
-                        }
+                        // The applyCarJsonData method will handle loading the model based on carModelType
+                        // and setting the current model path, livery, and UI selectors
                     },
                 };
 
