@@ -104,10 +104,25 @@ export class MaterialManager {
         setCookie('rimMaterial', bodyMaterials[3]);
     }
 
-    loadImage(src) {
+    async loadImage(src) {
         console.log('[materialManager loadImage] Attempting to load image from src:', src);
+        
+        // Handle blob URLs by creating a new object URL
+        if (src.startsWith('blob:')) {
+            try {
+                const response = await fetch(src);
+                const blob = await response.blob();
+                src = URL.createObjectURL(blob);
+                console.log('[materialManager loadImage] Created new object URL from blob:', src);
+            } catch (error) {
+                console.error('[materialManager loadImage] Failed to handle blob URL:', error);
+                throw error;
+            }
+        }
+        
         return new Promise((resolve, reject) => {
             const img = new Image();
+            img.crossOrigin = 'Anonymous';
             img.src = src;
             img.onload = () => {
                 console.log('[materialManager loadImage] Image loaded successfully:', src, img.width, img.height);

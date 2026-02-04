@@ -248,8 +248,8 @@ export class UIController {
         if (urlParams.has('decalsImage')) {
             try {
                 const base64Data = urlParams.get('decalsImage');
-                const content = atob(base64Data);
-                const blob = new Blob([content], { type: 'image/png' });
+                const bytes = this.base64ToUint8Array(base64Data);
+                const blob = new Blob([bytes], { type: 'image/png' });
                 const file = new File([blob], 'decals.png', { type: 'image/png' });
                 this.fileActions['decals.png'](file);
             } catch (error) {
@@ -260,8 +260,8 @@ export class UIController {
         if (urlParams.has('sponsorsImage')) {
             try {
                 const base64Data = urlParams.get('sponsorsImage');
-                const content = atob(base64Data);
-                const blob = new Blob([content], { type: 'image/png' });
+                const bytes = this.base64ToUint8Array(base64Data);
+                const blob = new Blob([bytes], { type: 'image/png' });
                 const file = new File([blob], 'sponsors.png', { type: 'image/png' });
                 this.fileActions['sponsors.png'](file);
             } catch (error) {
@@ -349,7 +349,11 @@ export class UIController {
                             }
                         } else if (filename.endsWith('.png')) {
                             console.log(`[loadLiveryFilesFromUrl] Creating blob for ${filename}`);
-                            const blob = new Blob([content], { type: 'image/png' });
+                            const decodedContent = this.base64Decode(base64Content);
+                            console.log(`[loadLiveryFilesFromUrl] ${filename} decoded content length:`, decodedContent.length);
+                            const bytes = this.base64ToUint8Array(decodedContent);
+                            console.log(`[loadLiveryFilesFromUrl] ${filename} decoded bytes length:`, bytes.length);
+                            const blob = new Blob([bytes], { type: 'image/png' });
                             console.log(`[loadLiveryFilesFromUrl] Blob created, size:`, blob.size);
                             const file = new File([blob], filename, { type: 'image/png' });
                             console.log(`[loadLiveryFilesFromUrl] File created, name:`, file.name);
@@ -390,18 +394,31 @@ export class UIController {
         }
     }
 
+    stripBase64Header(str) {
+        if (!str) {
+            return '';
+        }
+        const trimmed = str.trim();
+        const commaIndex = trimmed.indexOf(',');
+        if (trimmed.startsWith('data:') && commaIndex !== -1) {
+            return trimmed.slice(commaIndex + 1);
+        }
+        return trimmed;
+    }
+
     base64Decode(str) {
-        console.log('[base64Decode] Input length:', str?.length);
-        console.log('[base64Decode] Input first 100 chars:', str?.substring(0, 100));
-        console.log('[base64Decode] Input last 100 chars:', str?.substring(str.length - 100));
-        console.log('[base64Decode] Input is valid base64:', /^[A-Za-z0-9+/]+=*$/.test(str));
-        if (!str || str.trim() === '') {
+        const cleaned = this.stripBase64Header(str);
+        console.log('[base64Decode] Input length:', cleaned?.length);
+        console.log('[base64Decode] Input first 100 chars:', cleaned?.substring(0, 100));
+        console.log('[base64Decode] Input last 100 chars:', cleaned?.substring(cleaned.length - 100));
+        console.log('[base64Decode] Input is valid base64:', /^[A-Za-z0-9+/]+=*$/.test(cleaned));
+        if (!cleaned || cleaned.trim() === '') {
             console.log('[base64Decode] Empty or whitespace input, returning empty string');
             return '';
         }
         try {
             console.log('[base64Decode] Attempting atob decode');
-            const decoded = window.atob(str);
+            const decoded = window.atob(cleaned);
             console.log('[base64Decode] atob succeeded, length:', decoded.length);
             console.log('[base64Decode] Attempting decodeURIComponent');
             const result = decodeURIComponent(escape(decoded));
@@ -412,6 +429,24 @@ export class UIController {
             console.error('[base64Decode] Error details:', e.message);
             console.error('[base64Decode] Error stack:', e.stack);
             return '';
+        }
+    }
+
+    base64ToUint8Array(str) {
+        const cleaned = this.stripBase64Header(str);
+        if (!cleaned || cleaned.trim() === '') {
+            return new Uint8Array();
+        }
+        try {
+            const decoded = window.atob(cleaned);
+            const bytes = new Uint8Array(decoded.length);
+            for (let i = 0; i < decoded.length; i += 1) {
+                bytes[i] = decoded.charCodeAt(i);
+            }
+            return bytes;
+        } catch (e) {
+            console.error('[base64ToUint8Array] Base64 decode error:', e);
+            return new Uint8Array();
         }
     }
 
