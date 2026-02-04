@@ -299,7 +299,7 @@ export class UIController {
 
     async loadLiveryFromAttrition(liveryId, attritionUrl) {
         try {
-            const url = `${attritionUrl}/liveries/${liveryId}/preview-viewer`;
+            const url = `${attritionUrl}/livery-hub/${liveryId}/preview-viewer`;
             const response = await fetch(url);
             if (!response.ok) {
                 throw new Error(`Failed to fetch livery: ${response.status}`);
