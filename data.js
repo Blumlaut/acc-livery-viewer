@@ -4,7 +4,8 @@ var skinMaterialIds = {
     "satin": 2,
     "satinMetallic": 3,
     "metallic": 4,
-    "chrome": 5
+    "chrome": 5,
+    "clearChrome": 6
 }
 
 var materialIdToName = Object.keys(skinMaterialIds).reduce((acc, key) => {
