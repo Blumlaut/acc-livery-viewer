@@ -171,8 +171,22 @@ detectSoftwareRendering() {
         setCookie('rimMaterial', bodyMaterials[3]);
     }
 
-async loadImage(src) {
+    async loadImage(src) {
         console.log('[materialManager loadImage] Attempting to load image from src:', src);
+        
+        // Handle blob URLs by creating a new object URL
+        if (src.startsWith('blob:')) {
+            try {
+                const response = await fetch(src);
+                const blob = await response.blob();
+                src = URL.createObjectURL(blob);
+                console.log('[materialManager loadImage] Created new object URL from blob:', src);
+            } catch (error) {
+                console.error('[materialManager loadImage] Failed to handle blob URL:', error);
+                throw error;
+            }
+        }
+        
         let response;
         try {
             response = await fetch(src);
@@ -210,7 +224,7 @@ async loadImage(src) {
                 reject(`Failed to load image from ${src}`);
             };
         });
-}
+    }
 
     createTextureFromCanvas(canvas) {
         const texture = new THREE.Texture(canvas);
