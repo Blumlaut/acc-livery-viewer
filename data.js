@@ -48,6 +48,12 @@ var paintMaterials = {
         "clearCoat": 0,
         "clearCoatRoughness": 0,
         "metallic": 0.9
+    },
+    "clearChrome": {
+        "baseRoughness": 0.05,
+        "clearCoat": 1.0,
+        "clearCoatRoughness": 0.05,
+        "metallic": 1.0
     }
 }
 
