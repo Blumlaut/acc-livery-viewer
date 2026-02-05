@@ -1,25 +1,54 @@
 import * as THREE from 'three';
 
 export class MaterialManager {
-    constructor(state) {
-        this.state = state;
-        this.modelLoader = null;
-        // Track resources for memory monitoring
-        this.resourceTracker = {
-            textures: new Set(),
-            materials: new Set(),
-            meshes: new Set()
-        };
-        this.overlayTargets = [];
-        this.overlayTargetsModel = null;
-        this.baseLiveryCache = new Map();
-        this.baseLiveryCacheOrder = [];
-        this.maxBaseLiveryCacheEntries = 6;
-    }
-
-    setModelLoader(modelLoader) {
-        this.modelLoader = modelLoader;
-    }
+     constructor(state) {
+         this.state = state;
+         this.modelLoader = null;
+         // Track resources for memory monitoring
+         this.resourceTracker = {
+             textures: new Set(),
+             materials: new Set(),
+             meshes: new Set()
+         };
+         this.overlayTargets = [];
+         this.overlayTargetsModel = null;
+         this.baseLiveryCache = new Map();
+         this.baseLiveryCacheOrder = [];
+this.maxBaseLiveryCacheEntries = 6;
+          this.isSoftwareRendering = this.detectSoftwareRendering();
+      }
+  
+detectSoftwareRendering() {
+            // Check if createImageBitmap is available (GPU/worker mode)
+            if (typeof createImageBitmap === 'undefined') {
+                return true;
+            }
+            
+            // Try creating a simple bitmap to verify it actually works
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = 2;
+                canvas.height = 2;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) {
+                    return true;
+                }
+                const imageData = ctx.createImageData(2, 2);
+                imageData.data.set([255, 0, 0, 255]);
+                ctx.putImageData(imageData, 0, 0);
+                const bitmap = createImageBitmap(canvas);
+                if (!bitmap || bitmap.width !== 2 || bitmap.height !== 2) {
+                    return true;
+                }
+            } catch (e) {
+                return true;
+            }
+            return false;
+        }
+  
+     setModelLoader(modelLoader) {
+         this.modelLoader = modelLoader;
+     }
 
     setOverlayTargets(model) {
         if (!model || model === this.overlayTargetsModel) {
@@ -142,7 +171,7 @@ export class MaterialManager {
         setCookie('rimMaterial', bodyMaterials[3]);
     }
 
-    async loadImage(src) {
+async loadImage(src) {
         console.log('[materialManager loadImage] Attempting to load image from src:', src);
         let response;
         try {
@@ -153,7 +182,9 @@ export class MaterialManager {
         }
 
         const blob = await response.blob();
-        if (typeof createImageBitmap === 'function') {
+        
+        // Use createImageBitmap for GPU/worker mode, fallback to Image for software rendering
+        if (!this.isSoftwareRendering && typeof createImageBitmap === 'function') {
             try {
                 const bitmap = await createImageBitmap(blob);
                 console.log('[materialManager loadImage] Image loaded as ImageBitmap:', src, bitmap.width, bitmap.height);
@@ -162,7 +193,7 @@ export class MaterialManager {
                 console.warn('[materialManager loadImage] ImageBitmap failed, falling back to Image element:', error);
             }
         }
-
+        
         return new Promise((resolve, reject) => {
             const img = new Image();
             const objectUrl = URL.createObjectURL(blob);
@@ -179,7 +210,7 @@ export class MaterialManager {
                 reject(`Failed to load image from ${src}`);
             };
         });
-    }
+}
 
     createTextureFromCanvas(canvas) {
         const texture = new THREE.Texture(canvas);
