@@ -227,6 +227,8 @@ detectSoftwareRendering() {
     }
 
     createTextureFromCanvas(canvas) {
+        console.log('[materialManager createTextureFromCanvas] Called with canvas:', canvas.width, canvas.height);
+        
         const texture = new THREE.Texture(canvas);
         texture.flipY = false;
         texture.colorSpace = THREE.SRGBColorSpace;
@@ -238,6 +240,14 @@ detectSoftwareRendering() {
         this.state.trackResource('textures');
         
         this.state.bodyTextures.push(texture);
+        
+        console.log('[materialManager createTextureFromCanvas] Texture created:', {
+            width: texture.image.width,
+            height: texture.image.height,
+            needsUpdate: texture.needsUpdate,
+            colorSpace: texture.colorSpace
+        });
+        
         return texture;
     }
 
