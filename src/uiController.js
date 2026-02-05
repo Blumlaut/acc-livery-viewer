@@ -701,7 +701,17 @@ export class UIController {
 
     async handleJsonFile(file, dataUrl) {
         const base64Data = dataUrl.split(',')[1];
-        const content = JSON.parse(atob(base64Data));
+        const binaryString = atob(base64Data);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        let content;
+        try {
+            content = JSON.parse(new TextDecoder('utf-8').decode(bytes));
+        } catch {
+            content = JSON.parse(new TextDecoder('utf-16le').decode(bytes));
+        }
         if (this.fileActions[file.name]) {
             await this.fileActions[file.name](content);
         } else if (content.hasOwnProperty('raceNumber')) {
