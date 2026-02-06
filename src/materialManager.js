@@ -657,13 +657,6 @@ detectSoftwareRendering() {
 
         this.applyBodyColours();
 
-        if (this.state.decalsFile || this.state.sponsorsFile) {
-            const currentLivery = this.state.currentLivery ?? this.modelLoader?.getDefaultLivery(this.state.currentModelPath);
-            if (currentLivery) {
-                await this.mergeAndSetDecals(currentLivery);
-            }
-        }
-
         return {
             bodyColours: [...this.state.bodyColours],
             bodyMaterials: [...this.state.bodyMaterials],
